@@ -26,3 +26,27 @@ It is about improving support and handling of Movie, Audio, and pictures. It is 
 
 ### Environment
 Lime is not an Application, it is a Software Suite which provides a complementary ecosystem of tools to handle the multimedia usage better.
+
+## The projects
+Lime is a suite of tools to handle different aspect of the multimedia requirement in a system. These are the different projects that are foreseen for Lime:
+
+### Lime Launcher
+This aims at being the main visible interface to the Lime suite. This is a Software which can optionally be put in your system tray, to browse, launch and edit your files.
+
+- Provide a slick file launcher/browser, designed to optimally be used with mouse, keyboard, remote-control and touch-screen/pad.
+- Skin-able, could be used as a system-style windowed application, or as a full-screen media-center-style browser 
+- Main configuration interface for the Lime Suite
+- Provide the mean to add, edit, and retrieve automatically metadata for your multimedia files. Metadata are for example cover, plot, actors, rating, description, comments… Metadata are added as tag **inside** the file. No external database or added nfo files. One file = One self-contained video and its metadata.
+- This use the normal Windows directory structure (Integrated) and shell links to organize your files. You can also browse the same structure in Windows Explorer and drag/drop copy/paste both ways.
+
+### Thumb Lime
+This is a Windows shell-extension which will enable Windows to better support the multimedia files. This allows you to:
+- Display covers instead of first frames in Explorer Thumbnails
+- Access metadata directly from the Windows Explorer
+- Display relevant information and cover on the Windows Explorer View Pane
+
+### More to come
+
+- Multi-screen automations
+- Support of DLNA standard to access/control you multimedia collection
+
