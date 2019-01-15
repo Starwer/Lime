@@ -1,4 +1,5 @@
-# Light Integrated Multimedia Environment (Lime)
+# Light Integrated Multimedia Environment (Lime) 
+![Lime Logo](https://github.com/Starwer/Lime/blob/master/Documents/Icons/Lime%20Icon.svg "Lime Logo")
 Light Integrated Multimedia Environment (in short: **Lime**) is project aiming at providing a suite of Software enhancing the multimedia experience in Windows.
 The project has the following ambitions:
 - Provide a multimedia launcher which is easy to the hand and to the eyes, customizable, following the O.S. and multimedia standards to seamlessly integrate to the system
