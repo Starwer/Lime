@@ -765,7 +765,7 @@ namespace LimeLauncher
                 return;
             }
 
-            LimeMsg.Debug("OnChangeInPanelContent: {0}, {1}, {2}", parent.Name, item.Name, index);
+            LimeMsg.Debug("OnChangeInPanelContent: {0}, {1}, {2}", parent.Name, item?.Name, index);
 
             if (index == parent.Children.Count) index--;
             if (index>=0 && index < parent.Children.Count)

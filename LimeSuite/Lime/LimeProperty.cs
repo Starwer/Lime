@@ -935,10 +935,6 @@ namespace Lime
 
             // Finish copying properties
             Desc = copy.Desc;
-#if DEBUG
-            Ident += "§";
-            Name += "§";
-#endif
         }
 
 
