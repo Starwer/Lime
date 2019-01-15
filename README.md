@@ -36,7 +36,7 @@ This aims at being the main visible interface to the Lime suite. This is a Softw
 - Provide a slick file launcher/browser, designed to optimally be used with mouse, keyboard, remote-control and touch-screen/pad.
 - Skin-able, could be used as a system-style windowed application, or as a full-screen media-center-style browser 
 - Main configuration interface for the Lime Suite
-- Provide the mean to add, edit, and retrieve automatically metadata for your multimedia files. Metadata are for example cover, plot, actors, rating, description, comments… Metadata are added as tag **inside** the file. No external database or added nfo files. One file = One self-contained video and its metadata.
+- Provide the mean to add, edit, and retrieve automatically metadata for your multimedia files, usign free Internet databases. Metadata are for example covers, plots, actors, rating, descriptions, comments… Metadata are added as tag **inside** the file, following the file-format tagging standard. No external database or added nfo files. One file = One self-contained video and its metadata. Added metadata may be also supported in you player or other systems. 
 - This use the normal Windows directory structure (Integrated) and shell links to organize your files. You can also browse the same structure in Windows Explorer and drag/drop copy/paste both ways.
 
 ### Thumb Lime
@@ -49,4 +49,5 @@ This is a Windows shell-extension which will enable Windows to better support th
 
 - Multi-screen automations
 - Support of DLNA standard to access/control you multimedia collection
+- Official Website
 
