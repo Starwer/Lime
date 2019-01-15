@@ -1,0 +1,97 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     12-02-2018
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<c:LimeControl x:Class="LimeLauncher.Controls.LimeNumBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:s="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignWidth="200"
+             >
+    <UserControl.Resources>
+
+        <!-- Define value-converters -->
+        <w:EqualConverter x:Key="EqualConvert" />
+
+        <!-- No Style shall be used, so that this control is kept skinable -->
+
+    </UserControl.Resources>
+
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Setter Property="d:DataContext" Value="{d:DesignInstance Type=l:SkinParam, IsDesignTimeCreatable=True}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Style.Resources>
+            </Style.Resources>
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+
+    <!-- The DataContext of the Content control must not be overridden. A LimeProperty will be assigned to it by the LimeControl base -->
+    <Grid x:Name="wxMain"
+          RepeatButton.PreviewKeyDown="Button_PreviewKeyDown">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition x:Name="wxCol" Width="*" />
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBox x:Name="wxTextBox" Grid.Column="0"
+             IsReadOnly="{Binding ReadOnly}" 
+             SnapsToDevicePixels="True"
+             KeyDown="TextBoxUpdateSourceOnKey_KeyEvent"  
+             PreviewKeyDown="wxTextBox_PreviewKeyDown" 
+             PreviewKeyUp="wxTextBox_PreviewKeyUp" 
+             TextChanged="wxTextBox_TextChanged" 
+             LostFocus="wxTextBox_LostFocus" 
+             GotFocus="wxTextBox_GotFocus" >
+
+            <TextBox.Text>
+                <Binding RelativeSource="{RelativeSource Self}" Path="Text" Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <ExceptionValidationRule/>
+                        <!-- DataContext property set by code behind -->
+                        <l:LimePropertyValidationRule x:Name="wxValidation"/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+
+        <RepeatButton x:Name="wxMinus" Grid.Column="1" 
+                      Click="Button_Click" 
+                      PreviewKeyDown="Button_PreviewKeyDown">
+            <Path Fill="{Binding Foreground, ElementName=wxTextBox}" 
+                  Data="M 6 0 L 6 12 L 0 6 Z"/>
+        </RepeatButton>
+        
+        <Slider x:Name="wxSlider" Grid.Column="2"
+                IsTabStop="False" Focusable="False"
+                IsSnapToTickEnabled="True"
+                SnapsToDevicePixels="True"
+                HorizontalAlignment="Stretch"
+                AutoToolTipPlacement="TopLeft"
+                VerticalAlignment="Center"
+                ValueChanged="wxSlider_ValueChanged" 
+                LostMouseCapture="wxSlider_LostMouseCapture"/>
+
+        <RepeatButton x:Name="wxPlus" Grid.Column="3" 
+                      Click="Button_Click">
+            <Path Fill="{Binding Foreground, ElementName=wxTextBox}" 
+                  Data="M 0 0 L 6 6 L 0 12 Z"/>
+        </RepeatButton>
+    </Grid>
+
+
+</c:LimeControl>

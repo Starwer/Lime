@@ -1,0 +1,354 @@
+﻿<Application x:Class="LimeLauncher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="clr-namespace:Thumbnail"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             Startup="App_Startup">
+    <Application.Resources>
+    
+        <!-- **************************************************************************************************************** -->
+        <!-- Define value-converters -->
+
+        <!-- UniversalValueConverter: Enable to convert from virtually any type to the target type -->
+        <w:UniversalValueConverter x:Key="AutoConvert" />
+
+        <!-- ScaleConverter: Enable to multiply a double by a parameter value (default: Scale) -->
+        <w:ScaleConverter x:Key="ScaleConvert" />
+
+
+        <!-- **************************************************************************************************************** -->
+        <!-- Skin Mandatory parameters -->
+
+        <l:SkinParam x:Key="ParamIconSmallSize" Text="Small Icon Size"> 
+            <w:DoubleScaled>32</w:DoubleScaled>
+        </l:SkinParam>
+
+        <l:SkinParam x:Key="ParamIconBigSize" Text="Big Icon Size">
+            <w:DoubleScaled>256</w:DoubleScaled>
+        </l:SkinParam>
+
+        
+        <!-- **************************************************************************************************************** -->
+        <!-- Complete Visual tree hierarchy, 
+         format: + Type                       : Key/Name    (Style)
+              + Window 
+                + Border                      : wxWinBorder (BackgroundStyle)
+                  + Grid                      : wxMainGrid  (MainGridStyle)
+                    + GridSplitter            : wxSplitter
+                    + Button                  : wxBack      (NavigationBackButtonStyle)
+                    + Grid                    : wxToolGrid  (BrowserToolGridStyle)
+                      + LimeToolBar           : wxToolBar   (BrowserToolBarStyle)
+                      + Button                : wxNext      (NavigationNextButtonStyle)
+                    + Border                  : wxNotifier  (NotifierStyle)
+                      + TextBlock             : wxNotifierText
+                    + InfoPanel               : wxInfoPane  (InfoPaneStyle)
+                    + ScrollViewer            : wxScroll    (IconScrollViewerStyle)
+                      + ItemsControl          : wxRoot
+                        + StackPanel          : wxPanel     (IconPanelStyle)
+                          + Grid              : wxHeader
+                            + Image           : wxHeaderIcon
+                            + TextBlock       : wxHeaderTitle 
+                          + ItemsControl      : wxItemDataTemplate 
+                            + Grid            : wxItemArea
+                              + ToggleButton  : wxItem      (LimeItemButtonStyle)
+                                + Grid        : wxItemGrid
+                                  + Image     : wxIcon
+                                  + Thumbnail : wxThumbnail
+                                  + TextBlock : wxText 
+        -->
+
+
+        <!-- **************************************************************************************************************** -->
+        <!-- Generic Styles -->
+
+        <Style x:Key="LimeColorPickerColumnStyle" TargetType="ColumnDefinition">
+        </Style>
+
+        <Style x:Key="LimeControlHeaderTextStyle" TargetType="TextBox">
+        </Style>
+
+        <!-- **************************************************************************************************************** -->
+        <!-- InfoPanel Styles -->
+
+        <Style x:Key="InfoPaneStyle" TargetType="UserControl">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="3"/>
+        </Style>
+
+        <Style x:Key="ConfigPanelListBoxStyle" TargetType="ListBox">
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Margin" Value="3,3,6,3"/>
+            <Setter Property="Padding" Value="0,0,6,0"/>
+        </Style>
+
+        <Style x:Key="ConfigPanelBottomBarBorderStyle" TargetType="Border">
+            <Setter Property="Margin" Value="{w:ThicknessScaled '3'}"/>
+        </Style>
+
+
+        <Style x:Key="OpusTextStyle" TargetType="TextBlock">
+        </Style>
+
+        <Style x:Key="PersonButtonStyle" TargetType="Button">
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter RecognizesAccessKey="True"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PersonTextStyle" TargetType="TextBlock">
+        </Style>
+
+        <Style x:Key="RoleTextStyle" TargetType="TextBlock">
+        </Style>
+
+        <Style x:Key="OrigTitleTextStyle" TargetType="TextBlock">
+        </Style>
+
+        <!-- **************************************************************************************************************** -->
+        <!-- Notifiers -->
+
+        <Style x:Key="NotifierStyle" TargetType="Popup">
+            <Setter Property="Placement" Value="Center" />
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Margin" Value="10,5" />
+                </Style>
+            </Style.Resources>
+        </Style>
+
+
+
+        <!-- **************************************************************************************************************** -->
+        <!-- Default Theme -->
+
+        <Style x:Key="MainGridStyle" TargetType="Grid">
+            <Setter Property="Panel.ZIndex" Value="-1" />
+        </Style>
+
+        <Style x:Key="BackgroundStyle" TargetType="Border">
+            <Setter Property="Border.Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+        </Style>
+
+        <Style x:Key="NavigationBackButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Content" Value="&lt;&lt;&lt;"/>
+            <Setter Property="Width" Value="45" />
+            <Setter Property="Height" Value="45" />
+        </Style>
+
+
+        <Style x:Key="BackButtonStyle" TargetType="Button">
+        </Style>
+
+        <Style x:Key="BrowserToolGridStyle" TargetType="Grid">
+        </Style>
+
+        <Style x:Key="BrowserToolBarStyle" TargetType="{x:Type c:LimeToolBar}">
+        </Style>
+
+        <Style x:Key="NavigationNextButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Content" Value="&gt;&gt;&gt;"/>
+            <Setter Property="Width" Value="45" />
+            <Setter Property="Height" Value="45" />
+        </Style>
+
+        <Style x:Key="NextButtonStyle" TargetType="Button">
+        </Style>
+
+        <Style x:Key="IconScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="50,0"/>
+
+            <Style.Resources>
+                <!--  Panel Icon container definition  -->
+                <Style TargetType="ItemsControl">
+                    <Setter Property="ItemsControl.ItemsPanel">
+                        <Setter.Value>
+                            <ItemsPanelTemplate>
+                                <!-- Type of container for presenting the Icon-Panels -->
+                                <StackPanel HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform/>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+        <Style x:Key="IconPanelStyle" TargetType="StackPanel">
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+            <Style.Resources>
+                <!--  Panel Icon  -->
+                <Style TargetType="Image">
+                    <Setter Property="Margin" Value="10,8,10,0"/>
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="Stretch" Value="Uniform" />
+                </Style>
+
+                <!--  Panel Title  -->
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <!-- Set Value="Collapse" to Hide the panel title -->
+                    <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="20"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                </Style>
+
+                <!--  Panel Icon container definition  -->
+                <Style TargetType="ItemsControl">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="ItemsControl.ItemsPanel">
+                        <Setter.Value>
+                            <ItemsPanelTemplate>
+                                <!-- Type of container for presenting the LimeItem Buttons -->
+                                <WrapPanel HorizontalAlignment="Left" Margin="10,0,10,5" />
+                            </ItemsPanelTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+
+        <Style x:Key="ButtonBasisStyle" TargetType="ToggleButton">
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton" >
+                        <Border x:Name="Border" BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <SolidColorBrush Color="Transparent" />
+                            </Border.Background>
+                            <ContentPresenter RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="ToggleButton.IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX=".9" ScaleY=".9"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MetadataSearchButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ButtonBasisStyle}">
+            <Style.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.05}" />
+                </Style>
+                <Style TargetType="RowDefinition">
+                    <!-- Define the bottom row size, where the small icon should fit -->
+                    <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+                </Style>
+                <Style TargetType="ColumnDefinition">
+                    <!-- Define the left column size, where the small icon should fit -->
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+                </Style>
+                <Style TargetType="d:Thumbnail">
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+                    <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+                </Style>
+                <Style TargetType="Image">
+                    <!-- Format icon (image) -->
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Stretch" Value="Uniform" />
+                    <Style.Triggers>
+                        <Trigger Property="Visibility" Value="Visible">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="TextBlock">
+                    <!-- Format icon name (text) -->
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+
+
+        <Style x:Key="LimeItemButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ButtonBasisStyle}">
+            <Style.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.05}" />
+                </Style>
+                <Style TargetType="RowDefinition">
+                    <!-- Define the bottom row size, where the small icon should fit -->
+                    <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+                </Style>
+                <Style TargetType="ColumnDefinition">
+                    <!-- Define the left column size, where the small icon should fit -->
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+                </Style>
+                <Style TargetType="d:Thumbnail">
+                    <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+                    <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+                </Style>
+                <Style TargetType="Image">
+                    <!-- Format icon (image) -->
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Stretch" Value="Uniform" />
+                    <Style.Triggers>
+                        <Trigger Property="Visibility" Value="Visible">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="TextBlock">
+                    <!-- Format icon name (text) -->
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+    </Application.Resources>
+</Application>

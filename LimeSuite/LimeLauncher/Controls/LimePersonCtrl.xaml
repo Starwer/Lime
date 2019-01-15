@@ -1,0 +1,91 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     14-04-2018
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<c:LimeControl x:Class="LimeLauncher.Controls.LimePersonCtrl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:g="clr-namespace:System.Globalization;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignWidth="400"
+             d:DesignHeight="220"
+             >
+    <UserControl.Resources>
+
+        <!-- Define value-converters -->
+        <w:EqualConverter x:Key="EqualConvert" />
+        <w:ScaleConverter x:Key="ScaleConvert" />
+
+        <!-- No Style shall be used, so that this control is kept skinable -->
+        
+    </UserControl.Resources>
+
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Setter Property="d:DataContext" Value="{d:DesignInstance Type=l:SkinParam, IsDesignTimeCreatable=True}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+
+    <!-- The DataContext of the Content control must not be overridden. A LimeProperty will be assigned to it by the LimeControl base -->
+    <Border x:Name="wxMain">
+
+        <Grid x:Name="wxGrid"
+              DataContext="{Binding Content}"
+              Grid.IsSharedSizeScope="True"
+              HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding Skin.IconBigSize.Content.Scaled, Source={x:Static l:Global.Local}, Converter={StaticResource ScaleConvert}, ConverterParameter=0.66}"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <c:LimeImage Grid.Column="0" 
+                         IconKey="Person"
+                         DataContext="{Binding Pictures}"
+                         MaxHeight="{Binding Skin.IconBigSize.Content.Scaled, Source={x:Static l:Global.Local}}"
+                         ToolTip="{Binding DataContext.AliasString, ElementName=wxGrid}"/>
+
+            <w:WaitRotatingDots Grid.Column="0" 
+                                Panel.ZIndex="1" MaxWidth="150"
+                                IsEnabled="{Binding IsBusy}" />
+
+            <StackPanel Grid.Column="1" 
+                        Orientation="Vertical" 
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Top">
+                <c:LimeTextBox DataContext="{Binding Name}" HorizontalAlignment="Stretch" />
+                <c:LimeComposite DataContext="{Binding Roles}" 
+                                 IsEnabled="{Binding DataContext.RolesReadOnly, ElementName=wxGrid, Converter={StaticResource EqualConvert}, ConverterParameter=False}"
+                                 HorizontalAlignment="Stretch"/>
+                <TextBlock ToolTip="{Binding Biography}">
+                    <Run Text="{Binding Birthday, StringFormat=d, ConverterCulture={x:Static g:CultureInfo.CurrentCulture}}" />
+                    <Run Text=" - " />
+                    <Run Text="{Binding Deathday, StringFormat=d, ConverterCulture={x:Static g:CultureInfo.CurrentCulture}}" />
+                </TextBlock>
+                <TextBlock Text="{Binding OpusString}" 
+                           ToolTip="{Binding OpusString}"
+                           Style="{DynamicResource OpusTextStyle}"/>
+            </StackPanel>
+
+            <!-- Debug: -->
+            <!--<Border BorderThickness="1" BorderBrush="Orange" Grid.Column="0" Grid.Row="0"/>
+            <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="1" Grid.Row="0"/>-->
+        </Grid>
+
+    </Border>
+
+</c:LimeControl>

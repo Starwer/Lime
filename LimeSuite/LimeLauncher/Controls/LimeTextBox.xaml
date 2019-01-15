@@ -1,0 +1,56 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     28-01-2018
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+   
+<c:LimeControl x:Class="LimeLauncher.Controls.LimeTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:s="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignWidth="200"
+             >
+
+    <!-- No Style shall be used, so that this control is kept skinable -->
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Setter Property="d:DataContext" Value="{d:DesignInstance Type=l:SkinParam, IsDesignTimeCreatable=True}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Style.Resources>
+            </Style.Resources>
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+    <!-- The DataContext of the Content control must not be overridden. A LimeProperty will be assigned to it by the LimeControl base -->
+    <TextBox x:Name="wxMain"
+             Language="{Binding XmlMetadataLanguage, Source={x:Static l:Global.User}}"
+             AcceptsReturn="{Binding Multiline}"
+             SnapsToDevicePixels="True"
+             KeyDown="TextBoxUpdateSourceOnKey_KeyEvent"
+             PreviewKeyDown="wxTextBox_PreviewKeyDown" 
+             PreviewKeyUp="wxTextBox_PreviewKeyUp" 
+             PreviewMouseWheel="wxMain_PreviewMouseWheel"
+             LostFocus="wxMain_LostFocus"
+             TextChanged="wxTextBox_TextChanged" >
+        <TextBox.Text>
+            <Binding Path="Value" Mode="TwoWay">
+                <Binding.ValidationRules>
+                    <ExceptionValidationRule/>
+                    <!-- DataContext property set by code behind -->
+                    <l:LimePropertyValidationRule x:Name="wxValidation"/>
+                </Binding.ValidationRules>
+            </Binding>
+        </TextBox.Text>
+    </TextBox>
+
+
+</c:LimeControl>

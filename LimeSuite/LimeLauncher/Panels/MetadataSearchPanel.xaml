@@ -1,0 +1,153 @@
+﻿<UserControl x:Class="LimeLauncher.MetadataSearchPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:d="clr-namespace:Thumbnail"
+             xmlns:s="clr-namespace:System;assembly=mscorlib" 
+             IsVisibleChanged="UserControl_Update" IsEnabledChanged="UserControl_Update"
+            >
+    <UserControl.Resources>
+
+        <!-- **************************************************************************************************************** -->
+        <!-- Define value-converters -->
+
+        <w:UniversalValueConverter x:Key="AutoConvert" />
+        <w:URIConverter x:Key="URIConvert" />
+        <w:EqualConverter x:Key="EqualConvert" />
+        <w:ScaleConverter x:Key="ScaleConvert" />
+
+        <!-- Avoid Style definitions to enable Skin to style this control -->
+
+    </UserControl.Resources>
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Panel -->
+
+    <Border x:Name="wxMetadataSearchPanelBorder" Grid.Column="0" Grid.Row="0" 
+            DataContext="{Binding Search}">
+        <Grid x:Name="wxMetadataSearchPanelGrid"
+              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+              KeyDown="wxMetadataSearchPanelGrid_KeyDown">
+
+            <!-- Layout -->
+            
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="wxMetadataSearchPanelGridHighRow" Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <w:WaitRotatingDots x:Name="wxInfoEditWait"
+                                 Grid.Row="1" IsEnabled="False" Panel.ZIndex="1"
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+
+            <!--****************************************************************************************************************-->
+            <!-- Toolbar -->
+
+            <Grid x:Name="wxSearchToolBar" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch">
+                <c:LimeControl ValueValidated="LimeTextBox_TextValidated" HeaderEnabled="False"/>
+            </Grid>
+
+            <!--****************************************************************************************************************-->
+            <!-- List found Items -->
+
+            <!-- Main view: Focusable="False" is required to allow window Drag and double-click detection -->
+
+            <ScrollViewer x:Name="wxScroll" Grid.Row="1"  
+                          HorizontalAlignment="Stretch" 
+                          Focusable="False"
+                          Grid.IsSharedSizeScope="true">
+                <ItemsControl x:Name="wxPropCtrl"  IsTabStop="False" 
+                              HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                              ToggleButton.Click="SearchItem_Click" 
+                              ToggleButton.GotFocus="SearchItem_GotFocus" 
+                              ToggleButton.LostFocus="SearchItem_LostFocus" 
+                              ItemsSource="{Binding Items, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Row content -->
+                            <ToggleButton x:Name="wxButton"
+                                          Style="{DynamicResource MetadataSearchButtonStyle}"
+                                          ToolTip="{Binding Tooltip}" 
+                                          HorizontalAlignment="Stretch" 
+                                          MouseEnter="Button_MouseEnter" 
+                                          KeyDown="wxButton_KeyDown">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <c:LimeImage x:Name="wxPropCover" 
+                                                 Grid.Column="0"  
+                                                 IconKey="Picture"
+                                                 DataContext="{Binding PosterUrl}" />
+
+                                    <w:WaitRotatingDots Grid.Column="0" 
+                                                        Panel.ZIndex="1" MaxWidth="50"
+                                                        IsEnabled="{Binding IsEnabled, ElementName=wxPropCover, Converter={StaticResource EqualConvert}, ConverterParameter=False}" />
+
+                                    <Grid Grid.Column="1"
+                                          VerticalAlignment="Center">
+                                        
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition x:Name="wxRowTitle" Height="Auto"/>
+                                            <RowDefinition x:Name="wxRowOrig" Height="Auto"/>
+                                            <RowDefinition x:Name="wxRowGenres" Height="Auto"/>
+                                            <RowDefinition x:Name="wxRowDate" Height="Auto"/>
+                                            <RowDefinition x:Name="wxRowDesc" Height="*" />
+                                        </Grid.RowDefinitions>
+
+
+                                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                                                   x:Name="wxPropName" Text="{Binding Title}" />
+                                        <TextBlock Grid.Row="1"  Grid.ColumnSpan="2"
+                                                   Style="{DynamicResource OrigTitleTextStyle}"
+                                                   Text="{Binding OriginalTitle}" />
+                                        <TextBlock Grid.Row="2" 
+                                                   Text="{Binding Released, Converter={StaticResource AutoConvert}}" />
+                                        <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"
+                                                   Text="{Binding Score, Converter={StaticResource AutoConvert}}" />
+                                        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" 
+                                                   Text="{Binding GenresString}" />
+
+                                        <!-- Debug: -->
+                                        <!--<Border BorderThickness="1" BorderBrush="Orange" Grid.Column="0" Grid.Row="0"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="1" Grid.Row="0"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="2" Grid.Row="0"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="0" Grid.Row="1"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="1" Grid.Row="1"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="2" Grid.Row="1"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="0" Grid.Row="2"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="1" Grid.Row="2"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="2" Grid.Row="2"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="0" Grid.Row="3"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="1" Grid.Row="3"/>
+                                        <Border BorderThickness="1" BorderBrush="Orange" Grid.Column="2" Grid.Row="3"/>-->
+                                    </Grid>
+                                </Grid>
+                            </ToggleButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+           
+            <!--****************************************************************************************************************-->
+
+        </Grid>
+    </Border>
+</UserControl>

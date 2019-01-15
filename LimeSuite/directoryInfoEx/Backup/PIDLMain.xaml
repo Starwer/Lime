@@ -1,0 +1,60 @@
+﻿<Window x:Class="PIDLTest.Window1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sysIO="clr-namespace:System.IO;assembly=QuickZip.IO.PIDL"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:tool="clr-namespace:System.IO.Tools"
+    xmlns:local="clr-namespace:PIDLTest"    
+        
+    Title="PIDL" Height="300" Width="300">
+    <Window.Resources>
+        <local:GetDirectoriesConverterEx x:Key="getDirs"/>
+        <local:GetFilesConverterEx x:Key="getFiles"/>
+        <local:GetIconConverter x:Key="getIcon"/>
+        <HierarchicalDataTemplate DataType="{x:Type sysIO:DirectoryInfoEx}" 
+                                  ItemsSource="{Binding Converter={StaticResource getDirs}}">
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Height="20" Stretch="Fill" Source="{Binding Converter={StaticResource getIcon}}" />
+                <TextBlock Text="{Binding Label}" Margin="5,0,0,0" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type sysIO:FileInfoEx}">
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Height="20" Stretch="Fill" Source="{Binding Converter={StaticResource getIcon}}" />
+                <TextBlock Text="{Binding Label}" Margin="5,0,0,0" />
+            </StackPanel>
+        </DataTemplate>
+
+    </Window.Resources>
+
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom" x:Name="sbar">
+            <TextBlock x:Name="sbar1" />
+        </StatusBar>
+        <Grid  x:Name="gd"
+               DataContext="{Binding ElementName=tv, Path=SelectedValue, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <TreeView x:Name="tv" Grid.Column="0" 
+                      tool:DragDropHelper.EnableDrag="True"
+                      tool:DragDropHelper.EnableDrop="True"
+                      tool:DragDropHelper.ConfirmDrop="False">
+                <tool:Ex />  <!-- Desktop Directory --> 
+            </TreeView>
+            <GridSplitter Grid.Column="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+            <ListView x:Name="lv" Grid.Column="2" 
+                      tool:DragDropHelper.EnableDrag="True"
+                      tool:DragDropHelper.EnableDrop="True"
+                      tool:DragDropHelper.ConfirmDrop="False"
+                      tool:DragDropHelper.CurrentDirectory="{Binding 
+                                 RelativeSource={RelativeSource Self}, Path=DataContext, Mode=OneWay}"
+                      ItemsSource="{Binding RelativeSource={RelativeSource Self}, Path=DataContext, 
+                                 Converter={StaticResource getFiles}}" />
+            
+        </Grid>
+    </DockPanel>
+</Window>

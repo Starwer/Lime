@@ -1,0 +1,8 @@
+[submodule "OnlineVideos"]
+	path = OnlineVideos
+	url = https://github.com/offbyoneBB/mp-onlinevideos2.git
+	branch = EXP_BrowserHostMP2
+[submodule "LimeSuite/taglib-sharp"]
+	path = LimeSuite/taglib-sharp
+	url = https://github.com/mono/taglib-sharp.git
+	branch = master

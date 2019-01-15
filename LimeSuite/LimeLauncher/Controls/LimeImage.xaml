@@ -1,0 +1,68 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     31-03-2018
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<c:LimeControl x:Class="LimeLauncher.Controls.LimeImage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             mc:Ignorable="d" 
+             d:DesignWidth="200"
+             d:DesignHeight="200"
+             >
+    <UserControl.Resources>
+
+        <!-- Define value-converters -->
+        <w:EqualConverter x:Key="EqualConvert" />
+
+        <!-- No Style shall be used, so that this control is kept skinable -->
+        
+    </UserControl.Resources>
+
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Setter Property="d:DataContext" Value="{d:DesignInstance Type=l:SkinParam, IsDesignTimeCreatable=True}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+
+    <!-- The DataContext of the Content control must not be overridden. A LimeProperty will be assigned to it by the LimeControl base -->
+    <Grid x:Name="wxMain" 
+          Button.Click="Button_Click" 
+          Image.MouseDown="Image_MouseDown">
+
+        <c:LimeIcon x:Name="wxIcon"/>
+
+        <Grid x:Name="wxToolbar" VerticalAlignment="Bottom" Panel.ZIndex="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="wxBack"  Grid.Column="0" 
+                    Style="{DynamicResource BackButtonStyle}"
+                    Visibility="Collapsed"/>
+
+
+            <TextBlock x:Name="wxText" Grid.Column="1" />
+
+            <Button x:Name="wxNext" Grid.Column="2"
+                    Style="{DynamicResource NextButtonStyle}" 
+                    Visibility="Collapsed"/>
+        </Grid>
+
+        
+    </Grid>
+
+</c:LimeControl>

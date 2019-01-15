@@ -1,0 +1,105 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     06-02-2018
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<c:LimeControl x:Class="LimeLauncher.Controls.LimeDropDown"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             mc:Ignorable="d" 
+             d:DesignWidth="200"
+             >
+    <UserControl.Resources>
+
+        <!-- Define value-converters -->
+        <w:EqualConverter x:Key="EqualConvert" />
+        <l:FontFamilyConverter x:Key="FontFamilyConvert" />
+
+        <!-- Templates -->
+        
+        <DataTemplate x:Key="EnumItemTemplate">
+            <TextBlock Text="{Binding Name}" ToolTip="{Binding Desc}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="PickCollectionItemTemplate">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="FontFamilyItemTemplate">
+            <TextBlock Text="{Binding Name}" FontFamily="{Binding Key, Converter={StaticResource FontFamilyConvert}}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="FontWeightItemTemplate">
+            <TextBlock Text="{Binding Name}" FontWeight="{Binding Key}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="FontStyleItemTemplate">
+            <TextBlock Text="{Binding Name}" FontStyle="{Binding Key}" />
+        </DataTemplate>
+
+
+
+        <!-- No Style shall be used, so that this control is kept skinable -->
+
+    </UserControl.Resources>
+
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Setter Property="d:DataContext" Value="{d:DesignInstance Type=l:SkinParam, IsDesignTimeCreatable=True}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Style.Resources>
+            </Style.Resources>
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+
+    <!-- The DataContext of the Content control must not be overridden. A LimeProperty will be assigned to it by the LimeControl base -->
+    <Grid>
+        <ToggleButton x:Name="wxMain"
+                      IsEnabled="{Binding ReadOnly, Converter={StaticResource EqualConvert}, ConverterParameter=False}" 
+                      SnapsToDevicePixels="True"
+                      HorizontalContentAlignment="Stretch"
+                      Click="wxMain_Click"
+                      PreviewKeyDown="FixFocus_PreviewKeyDown">
+            <Grid Margin="2,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="wxText" Grid.Column="0" />
+                <Path Grid.Column="1" 
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center" 
+                      Fill="{Binding Foreground, ElementName=wxText}" 
+                      Data="M 0.5 0 L 4 4 L 7.5 0 Z"/>
+            </Grid>
+        </ToggleButton>
+
+        <!-- Popup Menu -->
+        <Popup x:Name="wxPopup"
+                       StaysOpen="False"
+                       Opened="Popup_Opened"
+                       Closed="Popup_Closed" 
+                       KeyDown="Popup_KeyDown">
+            <ListBox x:Name="wxMenu" Focusable="True"
+                     SelectionChanged="ListBox_SelectionChanged"
+                     SelectedValuePath="Key"
+                     CheckBox.Checked="CheckBox_Changed" 
+                     CheckBox.Unchecked="CheckBox_Changed" 
+                     PreviewKeyDown="ListBox_PreviewKeyDown"
+                     PreviewMouseUp="ListBox_PreviewMouseUp" />
+        </Popup>
+
+    </Grid>
+
+
+</c:LimeControl>

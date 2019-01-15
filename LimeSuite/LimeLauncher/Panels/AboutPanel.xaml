@@ -1,0 +1,119 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     01-10-2015
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<UserControl x:Class="LimeLauncher.AboutPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:lime="clr-namespace:Lime;assembly=Lime"
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:w="clr-namespace:WPFhelper"
+             >
+
+    <UserControl.Resources>
+
+        <w:ScaleConverter x:Key="ScaleConvert" />
+        <w:URIConverter x:Key="URIConvert" />
+
+    </UserControl.Resources>
+
+    <StackPanel Grid.IsSharedSizeScope="true"
+                Hyperlink.PreviewKeyDown="FixFocus_PreviewKeyDown"
+                Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
+        <c:LimeLabel DataContext="About" />
+        <StackPanel Orientation="Horizontal">
+            <c:LimeIcon Width="75" Height="75"  
+                        Margin="{w:ThicknessScaled 10}"
+                        IconKey="LimeIcon"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock FontWeight="Bold"
+                           FontSize="{Binding FontSize, ElementName=wxLabel, Converter={StaticResource ScaleConvert}, ConverterParameter=1.4}" 
+                           Text="{x:Static lime:About.name}" />
+                <TextBlock Opacity="0.6" x:Name="wxLabel" TextWrapping="Wrap" Text="{x:Static lime:About.description}" />
+                <TextBlock>
+                    <Run Text="{l:Translate Version}" />
+                    <Run Text=" " />
+                    <Run Text="{x:Static lime:About.version}" />
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="75"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Translate Website}" />
+            <TextBlock Grid.Row="0" Grid.Column="1">
+                <Hyperlink NavigateUri="{Binding Source={x:Static lime:About.url}, Converter={StaticResource URIConvert}}">
+                    <Run Text="{x:Static lime:About.url}"/>
+                </Hyperlink>
+            </TextBlock>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="{l:Translate Copyright}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static lime:About.copyright}" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="{l:Translate Author}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Static lime:About.author}" TextWrapping="wrap"/>
+        </Grid>
+
+        <TextBlock/>
+
+        <!-- Header content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition SharedSizeGroup="sysAbout" Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <c:LimeLabel Grid.Column="0" DataContext="UsingFeature" />
+            <c:LimeLabel Grid.Column="1" DataContext="Author" />
+
+        </Grid>
+        <ItemsControl DataContext="{x:Static l:AboutPanel.Credits}"  ItemsSource="{Binding}" Focusable="False" >
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- Row content -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition SharedSizeGroup="sysAbout" Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0"  
+                                   Margin="{w:ThicknessScaled 8}"
+                                   VerticalAlignment="Top">
+                            <Hyperlink NavigateUri="{Binding url, Converter={StaticResource URIConvert}}">
+                                <Run Text="{Binding item}"/>
+                            </Hyperlink>
+                        </TextBlock>
+                        
+                        <TextBlock Grid.Column="1" 
+                                   Text="{Binding author}" 
+                                   Margin="{w:ThicknessScaled 8}"
+                                   VerticalAlignment="Top" 
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+
+</UserControl>

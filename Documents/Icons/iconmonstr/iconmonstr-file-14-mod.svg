@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg841"
+   sodipodi:docname="iconmonstr-file-14-mod.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <metadata
+     id="metadata847">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs845" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="820"
+     inkscape:window-height="460"
+     id="namedview843"
+     showgrid="false"
+     inkscape:zoom="9.8333333"
+     inkscape:cx="9.559322"
+     inkscape:cy="12"
+     inkscape:window-x="206"
+     inkscape:window-y="95"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg841" />
+  <path
+     d="M 13.82,24 H 1 V 0 H 11.189 C 14.352,0 21,7.223 21,9.614 v 3.887 C 20.376,13.24 19.703,13.079 19,13.025 V 10.456 C 19,6.35 13,8 13,8 13,8 14.518,2 10.362,2 H 3 v 20 h 9.501 c 0.313,0.749 0.765,1.424 1.319,2 z"
+     id="path839"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cccssccscscccc" />
+  <path
+     d="m 23.5,19 h -3 v -3 h -2 v 3 h -3 v 2 h 3 v 3 h 2 v -3 h 3 z"
+     id="path2522"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccccccccccccc" />
+</svg>

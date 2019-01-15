@@ -1,0 +1,197 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     10-02-2015
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<UserControl x:Class="LimeLauncher.ConfigPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:lime="clr-namespace:Lime;assembly=Lime"
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:w="clr-namespace:WPFhelper"
+             xmlns:s="clr-namespace:System;assembly=mscorlib"
+             Background="Transparent"
+             mc:Ignorable="d" 
+             d:DesignWidth="200"
+             >
+    <UserControl.Resources>
+
+        <!-- Define value-converters -->
+        <w:EqualConverter x:Key="EqualConvert" />
+        <w:UniversalValueConverter x:Key="AutoConvert" />
+        <w:ScaleConverter x:Key="ScaleConvert" />
+        <l:TranslateConverter x:Key="Translate" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisible" />
+
+        <!-- No Style shall be used, so that this control is kept skinable -->
+            
+    </UserControl.Resources>
+
+    <!-- Debug: This style only applies at design-time -->
+    <d:DesignerProperties.DesignStyle>
+        <Style TargetType="UserControl">
+            <Style.Resources>
+            </Style.Resources>
+        </Style>
+    </d:DesignerProperties.DesignStyle>
+
+
+    <!--*************************************************************************************-->
+    <Grid DataContext="{x:Static l:Global.Properties}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Panel Selection -->
+        <ListBox x:Name="wxPanelList" Grid.Row="0" Grid.Column="0"
+                 Style="{DynamicResource ConfigPanelListBoxStyle}"
+                 Focusable="True"
+                 ItemsSource="{Binding Items, ElementName=wxPanels}"
+                 PreviewKeyDown="ListBox_PreviewKeyDown" 
+                 SelectionChanged="wxPanelList_SelectionChanged" 
+                 LayoutUpdated="wxPanelList_LayoutUpdated">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name, Converter={StaticResource Translate}}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Panels -->
+        <Border Grid.Row="0" Grid.Column="1" 
+                Style="{DynamicResource ConfigPanelBorderStyle}">
+            <ScrollViewer x:Name="wxScroll" Focusable="False">
+                <ItemsControl x:Name="wxPanels" Focusable="False">
+
+                    <!--*************************************************************************************-->
+                    <StackPanel x:Name="General"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+                        <c:LimeLabel DataContext="System Integration"/>
+                        <c:LimeControl DataContext="{Binding [StartWithWindows]}" />
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="Interface"/>
+                        <c:LimeControl DataContext="{Binding [Language]}"/>
+                        <c:LimeControl DataContext="{Binding [RootDirectoryName]}" />
+                        <c:LimeControl DataContext="{Binding [DragDropDefault]}" /> 
+                        <c:LimeControl DataContext="{Binding [ClickOnBorderAction]}" />
+                        <c:LimeControl DataContext="{Binding [AutoSelection]}" />
+                        <c:LimeControl DataContext="{Binding [KeysToNavigateEnable]}" />
+                        <c:LimeControl DataContext="{Binding [DoubleClickFullScreen]}" />
+                    </StackPanel>
+
+                    <!--*************************************************************************************-->
+                    <StackPanel x:Name="Layout"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+                        <c:LimeLabel DataContext="Window"/>
+                        <c:LimeControl DataContext="{Binding [ShowWindowBorders]}" />
+                        <c:LimeControl DataContext="{Binding [ShowWindowBordersFullScreen]}"
+                                       IsEnabled="{Binding ShowWindowBorders, Source={x:Static l:Global.User}}" />
+                        <c:LimeControl DataContext="{Binding [ShowInTaskbar]}" />
+                        <c:LimeControl DataContext="{Binding [TopMost]}"/>
+                        <c:LimeControl DataContext="{Binding [HideOnLaunch]}"/>
+                        <c:LimeControl DataContext="{Binding [ConfigWindow]}"/>
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="Window Content" />
+                        <c:LimeControl DataContext="{Binding [ShowTaskSwitcher]}"/>
+                        <c:LimeControl DataContext="{Binding [ShowAppTasks]}"
+                                       IsEnabled="{Binding ShowTaskSwitcher, Source={x:Static l:Global.User}}"
+                                       Visibility="{Binding Source={x:Static lime:LimeLib.IsWindows8}, Converter={StaticResource BoolToVisible}}"/>
+                        <c:LimeControl DataContext="{Binding [TaskMatchEnable]}"/>
+                        <c:LimeControl DataContext="{Binding [IconCover]}"/>
+                        <c:LimeControl DataContext="{Binding [EnableAnimations]}"/>
+                        <c:LimeControl DataContext="{Binding [MainPaneColumns]}"
+                                       IsEnabled="{Binding ListView, Source={x:Static l:Global.Local}, Converter={StaticResource EqualConvert}, ConverterParameter=False}" />
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="Screen Settings" />
+                        <c:LimeControl DataContext="{Binding [ScreenSpecificParameters]}"/>
+                        <c:LimeControl DataContext="{Binding [ScreenName]}"
+                                       IsEnabled="{Binding ScreenSpecificParameters, Source={x:Static l:Global.Local}}" />
+                        <c:LimeControl DataContext="{Binding [Zoom]}" />
+                        <c:LimeControl DataContext="{Binding [FullScreenBorderSize]}"/>
+                    </StackPanel>
+                    <!--*************************************************************************************-->
+                    <l:SkinPanel x:Name="Skin" Visibility="Hidden" />
+                    
+                    <!--*************************************************************************************-->
+                    <StackPanel x:Name="InfoPane"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+                        <c:LimeLabel DataContext="InfoPane" />
+                        <c:LimeControl DataContext="{Binding [ShowInfoPaneAuto]}"/>
+                        <c:LimeControl DataContext="{Binding [ShowInfoPaneMediaTypes]}" 
+                                    IsEnabled="{Binding ShowInfoPaneAuto, Source={x:Static l:Global.User}, Converter={StaticResource EqualConvert}, ConverterParameter=WhenDirectoryContainsMedia}" />
+                        <c:LimeControl DataContext="{Binding [AutoSlide]}"/>
+                        <c:LimeControl DataContext="{Binding [SlideShowPeriod]}"/>
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="InfoEditMode" />
+                        <c:LimeControl DataContext="{Binding [MetadataLanguage]}"/>
+                        <c:LimeControl DataContext="{Binding [PersonAutoDownload]}"/>
+                        <c:LimeControl DataContext="{Binding [PersonAutoSave]}"/>
+                        <c:LimeControl DataContext="{Binding [SpellCheck]}"/>
+                        <c:LimeControl DataContext="{Binding [Adult]}"/>
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="Naming" />
+                        <c:LimeControl DataContext="{Binding [PathToSearchMovie]}"/>
+                    </StackPanel>
+
+                    <!--*************************************************************************************-->
+                    <l:ApplicationPanel x:Name="Applications" Visibility="Hidden" />
+
+                    <!--*************************************************************************************-->
+                    <StackPanel x:Name="Advanced" Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+                        <c:LimeLabel DataContext="Developpers" />
+                        <c:LimeControl DataContext="{Binding [DevMode]}"/>
+                        <c:LimeControl DataContext="{Binding [EnableTypeScaled]}"/>
+                        <TextBlock/>
+                        <c:LimeLabel DataContext="Advanced Settings" />
+                        <c:LimeControl DataContext="{Binding [SmartIconSize]}"/>
+                        <c:LimeControl DataContext="{Binding [AllowLinkOfLink]}"/>
+                        <c:LimeControl DataContext="{Binding [ApplyZoomAfter]}"/>
+                        <c:LimeControl DataContext="{Binding [AutoSelectionAfter]}"/>
+                        <c:LimeControl DataContext="{Binding [ExtensionsAudio]}"/>
+                        <c:LimeControl DataContext="{Binding [ExtensionsVideo]}"/>
+                        <c:LimeControl DataContext="{Binding [ExtensionsImage]}"/>
+                        <c:LimeControl DataContext="{Binding [ExtensionsDocument]}"/>
+                    </StackPanel>
+
+                    <!--*************************************************************************************-->
+                    <l:HelpPanel x:Name="Help" Visibility="Hidden" />
+
+                    <!--*************************************************************************************-->
+                    <l:AboutPanel x:Name="About" Visibility="Hidden" />
+
+                    <!--*************************************************************************************-->
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!--*************************************************************************************-->
+        <!-- Bottom Bar -->
+        <Border Grid.Row="1" Grid.ColumnSpan="2"
+                Style="{DynamicResource ConfigPanelBottomBarBorderStyle}">
+            <WrapPanel HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal" 
+                            Focusable="True"
+                            Visibility="{Binding ReqRestart, Converter={StaticResource BoolToVisible}}">
+                    <c:LimeIcon IconKey="Warning"
+                                ToolTip="{Binding Converter={StaticResource Translate}, ConverterParameter=RestartTip}"/>
+                    <TextBlock VerticalAlignment="Center" Margin="1,0,20,0"  Opacity="0.6"
+                               Text="{Binding Converter={StaticResource Translate}, ConverterParameter=RestartShort}"/>
+                </StackPanel>
+
+                <c:LimeControl x:Name="wxSaveButton" 
+                               DataContext="{Binding [ConfigSave]}" />
+                <c:LimeControl x:Name="wxCloseButton" 
+                               DataContext="{Binding [ConfigClose]}" />
+            </WrapPanel>
+        </Border>
+    </Grid>
+
+</UserControl>

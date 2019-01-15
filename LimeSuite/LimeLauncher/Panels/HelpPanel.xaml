@@ -1,0 +1,97 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     18-01-2017
+* Copyright :   Sebastien Mouy © 2018  
+**************************************************************************-->
+
+<UserControl x:Class="LimeLauncher.HelpPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:c="clr-namespace:LimeLauncher.Controls"
+             xmlns:lime="clr-namespace:Lime;assembly=Lime"
+             xmlns:l="clr-namespace:LimeLauncher"
+             xmlns:w="clr-namespace:WPFhelper"
+             >
+
+    <UserControl.Resources>
+
+        <l:LimeProperty2CliConverter x:Key="Lime2cli" />
+        
+    </UserControl.Resources>
+
+    <StackPanel Grid.IsSharedSizeScope="true"
+                Hyperlink.PreviewKeyDown="FixFocus_PreviewKeyDown"
+                Hyperlink.Click="Hyperlink_Click">
+        <c:LimeLabel DataContext="CLI" SizeChanged="LimeLabel_SizeChanged" />
+        <TextBlock x:Name="wxCliDesc" TextWrapping="WrapWithOverflow">
+            <LineBreak/>
+            <Run FontWeight="Bold" Text="{l:Translate Usage}"/>
+            <Run FontWeight="Bold" Text=":   "/>
+            <Hyperlink DataContext="{x:Static lime:About.path}" 
+                       ToolTip="{l:Translate ClickCopy}">
+                <Run FontFamily="Courier New" Text="{Binding Mode=OneWay}"/>
+            </Hyperlink>
+            <Run FontFamily="Courier New"> [</Run>
+            <Run FontFamily="Courier New" Text="{l:Translate Usage}"/>
+            <Run FontFamily="Courier New">...]</Run>
+            <LineBreak/>
+            <LineBreak/>
+            <Run Text="{l:Translate CliDesc}"/>
+            <LineBreak/>
+            <LineBreak/>
+        </TextBlock>
+        
+        <!-- Header content -->
+        <Grid x:Name="wxCmdHeader">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition SharedSizeGroup="sysHelp" Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <c:LimeLabel Grid.Column="0" DataContext="Option" x:Name="wxColHeader" />
+            <c:LimeLabel Grid.Column="1" DataContext="Description" />
+
+        </Grid>
+        <ItemsControl x:Name="wxCmdTable" Focusable="False" >
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- Row content -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition SharedSizeGroup="sysHelp" Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"  
+                                   Margin="{w:ThicknessScaled 8}"
+                                   VerticalAlignment="Top"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="{Binding ElementName=wxColHeader, Path=MaxWidth}">   
+                            <Hyperlink ToolTip="{Binding Converter={StaticResource Lime2cli}}">
+                                <Run FontFamily="Courier New" 
+                                     Text="{Binding Converter={StaticResource Lime2cli}, Mode=OneWay}"/>
+                            </Hyperlink>
+                        </TextBlock>
+
+                        <TextBlock Grid.Column="1" 
+                                   Margin="{w:ThicknessScaled 8}"
+                                   VerticalAlignment="Top" 
+                                   TextWrapping="WrapWithOverflow" 
+                                   Text="{Binding Desc}" 
+                                   ToolTip="{Binding Name}"/>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+
+</UserControl>

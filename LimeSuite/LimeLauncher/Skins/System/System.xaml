@@ -1,0 +1,1001 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:w="clr-namespace:WPFhelper;assembly=LimeLauncher"
+                    xmlns:c="clr-namespace:LimeLauncher.Controls;assembly=LimeLauncher"
+                    xmlns:d="clr-namespace:Thumbnail;assembly=LimeLauncher"
+                    xmlns:l="clr-namespace:LimeLauncher;assembly=LimeLauncher"
+                    xmlns:lime="clr-namespace:Lime;assembly=Lime"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Metadata -->
+    <!-- Enter here the information about you and this skin -->
+
+    <s:Double x:Key="MetaLimeVersion">0.5</s:Double>
+    <s:String x:Key="MetaAuthor">Sebastien Mouy (Starwer)</s:String>
+    <s:String x:Key="MetaContact">starwer@laposte.net</s:String>
+    <s:String x:Key="MetaWebsite">http://starwer.online.fr</s:String>
+    <s:String x:Key="MetaDescription">System-style theme. Default theme provided with LimeLauncher.</s:String>
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Skin parameters -->
+
+    <l:SkinParam x:Key="ParamSizeLabel" Text="Size" />
+
+    <l:SkinParam x:Key="ParamFontSize" Text="Font" Minimum="8" Maximum="100">
+        <w:DoubleScaled>16</w:DoubleScaled>
+    </l:SkinParam>
+
+    <l:SkinParam x:Key="ParamIconBigSize" Text="Big Icon">
+        <w:DoubleScaled>128</w:DoubleScaled>
+    </l:SkinParam>
+    
+    <l:SkinParam x:Key="ParamIconMediumSize" Text="Medium Icon" Minimum="8" Maximum="512">
+        <w:DoubleScaled>40</w:DoubleScaled>
+    </l:SkinParam>
+    
+    <l:SkinParam x:Key="ParamIconSmallSize" Text="Small Icon">
+        <w:DoubleScaled>32</w:DoubleScaled>
+    </l:SkinParam>
+
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Define value-converters -->
+
+    <!-- UniversalValueConverter: Enable to convert from virtually any type to the target type -->
+    <w:UniversalValueConverter x:Key="AutoConvert" />
+
+    <!-- LowerThanConverter: Return true if the value is lower than the parameter. Both must be of type: double. -->
+    <w:LowerThanConverter x:Key="LowerThanConvert" />
+
+    <!-- ScaleConverter: Enable to multiply a double by a parameter value (default: Scale) -->
+    <w:ScaleConverter x:Key="ScaleConvert" />
+
+    <!-- ColorConverter: Enable to convert a color by multiplying it by another color -->
+    <w:ColorConverter x:Key="ColorConverter" />
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Derived objects declaration -->
+
+    <SolidColorBrush x:Key="ActiveButtonColorBrush" Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}" />
+    <SolidColorBrush x:Key="ControlOverBrush" Color="{Binding Color, Source={StaticResource ActiveButtonColorBrush}, Converter={StaticResource ColorConverter}, ConverterParameter=#8FFF}" />
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Complete Visual tree hierarchy, 
+         format: + Type                       : Key/Name    (Style)
+              + Window 
+                + Border                      : wxWinBorder (BackgroundStyle)
+                  + Grid                      : wxMainGrid  (MainGridStyle)
+                    + GridSplitter            : wxSplitter
+                    + Button                  : wxBack      (NavigationBackButtonStyle)
+                    + Button                  : wxNext      (NavigationNextButtonStyle)
+                    + Border                  : wxNotifier  (NotifierStyle)
+                      + TextBlock             : wxNotifierText
+                    + InfoPanel               : wxInfoPane
+                    + ScrollViewer            : wxScroll    (IconScrollViewerStyle)
+                      + ItemsControl          : wxRoot
+                        + StackPanel          : wxPanel     (IconPanelStyle)
+                          + Grid              : wxHeader
+                            + Image           : wxHeaderIcon
+                            + TextBlock       : wxHeaderTitle 
+                          + ItemsControl      : wxLimeItems 
+                            + Grid            : wxItemArea
+                              + ToggleButton  : wxItem      (LimeItemButtonStyle)
+                                + Grid        : wxItemGrid
+                                  + Image     : wxIcon
+                                  + Thumbnail : wxThumbnail
+                                  + TextBlock : wxText 
+    -->
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Generic Styles -->
+
+    <Style TargetType="TextBox">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '4,0'}"/>
+        <Setter Property="MinWidth" Value="{w:DoubleScaled 50}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Style.Triggers>
+            <Trigger Property="TextBox.IsReadOnly" Value="True">
+                <Setter Property="Opacity" Value="0.6"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style TargetType="ToggleButton">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '4,0'}"/>
+    </Style>
+
+    <Style TargetType="Popup">
+        <Setter Property="Placement" Value="Bottom"/>
+        <Setter Property="PopupAnimation" Value="Slide"/>
+        <Setter Property="AllowsTransparency" Value="True"/>
+        <Style.Resources>
+            <Style TargetType="Border">
+                <Setter Property="BorderThickness" Value="{w:ThicknessScaled 1}"/>
+                <Setter Property="Padding" Value="{w:ThicknessScaled '4'}"/>
+                <Setter Property="Background" Value="{x:Static SystemColors.MenuBrush}"/>
+                <Setter Property="BorderBrush" Value="{x:Static SystemColors.WindowFrameBrush}"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect BlurRadius="{w:DoubleScaled 5}" Opacity="0.5"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style TargetType="ListBox">
+                <Setter Property="BorderThickness" Value="{w:ThicknessScaled 1}"/>
+                <Setter Property="Background" Value="{x:Static SystemColors.MenuBrush}"/>
+                <Setter Property="BorderBrush" Value="{x:Static SystemColors.WindowFrameBrush}"/>
+                <!-- Shadow -->
+                <Setter Property="Margin" Value="{w:ThicknessScaled '1,1,8,8'}"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect BlurRadius="{w:DoubleScaled 5}" Opacity="0.5"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+    <Style TargetType="GridSplitter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="MinWidth" Value="{w:DoubleScaled 6}" />
+        <Setter Property="MinHeight" Value="{w:DoubleScaled 6}" />
+        <Setter Property="Margin" Value="{w:ThicknessScaled 1}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="True"/>
+                    <Condition Binding="{Binding InfoEditMode, Source={x:Static l:Global.Local}}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+            </MultiDataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style TargetType="{x:Type Image}">
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style TargetType="{x:Type w:WaitRotatingDots}">
+        <Setter Property="w:WaitRotatingDots.Foreground" Value="{x:Static SystemColors.GradientActiveCaptionBrush}"/>
+        <Setter Property="w:WaitRotatingDots.Background" Value="Transparent" />
+    </Style>
+
+
+    <Style x:Key="LimeControlStyle" TargetType="{x:Type c:LimeControl}">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '5,1,5,1'}"/>
+        <Style.Resources>
+            <Style TargetType="{x:Type c:LimeControl}">
+                <Setter Property="Margin" Value="{w:ThicknessScaled 1}"/>
+                <Style.Resources>
+                    <Style TargetType="{x:Type c:LimeControl}">
+                    </Style>
+                </Style.Resources>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+    <Style TargetType="{x:Type c:LimeTextBox}" BasedOn="{StaticResource LimeControlStyle}">
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeDropDown}" BasedOn="{StaticResource LimeControlStyle}">
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeListView}" BasedOn="{StaticResource LimeControlStyle}">
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeNumBox}" BasedOn="{StaticResource LimeControlStyle}">
+    </Style>
+
+    <Style TargetType="{x:Type c:LimePersonCtrl}" BasedOn="{StaticResource LimeControlStyle}">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="{w:ThicknessScaled '7,2'}"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+
+    <Style TargetType="ToolBarTray">
+        <Setter Property="Background" Value="{x:Null}" />
+    </Style>
+
+    <Style TargetType="CheckBox">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Margin" Value="0"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <!-- Style for overall  ScrollBar -->
+    <Style TargetType="ScrollBar">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Visibility" Value="Hidden"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="ScrollViewer">
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeLabel}">
+        <Style.Resources>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="Margin" Value="{w:ThicknessScaled '0,5,2,2'}"/>
+                <Setter Property="Padding" Value="{w:ThicknessScaled '2,0,2,1'}"/>
+                <Setter Property="Background" Value="{x:Static SystemColors.ControlLightBrush}" />
+                <Style.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Foreground" Value="Gray"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Style.Resources>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+    <Style TargetType="{x:Type c:LimeColorPicker}">
+        <Style.Resources>
+            <Style x:Key="LimeColorPickerColumnStyle" TargetType="ColumnDefinition">
+                <Setter Property="MaxWidth" Value="{w:DoubleScaled 100}"/>
+            </Style>
+            <Style TargetType="{x:Type Rectangle}">
+                <Setter Property="Margin" Value="{w:ThicknessScaled '2,1,5,1'}"/>
+                <Setter Property="Stroke" Value="Black"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeComposite}">
+        <Style.Resources>
+            <Style TargetType="{x:Type c:LimeControl}">
+                <Setter Property="HeaderEnabled" Value="False"/>
+            </Style>
+            <Style TargetType="{x:Type ItemsControl}">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+    <Style TargetType="{x:Type c:LimeButton}">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '2,0'}"/>
+        <Setter Property="MinWidth" Value="{w:DoubleScaled 50}"/>
+        <Style.Resources>
+           
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="{w:ThicknessScaled '0,0,0,4'}"/>
+            </Style>
+
+            <Style TargetType="{x:Type c:LimeIcon}">
+                <Setter Property="Margin" Value="{w:ThicknessScaled '3,2,6,2'}"/>
+                <Setter Property="Foreground" Value="{x:Static SystemColors.ControlDarkDarkBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeIcon}">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '2'}"/>
+        <Setter Property="Foreground" Value="{x:Static SystemColors.ControlDarkDarkBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+
+    <Style TargetType="Viewbox">
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.2"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type c:LimeImage}">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect
+                          ShadowDepth="{w:DoubleScaled '3'}"
+                          Color="Black"
+                          Opacity="0.9"
+                          BlurRadius="{w:DoubleScaled '3'}" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.3"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style TargetType="Hyperlink">
+        <Setter Property="TextDecorations" Value="{x:Null}" />
+    </Style>
+
+
+    <Style x:Key="LimeControlHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '1,0,6,0'}"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.2"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- InfoPane Styles -->
+
+    <Style x:Key="InfoPaneStyle" TargetType="UserControl">
+        <Style.Resources>
+            <Style TargetType="ScrollViewer">
+                <Setter Property="Padding" Value="{w:ThicknessScaled '5,0,6,6'}" />
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="ConfigPanelListBoxStyle" TargetType="ListBox">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '3,3,0,3'}"/>
+        <Setter Property="Padding" Value="{w:ThicknessScaled '3,0'}"/>
+        <Setter Property="BorderThickness" Value="{w:ThicknessScaled 2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+    </Style>
+
+    <Style x:Key="ConfigPanelBorderStyle" TargetType="Border">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '3'}"/>
+        <Setter Property="BorderThickness" Value="{w:ThicknessScaled 2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+    </Style>
+
+    <Style x:Key="ConfigPanelBottomBarBorderStyle" TargetType="Border">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '8'}"/>
+    </Style>
+
+
+    <Style x:Key="OpusTextStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '8,5'}" />
+        <Setter Property="TextTrimming" Value="WordEllipsis"/>
+        <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+        <Setter Property="LineHeight" Value="{Binding Source={StaticResource ParamFontSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.1}" />
+        <Setter Property="MaxHeight" Value="{Binding Source={StaticResource ParamFontSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=2.4}" />
+    </Style>
+
+    <Style x:Key="PersonButtonStyle" TargetType="Button">
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter RecognizesAccessKey="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PersonTextStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '5,0'}" />
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextTrimming" Value="WordEllipsis"/>
+        <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+    </Style>
+
+    <Style x:Key="RoleTextStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '5,0'}" />
+        <Setter Property="Opacity" Value="0.7" />
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextTrimming" Value="WordEllipsis"/>
+        <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+        <Setter Property="FontStyle" Value="Italic"/>
+    </Style>
+
+    <Style x:Key="OrigTitleTextStyle" TargetType="TextBlock">
+        <Setter Property="Opacity" Value="0.7" />
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Notifier -->
+    <!--  + Window 
+            + Border : BackgroundStyle
+              + Grid : MainGridStyle 
+                * Border : NotifierStyle
+                  + TextBlock
+    -->
+
+    <Style x:Key="NotifierStyle" TargetType="Popup">
+        <Setter Property="PopupAnimation" Value="Fade" />
+        <Setter Property="Placement" Value="Center" />
+        <Setter Property="AllowsTransparency" Value="True" />
+        <Style.Resources>
+            <Style TargetType="Border">
+                <Setter Property="Margin" Value="{w:ThicknessScaled 4}"/>
+                <Setter Property="BorderThickness" Value="{w:ThicknessScaled 2}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="Margin" Value="{w:ThicknessScaled '10,5'}" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Containers, Panels hierarchy -->
+
+    <!--  Style of the Window  (and default inheritance values) -->
+    <!--  * Window 
+    -->
+    <Style TargetType="Window">
+        <Setter Property="FontSize" Value="{Binding Content.Scaled, Source={StaticResource ParamFontSize}}"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Style.Resources>
+
+            <Style TargetType="ToolTip">
+                <Style.Resources>
+                    <Style TargetType="ContentPresenter">
+                        <Style.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="{Binding Content.Scaled, Source={StaticResource ParamFontSize}}" />
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                            </Style>
+                        </Style.Resources>
+                    </Style>
+                </Style.Resources>
+                <Setter Property="MaxWidth" Value="{Binding Content.Scaled, Source={StaticResource ParamIconBigSize}, Converter={StaticResource ScaleConvert}, ConverterParameter=4}"/>
+                <Setter Property="ToolTipService.Placement" Value="Bottom" />
+            </Style>
+
+            <Style TargetType="TextBlock">
+                <Setter Property="Margin" Value="{w:ThicknessScaled 2}"/>
+                <Setter Property="MinWidth" Value="{w:DoubleScaled 50}"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.3"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+        </Style.Resources>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding  Content.Scaled, Source={StaticResource ParamFontSize}, Converter={StaticResource LowerThanConvert}, ConverterParameter=14}" Value="True">
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Window Border/Background -->
+    <!--  + Window 
+            * Border : BackgroundStyle 
+    -->
+    <Style x:Key="BackgroundStyle" TargetType="Border">
+        <Setter Property="Opacity" Value="1"/>
+
+        <Setter Property="Border.Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+        <Setter Property="Border.BorderBrush" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="0" />
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=WindowStyle}" Value="None" />
+                    <Condition Binding="{Binding  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}" Value="Normal"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="BorderThickness" Value="{w:DoubleScaled 4}" />
+                <Setter Property="Border.BorderBrush" Value="{DynamicResource {x:Static SystemColors.GradientActiveCaptionBrushKey}}"/>
+            </MultiDataTrigger>
+            <MultiDataTrigger >
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=WindowStyle}" Value="None" />
+                    <Condition Binding="{Binding  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}" Value="Maximized"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="BorderThickness" Value="{Binding Source={x:Static l:Global.Local}, Path=FullScreenBorderSize, Converter={StaticResource AutoConvert}}" />
+                <Setter Property="Border.BorderBrush" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!-- Main Grid -->
+    <!--  + Window 
+            + Border : BackgroundStyle 
+              * Grid : MainGridStyle 
+    -->
+    <Style x:Key="MainGridStyle" TargetType="Grid">
+        <Setter Property="Panel.ZIndex" Value="-1" />
+    </Style>
+
+
+    <!-- Main Container of the Icon-Panels: ScrollViewer -->
+    <!--  + Window 
+            + Border : BackgroundStyle
+              + Grid : MainGridStyle 
+                + Button : NavigationBackButtonStyle
+                + Button : NavigationNextButtonStyle
+                * ScrollViewer : IconScrollViewerStyle
+                  + ItemsControl
+    -->
+
+    <Style x:Key="IconScrollViewerStyle" TargetType="ScrollViewer">
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="{w:ThicknessScaled '50,0'}"/>
+
+        <Style.Resources>
+            <!--  Panel Icon container definition  -->
+            <Style TargetType="ItemsControl">
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemsControl.ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <!-- Type of container for presenting the Icon-Panels -->
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ListView, Source={x:Static l:Global.Local}}" Value="True">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <!-- Icon-Panel: Contains the Title of a LimeItem Directory and its content (Icons/tasks) -->
+    <!--  + Window 
+            + Border : BackgroundStyle
+              + Grid : MainGridStyle 
+                + ScrollViewer : IconScrollViewerStyle
+                  + ItemsControl
+                    * StackPanel : IconPanelStyle
+                      + StackPanel    (Panel Header)
+                        + Image       (Panel Icon)
+                        + TextBlock   (Panel Title)
+                      + ItemsControl  (Panel Icons)
+    -->
+
+    <Style x:Key="IconPanelStyle" TargetType="StackPanel">
+        <Style.Resources>
+            <!--  Panel Icon  -->
+            <Style TargetType="Image">
+                <Setter Property="Margin" Value="{w:ThicknessScaled '4'}"/>
+                <Setter Property="Height" Value="{Binding Content.Scaled, Source={StaticResource ParamIconMediumSize}}"/>
+                <Setter Property="Stretch" Value="Uniform" />
+            </Style>
+
+            <!--  Panel Title  -->
+            <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Visible"/>
+                <!-- Set Value="Collapse" to Hide the panel title -->
+                <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="{w:ThicknessScaled '2,0'}"/>
+                <Setter Property="Padding" Value="{w:ThicknessScaled '4,1'}"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="{Binding  Content.Scaled, Source={StaticResource ParamFontSize}, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+                <Setter Property="Foreground" Value="{x:Static SystemColors.HotTrackBrush}"/>
+                <Setter Property="Background" Value="{x:Static SystemColors.ControlLightBrush}"/>
+            </Style>
+
+            <!--  Panel Icon container definition  -->
+            <Style TargetType="ItemsControl">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="Margin" Value="{w:ThicknessScaled '10,0,10,20'}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ListView, Source={x:Static l:Global.Local}}" Value="False">
+                        <!-- Icon view -->
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                        <Setter Property="ItemsControl.ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+    </Style>
+    
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Focused element visual decoration -->
+
+    <Style x:Key="ButtonFocusVisual">
+        <Setter Property="Control.Template" Value="{x:Null}" />
+    </Style>
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- LimeItem Button : Represents the icons/thumbnails -->
+    <!--  + Window 
+            + Border : BackgroundStyle
+              + Grid : MainGridStyle 
+                + ScrollViewer : IconScrollViewerStyle
+                  + ItemsControl
+                    + StackPanel : IconPanelStyle
+                      + ItemsControl
+                        * ToggleButton : LimeItemButtonStyle
+                          + Grid            
+                            + Image                         (Icon)
+                            + Thumbnail                     (Task thumbnail)
+                            + TextBlock                     (Name)
+    -->
+
+
+    <Style x:Key="ButtonBasisStyle" TargetType="ToggleButton">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton" >
+                    <Border x:Name="Border" BorderThickness="{w:ThicknessScaled 2}" BorderBrush="Transparent" CornerRadius="{w:DoubleScaled 3}">
+                        <Border.Background>
+                            <SolidColorBrush Color="Transparent" />
+                        </Border.Background>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Focused">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" Storyboard.TargetName="Border" 
+                                                        To="{Binding Color, Source={StaticResource ControlOverBrush}}" Duration="0"/>
+                                        <ColorAnimation Storyboard.TargetProperty="(BorderBrush).(SolidColorBrush.Color)" Storyboard.TargetName="Border" 
+                                                         To="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Checked">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" Storyboard.TargetName="Border" 
+                                                        To="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}" Duration="0"/>
+                                        <ColorAnimation Storyboard.TargetProperty="(BorderBrush).(SolidColorBrush.Color)" Storyboard.TargetName="Border" 
+                                                         To="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Storyboard.TargetName="Border">
+                                            <EasingColorKeyFrame KeyTime="0" Value="Transparent" />
+                                        </ColorAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Panel.Opacity)" Storyboard.TargetName="Border">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="0.2" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter RecognizesAccessKey="True" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MetadataSearchButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ButtonBasisStyle}">
+        <Style.Resources>
+            <Style TargetType="Image">
+                <!-- Format icon (image) -->
+                <Setter Property="Margin" Value="{w:ThicknessScaled '2,1,4,1'}"/>
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="True">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.1" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="TextBlock">
+                <!-- Format icon name (text) -->
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextWrapping" Value="NoWrap"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+            </Style>
+        </Style.Resources>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style x:Key="LimeItemButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ButtonBasisStyle}">
+        <Style.Resources>
+            <Style TargetType="Grid">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="MinWidth" Value="{Binding Source={StaticResource ParamFontSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=10}" />
+                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding ListView, Source={x:Static l:Global.Local}}" Value="False">
+                        <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.05}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="RowDefinition">
+                <!-- Define the bottom row size, where the small icon should fit -->
+                <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+            </Style>
+            <Style TargetType="ColumnDefinition">
+                <!-- Define the left column size, where the small icon should fit -->
+                <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconSmallSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.2}"/>
+            </Style>
+            <Style TargetType="d:Thumbnail">
+                <Setter Property="Width" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+                <Setter Property="Height" Value="{Binding Source={StaticResource ParamIconBigSize}, Path=Content.Scaled}"/>
+            </Style>
+            <Style TargetType="Image">
+                <!-- Format icon (image) -->
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Style.Triggers>
+                    <Trigger Property="Visibility" Value="Visible">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="TextBlock">
+                <!-- Format icon name (text) -->
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="WordEllipsis"/>
+                <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+                <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+                <Setter Property="MaxWidth" Value="{Binding ElementName=wxButtonGrid, Path=ActualWidth}" />
+                <Setter Property="LineHeight" Value="{Binding Source={StaticResource ParamFontSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=1.1}" />
+                <Setter Property="MaxHeight" Value="{Binding Source={StaticResource ParamFontSize}, Path=Content.Scaled, Converter={StaticResource ScaleConvert}, ConverterParameter=4.4}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ListView, Source={x:Static l:Global.Local}}" Value="True">
+                        <Setter Property="TextWrapping" Value="NoWrap"/>
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+
+    </Style>
+
+
+    <!-- **************************************************************************************************************** -->
+    <!-- Navigation Buttons -->
+    <!--  + Window 
+            + Border : BackgroundStyle
+              + Grid : MainGridStyle 
+                * Button : NavigationBackButtonStyle  (Go back to previous directory)
+                * Button : NavigationNextButtonStyle  (Go to next directory)
+    -->
+
+    <!-- Navigation Back Button -->
+    
+    <Style x:Key="BackButtonBaseStyle" TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Width" Value="{w:DoubleScaled 45}" />
+        <Setter Property="Height" Value="{w:DoubleScaled 45}" />
+        <Setter Property="Margin" Value="{w:ThicknessScaled '4,0'}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button" >
+                    <Viewbox HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Canvas x:Name="wxCanvas"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Width="100" Height="100">
+                            <Ellipse x:Name="Border" Margin="4" Width="92" Height="92" 
+                                     StrokeThickness="8"  Fill="#0FFF" Stroke="#0FFF" />
+                            <Path x:Name="Sign" Margin="25,25,25,25" Width="50" Height="50" 
+                                  Fill="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" 
+                                  Data="M 32 0 L 8 24 L 32 48 Z"/>
+                        </Canvas>
+                    </Viewbox>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Button.IsPressed" Value="True">
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX=".9" ScaleY=".9"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsEnabled" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsMouseOver" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsFocused" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationBackButtonStyle" BasedOn="{StaticResource BackButtonBaseStyle}" TargetType="Button">
+    </Style>
+
+    <Style x:Key="BackButtonStyle" BasedOn="{StaticResource BackButtonBaseStyle}" TargetType="Button">
+        <Setter Property="Width" Value="{w:DoubleScaled 20}" />
+        <Setter Property="Height" Value="{w:DoubleScaled 20}" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+
+
+    <!-- Browser ToolGrid -->
+    
+    <Style x:Key="BrowserToolGridStyle" TargetType="Grid">
+    </Style>
+
+    <Style x:Key="BrowserToolBarStyle" TargetType="{x:Type c:LimeToolBar}">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+
+    <!-- Navigation Next Button -->
+    <Style x:Key="NextButtonBaseStyle" TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Width" Value="{w:DoubleScaled 45}" />
+        <Setter Property="Height" Value="{w:DoubleScaled 45}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button" >
+                    <Viewbox HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Canvas x:Name="wxCanvas"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Width="100" Height="100">
+                            <Ellipse x:Name="Border" Margin="4" Width="92" Height="92" 
+                                     StrokeThickness="8"  Fill="#0FFF" Stroke="#0FFF" />
+                            <Path x:Name="Sign" Margin="33,25,17,25" Width="50" Height="50" 
+                                  Fill="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" 
+                                  Data="M 8 0 L 32 24 L 8 48 Z"/>
+                        </Canvas>
+                    </Viewbox>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Button.IsPressed" Value="True">
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX=".9" ScaleY=".9"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsEnabled" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsMouseOver" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsFocused" Value="True">
+                            <Setter TargetName="Sign" Property="Fill" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Fill" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"/>
+                            <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Margin" Value="{w:ThicknessScaled '4,0'}" />
+    </Style>
+
+    <Style x:Key="NavigationNextButtonStyle" BasedOn="{StaticResource NextButtonBaseStyle}" TargetType="Button">
+    </Style>
+
+    <Style x:Key="NextButtonStyle" BasedOn="{StaticResource NextButtonBaseStyle}" TargetType="Button">
+        <Setter Property="Width" Value="{w:DoubleScaled 20}" />
+        <Setter Property="Height" Value="{w:DoubleScaled 20}" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+
+</ResourceDictionary>
