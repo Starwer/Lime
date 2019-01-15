@@ -42,6 +42,21 @@ This aims at being the main visible interface to the Lime suite. This is a Softw
 - Provide the mean to add, edit, and retrieve automatically metadata for your multimedia files, usign free Internet databases. Metadata are for example covers, plots, actors, rating, descriptions, comments… Metadata are added as tag **inside** the file, following the file-format tagging standard. No external database or added nfo files. One file = One self-contained video and its metadata. Added metadata may be also supported in you player or other systems. 
 - This use the normal Windows directory structure (Integrated) and shell links to organize your files. You can also browse the same structure in Windows Explorer and drag/drop copy/paste both ways.
 
+#### Lime Launcher System Skin
+![LimeLauncher System Skin](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20System%20Skin.jpg "Lime Launcher System Skin")
+
+#### Lime Launcher Normal mode
+![LimeLauncher ProjectTile Skin](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20Normal%20mode.jpg "Lime Launcher Normal mode")
+
+#### Lime Launcher Edit mode
+![LimeLauncher Edit mode](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20Edit%20mode.jpg "Lime Launcher Edit mode")
+
+#### Lime Launcher Normal mode
+![LimeLauncher List View](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20List%20view.jpg "Lime Launcher Normal mode")
+
+#### Lime Launcher Configuration
+![LimeLauncher Configuration](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20Configuration.jpg "Lime Launcher Configuration")
+
 ### Thumb Lime
 This is a Windows shell-extension which will enable Windows to better support the multimedia files. This allows you to:
 - Display covers instead of first frames in Explorer Thumbnails
