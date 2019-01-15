@@ -6,11 +6,13 @@ The project has the following ambitions:
 - Provide full support of metadata, retrieving information about your movie and music on the Internet databases, but also enabling to customize these data for you own collection.
 - Enhance the support of multimedia in the Window explorer itself: better thumbnails, better tag support, better view-pane
 - Enable the control of your multimedia collection by different interface, with an equally good support of mouse, keyboard, touchscreens, touch-pads, remote-controls, but also network and DLNA access. 
- - This must be light in resources
+- This must be light in resources
 - This must be free (open-source)
 - This must be user-centric
+- The configurations may be stored on shared between devices and/or users, over network locations like Cloud-based drive or NAS
+- Multi-Language
 
-## What's in the name
+## That's in the name
 
 ### Light
 It just provides what’s missing to your system: an excellent support for multimedia. It doesn’t add things that are probably already there or where other Software do better, like a video/music player, codecs, pictures... 
