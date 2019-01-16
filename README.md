@@ -52,14 +52,14 @@ This aims at being the main visible interface to the Lime suite. This is a Softw
 ![LimeLauncher Edit mode](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20Edit%20mode.jpg "Lime Launcher Edit mode")
 
 #### Lime Launcher Normal mode
-![LimeLauncher List View](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20List%20view.jpg "Lime Launcher Normal mode")
+![LimeLauncher List View](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20List%20view.jpg "Lime Launcher List View")
 
 #### Lime Launcher Configuration
 ![LimeLauncher Configuration](https://github.com/Starwer/Lime/blob/master/Documents/Screenshots/LimeLauncher%20Configuration.jpg "Lime Launcher Configuration")
 
 ### Thumb Lime
-This is a Windows shell-extension which will enable Windows to better support the multimedia files. This allows you to:
-- Display covers instead of first frames in Explorer Thumbnails
+This is a Windows shell-extension which will enables Windows to support the multimedia files better. This allows you to:
+- Display covers instead of the one of the first frames in Explorer Thumbnails
 - Access metadata directly from the Windows Explorer
 - Display relevant information and cover on the Windows Explorer View Pane
 
