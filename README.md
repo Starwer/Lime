@@ -1,4 +1,4 @@
-# Light Integrated Multimedia Environment (Lime) 
+# Light Integrated Multimedia Environment (Lime) ![Status](https://img.shields.io/badge/Maturity-Alpha-orange.svg)
 ![Lime Logo](https://github.com/Starwer/Lime/blob/master/Documents/Icons/Lime%20Icon.svg "Lime Logo")
 Light Integrated Multimedia Environment (in short: **Lime**) is project aiming at providing a suite of Software enhancing the multimedia experience in Windows.
 The project has the following ambitions:
@@ -63,7 +63,7 @@ This is a Windows shell-extension which will enables Windows to support the mult
 - Access metadata directly from the Windows Explorer
 - Display relevant information and cover on the Windows Explorer View Pane
 
-### More to come
+### More to come...
 
 - Multi-screen automations
 - Support of DLNA standard to access/control you multimedia collection
