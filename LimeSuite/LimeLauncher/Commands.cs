@@ -255,7 +255,7 @@ namespace LimeLauncher
         public static LimeCommand ItemMenu = new LimeCommand( ApplicationCommands.ContextMenu,
             () => MainWindow.Browser.GetFocus != null,
             () => {
-                MainWindow.Browser.LimeItem_ContextMenu();
+                MainWindow.Browser.LimeItem_ContextMenuOpening();
             });
 
 		// -------------------------------------------

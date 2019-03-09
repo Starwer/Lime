@@ -161,12 +161,17 @@ namespace Lime
 		public string DestinationName = null;
 
 		/// <summary>
+		/// Preliminary call
+		/// </summary>
+		public readonly bool Preliminary = true;
+
+		/// <summary>
 		/// Set this flag to indicate that the requested action is valid and/or has been performed.
 		/// </summary>
 		public bool Handled = false;
 
 		/// <summary>
-		/// Set this flag to indicate that the source of the action has already been handled in the destination callback.
+		/// Set this flag to indicate that the source of the action has already been handled and will avoid the callback to source.
 		/// </summary>
 		public bool SourceHandled = false;
 
@@ -191,6 +196,7 @@ namespace Lime
 			Destination = copy.Destination;
 			DestinationIndex = copy.DestinationIndex;
 			DestinationName = copy.DestinationName;
+			Preliminary = copy.Preliminary;
 			Handled = copy.Handled;
 			SourceHandled = copy.SourceHandled;
 		}
@@ -200,6 +206,7 @@ namespace Lime
 		/// </summary>
 		/// <param name="method">sytem triggering an action being applied on a DataObjectCompatible</param>
 		/// <param name="action">action being done on the actual DataObjectCompatible</param>
+		/// <param name="preliminary">preliminary call or source</param>
 		/// <param name="source">Data representing the source</param>
 		/// <param name="data">IDataObject representation of the source</param>
 		/// <param name="sourceParent">Data representing the parent of the source</param>
@@ -208,6 +215,7 @@ namespace Lime
 		public DataObjectCompatibleEventArgs(
 			DataObjectMethod method,
 			DataObjectAction action,
+			bool preliminary,
 			object source,
 			IDataObject data,
 			object sourceParent,
@@ -218,6 +226,7 @@ namespace Lime
 			Direction = DataObjectDirection.From;
 			Action = action;
 			Method = method;
+			Preliminary = preliminary;
 			Source = source;
 			Data = data;
 			SourceParent = sourceParent;
@@ -226,7 +235,7 @@ namespace Lime
 		}
 
 		/// <summary>
-		/// Constrcut from source and destination
+		/// Construct from source and destination
 		/// </summary>
 		/// <param name="copy">object to clone (typically representing a source)</param>
 		/// <param name="action">action being done on the actual DataObjectCompatible</param>
@@ -246,8 +255,8 @@ namespace Lime
 			Destination = destination;
 			DestinationIndex = destinationIndex;
 			DestinationName = destinationName;
+			Preliminary = false;
 			Handled = false;
-			SourceHandled = false;
 		}
 
 		#endregion
@@ -281,11 +290,11 @@ namespace Lime
 		/// <returns>true if the action has actually been handled and performed.</returns>
 		public bool DoOnCollection(ICollection destination)
 		{
-			if (Handled || destination == null) return false;
+			if (Handled || Preliminary) return false;
 
 			if (Direction == DataObjectDirection.To)
 			{
-				if (DestinationIndex >= 0)
+				if (destination != null && DestinationIndex >= 0 && Source != null)
 				{
 					// Special treatment for Observable collection: try to use Move method
 					if (Action == DataObjectAction.Move &&

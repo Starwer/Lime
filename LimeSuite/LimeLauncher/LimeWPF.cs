@@ -15,11 +15,9 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Markup;
 using System.Collections.Generic;
-using Lime;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Animation;
-using System.Windows.Input;
-using WPFhelper;
+using Lime;
 using LimeLauncher.Controls;
 
 namespace LimeLauncher
@@ -498,7 +496,7 @@ namespace LimeLauncher
 
 	// ----------------------------------------------------------------------------------------------
 	/// <summary>
-	/// Return True/Visible if the value (any type) is not equal to the parameter value (any type).
+	/// Convert any <see cref="IEnumerable"/> to a <see cref="string"/> representation.
 	/// </summary>
 	public class ListToStringConverter : IValueConverter
 	{
@@ -528,7 +526,7 @@ namespace LimeLauncher
 
 	// ----------------------------------------------------------------------------------------------
 	/// <summary>
-	/// Return an instance of LimeIcon from its key.
+	/// Return an instance of LimeIcon from its key identifier.
 	/// </summary>
 	public class LimeIconConverter : IValueConverter
 	{
@@ -559,6 +557,7 @@ namespace LimeLauncher
 	}
 
 	#endregion
+
 
 	// --------------------------------------------------------------------------------------------------
 	#region AnimateAction

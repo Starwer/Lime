@@ -15,7 +15,6 @@
              xmlns:lime="clr-namespace:Lime;assembly=Lime"
              xmlns:c="clr-namespace:LimeLauncher.Controls"
              xmlns:w="clr-namespace:WPFhelper"
-             xmlns:s="clr-namespace:System;assembly=mscorlib"
              Background="Transparent"
              mc:Ignorable="d" 
              d:DesignWidth="200"
@@ -81,16 +80,10 @@
                         <TextBlock/>
                         <c:LimeLabel DataContext="Interface"/>
                         <c:LimeControl DataContext="{Binding [Language]}"/>
-                        <c:LimeControl DataContext="{Binding [RootDirectoryName]}" />
-                        <c:LimeControl DataContext="{Binding [DragDropDefault]}" /> 
-                        <c:LimeControl DataContext="{Binding [ClickOnBorderAction]}" />
-                        <c:LimeControl DataContext="{Binding [AutoSelection]}" />
-                        <c:LimeControl DataContext="{Binding [KeysToNavigateEnable]}" />
                         <c:LimeControl DataContext="{Binding [DoubleClickFullScreen]}" />
-                    </StackPanel>
-
-                    <!--*************************************************************************************-->
-                    <StackPanel x:Name="Layout"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+                        <c:LimeControl DataContext="{Binding [ConfigWindow]}"/>
+                        <c:LimeControl DataContext="{Binding [EnableAnimations]}"/>
+                        <TextBlock/>
                         <c:LimeLabel DataContext="Window"/>
                         <c:LimeControl DataContext="{Binding [ShowWindowBorders]}" />
                         <c:LimeControl DataContext="{Binding [ShowWindowBordersFullScreen]}"
@@ -98,16 +91,7 @@
                         <c:LimeControl DataContext="{Binding [ShowInTaskbar]}" />
                         <c:LimeControl DataContext="{Binding [TopMost]}"/>
                         <c:LimeControl DataContext="{Binding [HideOnLaunch]}"/>
-                        <c:LimeControl DataContext="{Binding [ConfigWindow]}"/>
-                        <TextBlock/>
-                        <c:LimeLabel DataContext="Window Content" />
-                        <c:LimeControl DataContext="{Binding [ShowTaskSwitcher]}"/>
-                        <c:LimeControl DataContext="{Binding [ShowAppTasks]}"
-                                       IsEnabled="{Binding ShowTaskSwitcher, Source={x:Static l:Global.User}}"
-                                       Visibility="{Binding Source={x:Static lime:LimeLib.IsWindows8}, Converter={StaticResource BoolToVisible}}"/>
-                        <c:LimeControl DataContext="{Binding [TaskMatchEnable]}"/>
-                        <c:LimeControl DataContext="{Binding [IconCover]}"/>
-                        <c:LimeControl DataContext="{Binding [EnableAnimations]}"/>
+                        <c:LimeControl DataContext="{Binding [ClickOnBorderAction]}" />
                         <c:LimeControl DataContext="{Binding [MainPaneColumns]}"
                                        IsEnabled="{Binding ListView, Source={x:Static l:Global.Local}, Converter={StaticResource EqualConvert}, ConverterParameter=False}" />
                         <TextBlock/>
@@ -118,8 +102,23 @@
                         <c:LimeControl DataContext="{Binding [Zoom]}" />
                         <c:LimeControl DataContext="{Binding [FullScreenBorderSize]}"/>
                     </StackPanel>
+
                     <!--*************************************************************************************-->
-                    <l:SkinPanel x:Name="Skin" Visibility="Hidden" />
+                    <StackPanel x:Name="BrowserPane"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
+
+                        <c:LimeLabel DataContext="BrowserPane" />
+                        <c:LimeControl DataContext="{Binding [RootDirectoryName]}" />
+                        <c:LimeControl DataContext="{Binding [AutoSelection]}" />
+                        <c:LimeControl DataContext="{Binding [DragDropDefault]}" />
+                        <c:LimeControl DataContext="{Binding [KeysToNavigateEnable]}" />
+                        <c:LimeControl DataContext="{Binding [ShowTaskSwitcher]}"/>
+                        <c:LimeControl DataContext="{Binding [TaskMatchEnable]}"/>
+                        <c:LimeControl DataContext="{Binding [SystemMenuEnable]}"/>
+                        <c:LimeControl DataContext="{Binding [IconCover]}"/>
+                        <c:LimeControl DataContext="{Binding [ShowAppTasks]}"
+                                       IsEnabled="{Binding ShowTaskSwitcher, Source={x:Static l:Global.User}}"
+                                       Visibility="{Binding Source={x:Static lime:LimeLib.IsWindows8}, Converter={StaticResource BoolToVisible}}"/>
+                    </StackPanel>
                     
                     <!--*************************************************************************************-->
                     <StackPanel x:Name="InfoPane"  Visibility="Collapsed" Grid.IsSharedSizeScope="True">
@@ -140,6 +139,9 @@
                         <c:LimeLabel DataContext="Naming" />
                         <c:LimeControl DataContext="{Binding [PathToSearchMovie]}"/>
                     </StackPanel>
+
+                    <!--*************************************************************************************-->
+                    <l:SkinPanel x:Name="Skin" Visibility="Hidden" />
 
                     <!--*************************************************************************************-->
                     <l:ApplicationPanel x:Name="Applications" Visibility="Hidden" />

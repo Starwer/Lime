@@ -298,13 +298,14 @@ namespace LimeLauncher.Controls
 
 		private void Image_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			if (ReadOnly && IsEnabled && e.ChangedButton == MouseButton.Left)
+			if (ReadOnly && Visibility == Visibility.Visible && IsEnabled && e.ChangedButton == MouseButton.Left)
 			{
-				Hold = !Hold;
+				var count = Cache != null ? Cache.Count : 0;
+				Index = Index >= count - 1 ? 0 : Index + 1;
+				Skip = true;
 			}
 		}
-		bool Hold = false;
-
+		private bool Skip = false;
 
 		/// <summary>
 		/// Enable to display tooltips about the image
@@ -361,11 +362,13 @@ namespace LimeLauncher.Controls
 		/// </summary>
 		public void NextSlide()
 		{
-			if (ReadOnly && Visibility == Visibility.Visible && IsEnabled && !Hold)
+			if (ReadOnly && Visibility == Visibility.Visible && IsEnabled && !Skip)
 			{
 				var count = Cache != null ? Cache.Count : 0;
 				Index = Index >= count - 1 ? 0 : Index + 1;
 			}
+
+			Skip = false;
 		}
 
 		#endregion

@@ -116,8 +116,12 @@
     <Window.UseLayoutRounding>True</Window.UseLayoutRounding>
 
 
-    <Border x:Name="wxWinBorder" Style="{DynamicResource BackgroundStyle}" IsMouseDirectlyOverChanged="wxWinBorder_IsMouseDirectlyOverChanged" PreviewMouseLeftButtonDown="wxWinBorder_PreviewMouseLeftButtonDown">
-        <Grid x:Name="wxMainGrid" Style="{DynamicResource MainGridStyle}" ContextMenu="{StaticResource AppMenu}" >
+    <Border x:Name="wxWinBorder" 
+            Style="{DynamicResource BackgroundStyle}" 
+            IsMouseDirectlyOverChanged="wxWinBorder_IsMouseDirectlyOverChanged" 
+            PreviewMouseLeftButtonDown="wxWinBorder_PreviewMouseLeftButtonDown">
+        <Grid x:Name="wxMainGrid" 
+              Style="{DynamicResource MainGridStyle}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="wxMainPaneColumn"/>
                 <ColumnDefinition Width="Auto"/>

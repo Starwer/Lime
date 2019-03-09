@@ -890,27 +890,26 @@ namespace Lime
 		/// <param name="e">DataObject event representation</param>
 		public void DataObjectCanDo(DataObjectCompatibleEventArgs e)
 		{
-			LimeMsg.Debug("LimeItem DataObjectCanDo: {0} : {1} @ {2}", Name, e.Action, e.DestinationIndex);
+			LimeMsg.Debug("LimeItem DataObjectCanDo: {0} : {1} {2} @ {3}", Name, e.Action, e.Direction, e.Direction == DataObjectDirection.From ? e.SourceIndex : e.DestinationIndex);
 			if (e.Direction == DataObjectDirection.To)
 			{
 				e.Handled = !Task && Directory;
 
 				if (e.Handled)
 				{
-					if (e.Data.GetData("Shell IDList Array") != null)
+					if (e.Action == DataObjectAction.Open)
 					{
-						// For PIDLs, restrict to link creation
-						if (e.Action == DataObjectAction.Link || e.Action == DataObjectAction.Open)
+						if (! e.Data.GetDataPresent("Shell IDList Array")) // Shell Link
 						{
 							e.Action = DataObjectAction.Link;
 						}
-						else if (e.Action != DataObjectAction.Menu)
-						{
+						else
+						{ 
 							// Not recognized format
 							e.Handled = false;
 						}
 					}
-					else if (e.Action == DataObjectAction.Open)
+					else if (! e.Data.GetDataPresent(DataFormats.FileDrop, true) )
 					{
 						// Not recognized format
 						e.Handled = false;
@@ -931,28 +930,35 @@ namespace Lime
 		/// <param name="e">DataObject event reauest</param>
 		public void DataObjectDo(DataObjectCompatibleEventArgs e)
 		{
-			LimeMsg.Debug("LimeItem DataObjectDo: {0} : {1} @ {2}", Name, e.Action, e.DestinationIndex);
+			LimeMsg.Debug("LimeItem DataObjectDo: {0} : {1} {2} @ {3}", Name, e.Action, e.Direction, e.Direction == DataObjectDirection.From ? e.SourceIndex : e.DestinationIndex);
 
-			if (e.DoOnCollection(Children)) return;
+			e.Handled = e.Preliminary;
+			if (e.Preliminary) return;
 
 			var action = e.Action;
 			if (e.Direction == DataObjectDirection.From)
 			{
 				e.Handled = true;
+				if (action == DataObjectAction.Move)
+				{
+					Delete();
+				}
 			}
 			else if (e.Direction == DataObjectDirection.To)
 			{
 				e.Handled = true;
+				e.SourceHandled = true;
 
-				// retrieve sources
-				string[] paths = (string[])e.Data.GetData(DataFormats.FileDrop, true);
+				// try to retrieve sources
+				var paths = (string[])e.Data.GetData(DataFormats.FileDrop, true);
 
 				// Handle special folders
 				IntPtr[] pidls = null;
 				if (paths == null)
 				{
-					pidls = Win32.CILDtoPIDL((MemoryStream)e.Data.GetData("Shell IDList Array"));
-					if(action != DataObjectAction.Link) action =  DataObjectAction.None;
+					var stream = (MemoryStream)e.Data.GetData("Shell IDList Array");
+					if (stream != null) pidls = Win32.CILDtoPIDL(stream);
+					if (stream == null || action != DataObjectAction.Link) action = DataObjectAction.None;
 				}
 
 
@@ -977,6 +983,7 @@ namespace Lime
 					default:
 						LimeMsg.Debug("Drop: Do nothing to {0}", Path);
 						e.Handled = false;
+						e.SourceHandled = false;
 						break;
 				}
 
@@ -984,7 +991,6 @@ namespace Lime
 				if (pidls != null) {
 					foreach (var pidl in pidls) Win32.ILFree(pidl);
 				}
-
 			}
 		}
 

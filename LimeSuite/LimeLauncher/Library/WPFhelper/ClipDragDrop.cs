@@ -11,9 +11,13 @@ using Lime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
@@ -135,9 +139,19 @@ namespace WPFhelper
 		InterApplication = 0x1000,
 
 		/// <summary>
+		/// Enable the Cut/copy/paste menu
+		/// </summary>
+		ClipboardMenu = 0x2000,
+
+		/// <summary>
+		/// Enable the deletion of element using cut
+		/// </summary>
+		Delete = 0x4000,
+
+		/// <summary>
 		/// Enable all drag and drop operation
 		/// </summary>
-		All = 0x2000 - 1
+		All = 0x8000 - 1
 	}
 
 	/// <summary>
@@ -172,7 +186,7 @@ namespace WPFhelper
 			if (parameter == null) return false;
 			var actionName = (string)parameter;
 			var action = (DataObjectAction)Enum.Parse(typeof(DataObjectAction), actionName);
-			return ClipDragDrop.CanExecute(action);
+			return ClipDragDrop.CanDrop(action);
 		}
 
 		public void Execute(object parameter)
@@ -180,7 +194,7 @@ namespace WPFhelper
 			if (parameter == null) return;
 			var actionName = (string)parameter;
 			var action = (DataObjectAction)Enum.Parse(typeof(DataObjectAction), actionName);
-			ClipDragDrop.Execute(action);
+			ClipDragDrop.Drop(action);
 		}
 
 		/// <summary>
@@ -211,27 +225,34 @@ namespace WPFhelper
 		#region Types
 
 		/// <summary>
-		/// ClipDragDrop data handled 
+		/// ClipDragDrop data context 
 		/// </summary>
-		public class ClipDragDropEventArgs
+		private class ClipDragDropContext
 		{
+			public ClipDragDropOperations SourceOperations = ClipDragDropOperations.None;
 			public FrameworkElement Source;
 			public ItemsControl SourceItemsControl;
+			public DataObjectCompatibleEventArgs DataObjectCompatibleEventArgs;
+		}
 
-			public FrameworkElement Over;
+
+		/// <summary>
+		/// ClipDragDrop data context 
+		/// </summary>
+		private class DragDropContext
+		{
 			public FrameworkElement Destination;
 			public ItemsControl DestinationItemsControl;
-			public int DestinationIndex;
 
-			public ClipDragDropOperations SourceOperations = ClipDragDropOperations.None;
+			public FrameworkElement Over;
 			public DragDropEffects DragDropEffects = DragDropEffects.None;
-
 			public ClipDragDefaultOperation DragDefaultOperation;
 			public bool RightClick;
 			public Point MouseHit;
-
-			public bool Cancelled;
+			public Rect? HitZone;
 		}
+
+
 
 		#endregion
 
@@ -260,6 +281,30 @@ namespace WPFhelper
 		public static readonly ClipDragDropMenuCommand MenuCommand = new ClipDragDropMenuCommand();
 
 		/// <summary>
+		/// CommandBinding to handle the clipboard Cut operation
+		/// </summary>
+		private static readonly CommandBinding CommandBindingCut = 
+			new CommandBinding(ApplicationCommands.Cut, ClipboardExecuted, ClipboardCanExecute);
+
+		/// <summary>
+		/// CommandBinding to handle the clipboard Copy operation
+		/// </summary>
+		private static readonly CommandBinding CommandBindingCopy = 
+			new CommandBinding(ApplicationCommands.Copy, ClipboardExecuted, ClipboardCanExecute);
+
+		/// <summary>
+		/// CommandBinding to handle the clipboard Paste operation
+		/// </summary>
+		private static readonly CommandBinding CommandBindingPaste = 
+			new CommandBinding(ApplicationCommands.Paste, ClipboardExecuted, ClipboardCanExecute);
+
+		/// <summary>
+		/// CommandBinding to handle the clipboard Paste operation
+		/// </summary>
+		private static readonly CommandBinding CommandBindingDelete =
+			new CommandBinding(ApplicationCommands.Delete, ClipboardExecuted, ClipboardCanExecute);
+
+		/// <summary>
 		/// Store the open Drop menu instance
 		/// </summary>
 		private static ContextMenu ContextMenu = null;
@@ -275,19 +320,25 @@ namespace WPFhelper
 		private static readonly Duration AnimDuration = new Duration(new TimeSpan(0, 0, 0, 0, 200));
 
 		/// <summary>
-		/// Store the dragged object reference
+		/// Store the Clipboard object data
 		/// </summary>
-		private static ClipDragDropEventArgs Data = null;
+		private static ClipDragDropContext ClipData = null;
+
+		/// <summary>
+		/// Store the Drag & Drop object data
+		/// </summary>
+		private static ClipDragDropContext DragData = null;
+
+		/// <summary>
+		/// Store the Drag & Drop oject context
+		/// </summary>
+		private static DragDropContext DragContext = null;
 
 		/// <summary>
 		/// Dragged control decorations
 		/// </summary>
 		private static DragSystemIcon DragIcon = null;
 
-		/// <summary>
-		/// Zone, relative to the destination control, where the hit doesn't need to be recomputed
-		/// </summary>
-		private static Rect? HitZone;
 
 		/// <summary>
 		/// Objects that have be queried by CanDragDrop method 
@@ -313,7 +364,7 @@ namespace WPFhelper
 		/// </summary>
 		public static bool MayDrag
 		{
-			get { return Data != null; }
+			get { return DragData != null; }
 		}
 
 		/// <summary>
@@ -328,11 +379,12 @@ namespace WPFhelper
 		/// <summary>
 		/// Retrieve the DataObjectCompatibleEventArgs object representing the current Drag & Drop operation
 		/// </summary>
-		public static DataObjectCompatibleEventArgs DataObjectCompatibleEventArgs { get; private set; }
-
+		public static DataObjectCompatibleEventArgs DataObjectCompatibleEventArgs
+		{
+			get { return DragData?.DataObjectCompatibleEventArgs; }
+		}
 
 		#endregion
-
 
 
 		// ----------------------------------------------------------------------------------------------
@@ -631,6 +683,93 @@ namespace WPFhelper
 
 
 		// ----------------------------------------------------------------------------------------------
+		#region Clipboard watcher
+
+
+		private const int WM_CLIPBOARDUPDATE = 0x031D;
+
+		/// <summary>
+		///  See http://msdn.microsoft.com/en-us/library/ms632599%28VS.85%29.aspx#message_only
+		/// </summary>
+		/// <param name="hwnd"></param>
+		/// <returns></returns>
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+		private static HwndSource WinSource = null;
+		private static bool WndProcSkip = false;
+
+		/// <summary>
+		/// Start or continue watching clipboard events to track changes
+		/// </summary>
+		/// <param name="elm"></param>
+		private static void ClipboardWatcher(FrameworkElement elm)
+		{
+			LimeMsg.Debug("ClipDragDrop ClipboardWatcher: {0} --> {1}", elm, WinSource);
+
+			if (WinSource != null)
+			{
+				// Alreay started: Ignore the next change
+				WndProcSkip = true;
+				return;
+			}
+
+			var windowSource = PresentationSource.FromVisual(elm).RootVisual as Window;
+
+			if (!(PresentationSource.FromVisual(windowSource) is HwndSource source))
+			{
+				return;
+			}
+
+
+			WinSource = source;
+			WinSource.AddHook(WndProc);
+
+			// get window handle for interop
+			IntPtr windowHandle = new WindowInteropHelper(windowSource).Handle;
+
+			// register for clipboard events
+			AddClipboardFormatListener(windowHandle);
+		}
+
+		/// <summary>
+		/// Invalidate clipboard data if the clipboard update happen off control of the ClipDragDrop
+		/// </summary>
+		/// <param name="hwnd"></param>
+		/// <param name="msg"></param>
+		/// <param name="wParam"></param>
+		/// <param name="lParam"></param>
+		/// <param name="handled"></param>
+		/// <returns></returns>
+		private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+		{
+			if (msg == WM_CLIPBOARDUPDATE)
+			{
+				LimeMsg.Debug("ClipDragDrop WndProc: {0} --> skip: {1}", WinSource, WndProcSkip);
+
+				if (WndProcSkip)
+				{
+					WndProcSkip = false;
+				}
+				else if (ClipData != null)
+				{
+					// Update visual
+					ClipboardSourceVisual(false);
+
+					// Invalidate the data source
+					ClipData = null;
+				}
+			}
+
+			return IntPtr.Zero;
+		}
+
+
+		#endregion
+
+
+		// ----------------------------------------------------------------------------------------------
 		#region Class functions
 
 
@@ -645,6 +784,7 @@ namespace WPFhelper
 			if (wxthis == null) return;
 			if ((bool)e.NewValue)
 			{
+				// Handle Drag & Drop
 				wxthis.AllowDrop = true;
 
 				wxthis.PreviewMouseDown += OnMouseButtonDown;
@@ -656,9 +796,18 @@ namespace WPFhelper
 
 				wxthis.DragOver += OnDragOver;
 				wxthis.DragLeave += OnDragLeave;
+
+				// Handle Clipboard
+				wxthis.CommandBindings.Add(CommandBindingCut);
+				wxthis.CommandBindings.Add(CommandBindingCopy);
+				wxthis.CommandBindings.Add(CommandBindingPaste);
+				wxthis.CommandBindings.Add(CommandBindingDelete);
+
+				wxthis.ContextMenuOpening += OnClipboardContextMenuOpening;
 			}
 			else
 			{
+				// Remove Drag & Drop
 				wxthis.PreviewMouseDown -= OnMouseButtonDown;
 				wxthis.PreviewMouseUp -= OnMouseButtonUp;
 				wxthis.PreviewMouseMove -= OnMouseMove;
@@ -669,37 +818,52 @@ namespace WPFhelper
 
 				wxthis.DragOver -= OnDragOver;
 				wxthis.DragLeave -= OnDragLeave;
+
+				// Remove Clipboard
+				wxthis.CommandBindings.Remove(CommandBindingCut);
+				wxthis.CommandBindings.Remove(CommandBindingCopy);
+				wxthis.CommandBindings.Remove(CommandBindingPaste);
+				wxthis.CommandBindings.Remove(CommandBindingDelete);
+
+				wxthis.ContextMenuOpening -= OnClipboardContextMenuOpening;
 			}
 		}
+
 
 		/// <summary>
 		///  Cancel any ongoing Drag & Drop operation
 		/// </summary>
 		public static void Cancel()
 		{
-			bool cancelled = false;
+			StopDragDrop(cancel: true);
+		}
+
+
+		/// <summary>
+		///  Stop any ongoing Drag & Drop operation
+		/// </summary>
+		public static void StopDragDrop(bool cancel)
+		{
 
 			// Animate Source
 			bool animate = false;
 
-			if (Data != null)
+			if (DragData != null)
 			{
-				cancelled = Data.Cancelled;
-
-				LimeMsg.Debug("ClipDragDrop Cancel: {0}", cancelled);
+				LimeMsg.Debug("ClipDragDrop Cancel: {0}", cancel);
 
 				// Restore Drop destination aspect
-				if (Data.Destination != null)
+				if (DragContext.Destination != null)
 				{
-					DragDropDestinationVisual(false);
-					DragDropInCollection(ClipDragDropOperations.None);
+					ClipDragDropDestinationVisual(false, DragContext.Destination);
+					DragDropInCollection(ClipDragDropOperations.DragDrop);
 				}
 
 				// Handle Source and its attributes
-				if (Data.Source != null)
+				if (DragData.Source != null)
 				{
-					animate = GetAnimate(Data.Source);
-					Data.Source.PreviewMouseMove -= OnMouseMove;
+					animate = GetAnimate(DragData.Source);
+					DragData.Source.PreviewMouseMove -= OnMouseMove;
 					DragDropSourceVisual(false);
 				}
 
@@ -707,9 +871,9 @@ namespace WPFhelper
 
 			if (DragIcon != null)
 			{
-				if (cancelled && animate)
+				if (cancel && animate)
 				{
-					var wxsrc = Data.Source;
+					var wxsrc = DragData.Source;
 					// Bring dragged object back to its position
 					var wnd = PresentationSource.FromVisual(wxsrc).RootVisual;
 					var offset = new Point(wxsrc.ActualWidth / 2, wxsrc.ActualHeight / 2);
@@ -730,24 +894,23 @@ namespace WPFhelper
 
 			DebugAdorner.Hide();
 
-			HitZone = null;
 			CanDragDropCache = null;
 			HandleDestinationAction = ClipDragDropOperations.From | ClipDragDropOperations.To; // Invalidate
-			Data = null;
-			DataObjectCompatibleEventArgs = null;
+			DragData = null;
+			DragContext = null;
 			ContextMenu = null;
 			Mouse.OverrideCursor = null;
 		}
 
 
 		/// <summary>
-		/// Check whether a Clipboard action can be used on the current Drag & Drop operation
+		/// Check whether an action can be used on the current Drag & Drop operation
 		/// </summary>
 		/// <param name="action">action to be tested</param>
 		/// <returns>true if action can be applied to the current Clipboard operation</returns>
-		public static bool CanExecute(DataObjectAction action)
+		public static bool CanDrop(DataObjectAction action)
 		{
-			if (DataObjectCompatibleEventArgs == null || Data == null) return false;
+			if (DataObjectCompatibleEventArgs == null || DragData == null) return false;
 
 			var direction = DataObjectCompatibleEventArgs.Direction;
 
@@ -765,12 +928,12 @@ namespace WPFhelper
 				ClipDragDropOperations.None) |
 				(ClipDragDropOperations)action;
 
-			var effect = CanDragDrop(
+			var effect = CanClipDragDrop(
 				operation,
-				(object) Data.Destination ?? DataObjectCompatibleEventArgs.Data,
+				(object)DragContext.Destination ?? DataObjectCompatibleEventArgs.Data,
 				DataObjectCompatibleEventArgs.DestinationIndex,
 				register: false,
-				wxItemsControl: Data.DestinationItemsControl);
+				wxItemsControl: DragContext.DestinationItemsControl);
 
 			return effect != DataObjectAction.None && effect == action;
 		}
@@ -779,116 +942,176 @@ namespace WPFhelper
 		/// <summary>
 		/// Execute and complete the current Drag & Drop operation
 		/// </summary>
-		/// <param name="action">action to be execute (None: will just cancel the Drag & Drop operation)</param>
+		/// <param name="action">action to be executed (None: will just cancel the Drag & Drop operation)</param>
 		/// <returns>true if the action has been handled</returns>
-		public static bool Execute(DataObjectAction action)
+		public static bool Drop(DataObjectAction action)
 		{
-			bool ret = true;
-
-			if (Data.DragDropEffects == DragDropEffects.None ||
+			if (DragData == null ||
+				DragContext.DragDropEffects == DragDropEffects.None ||
 				action == DataObjectAction.None ||
 				DataObjectCompatibleEventArgs.Direction != DataObjectDirection.To ||
-				!CanExecute(action))
+				!CanDrop(action))
 			{
-				LimeMsg.Debug("ClipDragDrop Execute: Cancelled: {0}", Data.DragDropEffects);
-				Data.Cancelled = true;
+				LimeMsg.Debug("ClipDragDrop Drop: Cancelled: {0}", DragContext.DragDropEffects);
+				Cancel();
+				return false;
 			}
-			else if (DataObjectCompatibleEventArgs != null)
+
+			DataObjectCompatibleEventArgs.Action = action;
+
+			return Execute(DragData, DragContext.Destination);
+		}
+
+
+
+		/// <summary>
+		/// Execute and complete if applicable the current Clipboard or Drag & Drop operation
+		/// </summary>
+		/// <param name="context">context to be executed</param>
+		/// <param name="wxDest">destination</param>
+		/// <returns>true if the action has been handled</returns>
+		private static bool Execute(ClipDragDropContext context, FrameworkElement wxDest)
+		{
+			bool ret = true;
+			bool cancelled = false;
+
+			var docEventArgs = context?.DataObjectCompatibleEventArgs;
+
+			if (docEventArgs == null)
 			{
-				if (Data.Destination is var wxDest)
+				LimeMsg.Debug("ClipDragDrop Execute: Invalid");
+				cancelled = true;
+			}
+			else if(docEventArgs.Direction == DataObjectDirection.From)
+			{
+				// Handle Source
+				LimeMsg.Debug("ClipDragDrop Execute: Source");
+
+				// Use the DataObjectCompatible object action handler on source
+				if (!docEventArgs.SourceHandled)
 				{
-					// Make sure we make the right destination message
-					DataObjectCompatibleEventArgs.Action = action;
-					DataObjectCompatibleEventArgs.Handled = false;
-					DataObjectCompatibleEventArgs.SourceHandled = false;
-
-					object data = GetDestination(wxDest) ?? wxDest.DataContext;
-					if (DataObjectCompatibleEventArgs.Action == DataObjectAction.Menu)
+					if (docEventArgs.Source is IDataObjectCompatible source)
 					{
-						// Show Drop Menu
-						ContextMenu = GetContextMenu(wxDest);
-						if (ContextMenu == null)
+						docEventArgs.Handled = false;
+						docEventArgs.Direction = DataObjectDirection.From;
+						source.DataObjectDo(docEventArgs);
+					}
+					else
+					{
+						// Try to handle collection automatically
+						docEventArgs.DoOnCollection(null);
+					}
+
+					ret = docEventArgs.Handled;
+				}
+
+				return ret;
+			}
+			else if (wxDest == null || docEventArgs.Action == DataObjectAction.None)
+			{
+				LimeMsg.Debug("ClipDragDrop Execute: Cancelled");
+				cancelled = true;
+			}
+			else 
+			{
+				// Handle Destination
+				LimeMsg.Debug("ClipDragDrop Execute: Destination");
+
+				// Make sure we make the right destination message
+				docEventArgs.Handled = false;
+				docEventArgs.SourceHandled = false;
+
+				object data = GetDestination(wxDest) ?? wxDest.DataContext;
+				if (docEventArgs.Action == DataObjectAction.Menu)
+				{
+					// Show Drop Menu
+					ContextMenu = GetContextMenu(wxDest);
+					if (ContextMenu == null)
+					{
+						// Create default menu
+
+						ContextMenu = new ContextMenu();
+
+						for (var enu = DataObjectAction.Copy; enu < DataObjectAction.Menu; enu = (DataObjectAction)((int)enu << 1))
 						{
-							// Create default menu
+							var name = Enum.GetName(typeof(DataObjectAction), enu);
+							var format = GetFormat(wxDest, enu);
+							var text = string.Format(format, docEventArgs.DestinationName);
 
-							ContextMenu = new ContextMenu();
-
-							for (var enu = DataObjectAction.Copy; enu < DataObjectAction.Menu; enu = (DataObjectAction)((int)enu << 1))
-							{
-								var name = Enum.GetName(typeof(DataObjectAction), enu);
-								var format = GetFormat(wxDest, enu);
-								var text = string.Format(format, DataObjectCompatibleEventArgs.DestinationName);
-
-								ContextMenu.Items.Add(
-									new MenuItem()
-									{
-										Name = name,
-										Header = text,
-										Command = MenuCommand,
-										CommandParameter = name
-									});
-							}
-
-							// Create Cancel MenuItem
-							ContextMenu.Items.Add(new Separator());
-							var textc = string.Format(GetFormatCancel(wxDest), DataObjectCompatibleEventArgs.DestinationName);
 							ContextMenu.Items.Add(
-									new MenuItem()
-									{
-										Name = "Cancel",
-										Header = textc,
-										Command = MenuCommand,
-										CommandParameter = DataObjectAction.None.ToString()
-									});
-						}
-						else
-						{
-							ContextMenu.Closed -= OnContextMenuClosed;
+								new MenuItem()
+								{
+									Name = name,
+									Header = text,
+									Command = MenuCommand,
+									CommandParameter = name
+								});
 						}
 
-						ContextMenu.Closed += OnContextMenuClosed;
-						ContextMenu.IsOpen = true;
-
-						return true;
-
+						// Create Cancel MenuItem
+						ContextMenu.Items.Add(new Separator());
+						var textc = string.Format(GetFormatCancel(wxDest), docEventArgs.DestinationName);
+						ContextMenu.Items.Add(
+								new MenuItem()
+								{
+									Name = "Cancel",
+									Header = textc,
+									Command = MenuCommand,
+									CommandParameter = DataObjectAction.None.ToString()
+								});
 					}
-					else if (data is IDataObjectCompatible dest)
+					else
 					{
-						// Use the DataObjectCompatible object action handler on destination
-						DataObjectCompatibleEventArgs.Handled = false;
-						dest.DataObjectDo(DataObjectCompatibleEventArgs);
-						ret = DataObjectCompatibleEventArgs.Handled;
-
-						// Use the DataObjectCompatible object action handler on source
-						if (ret && !DataObjectCompatibleEventArgs.SourceHandled &&
-							DataObjectCompatibleEventArgs.Source is IDataObjectCompatible source)
-						{
-							DataObjectCompatibleEventArgs.Handled = false;
-							DataObjectCompatibleEventArgs.Direction = DataObjectDirection.From;
-							source.DataObjectDo(DataObjectCompatibleEventArgs);
-						}
-
-						Data.Cancelled = !DataObjectCompatibleEventArgs.Handled;
-
+						ContextMenu.Closed -= OnDropContextMenuClosed;
 					}
-					else if (wxDest is ICollection collec)
+
+					ContextMenu.Closed += OnDropContextMenuClosed;
+					ContextMenu.IsOpen = true;
+
+					return true;
+
+				}
+				else if (data is IDataObjectCompatible dest)
+				{
+					// Use the DataObjectCompatible object action handler on destination
+					docEventArgs.Handled = false;
+					dest.DataObjectDo(docEventArgs);
+					ret = docEventArgs.Handled;
+
+					// Use the DataObjectCompatible object action handler on source
+					if (ret && !docEventArgs.SourceHandled &&
+						docEventArgs.Source is IDataObjectCompatible source)
 					{
-						// Handle collections automatically
-						if (DataObjectCompatibleEventArgs.DoOnCollection(collec) &&
-							!DataObjectCompatibleEventArgs.SourceHandled)
-						{
-							// Handle source collection
-							DataObjectCompatibleEventArgs.Handled = false;
-							DataObjectCompatibleEventArgs.Direction = DataObjectDirection.From;
-							DataObjectCompatibleEventArgs.DoOnCollection(collec);
-						}
-
-						Data.Cancelled = !DataObjectCompatibleEventArgs.Handled;
+						docEventArgs.Handled = false;
+						docEventArgs.Direction = DataObjectDirection.From;
+						source.DataObjectDo(docEventArgs);
 					}
+
+					cancelled = !docEventArgs.Handled;
+
+				}
+				else if (wxDest is ICollection collec)
+				{
+					// Handle collections automatically
+					if (docEventArgs.DoOnCollection(collec) &&
+						!docEventArgs.SourceHandled)
+					{
+						// Handle source collection
+						docEventArgs.Handled = false;
+						docEventArgs.Direction = DataObjectDirection.From;
+						docEventArgs.DoOnCollection(collec);
+					}
+
+					cancelled = !docEventArgs.Handled;
 				}
 			}
 
-			Cancel();
+			// Stop drag & drop operation
+			if (docEventArgs != null &&
+				docEventArgs.Method == DataObjectMethod.DragDrop)
+			{
+				StopDragDrop(cancelled);
+			}
 
 			return ret;
 		}
@@ -935,11 +1158,10 @@ namespace WPFhelper
 		/// </summary>
 		/// <param name="sender">ContextMenu</param>
 		/// <param name="e"></param>
-		public static void OnContextMenuClosed(object sender, RoutedEventArgs e)
+		public static void OnDropContextMenuClosed(object sender, RoutedEventArgs e)
 		{
-			if (Data != null)
+			if (DragData != null)
 			{
-				Data.Cancelled = true;
 				Cancel();
 			}
 		}
@@ -955,9 +1177,8 @@ namespace WPFhelper
 			LimeMsg.Debug("ClipDragDrop OnMouseButtonDown: {0}", sender);
 
 			// Cancel previous dragging operation
-			if (Data != null)
+			if (DragData != null)
 			{
-				Data.Cancelled = true;
 				Cancel();
 			}
 
@@ -975,18 +1196,20 @@ namespace WPFhelper
 
 			// Retrieve Drag-source
 			var wxSource = WPF.FindFromPoint<FrameworkElement>(wxSender, e.GetPosition(wxSender),
-				(elm) => elm != null && GetSource(elm) != null);
+				(elm) => GetSource(elm) != null);
 
 			if (wxSource != null)
 			{
 				// initialize the Drag and Drop
-				Data = new ClipDragDropEventArgs()
+				DragData = new ClipDragDropContext()
 				{
-					Source = wxSource,
-					DestinationIndex = -1,
+					Source = wxSource
+				};
+
+				DragContext = new DragDropContext()
+				{
 					RightClick = rightClick,
-					MouseHit = e.GetPosition(wxSource),
-					Cancelled = true
+					MouseHit = e.GetPosition(wxSource)
 				};
 
 				// Track mouse move from now
@@ -1001,11 +1224,10 @@ namespace WPFhelper
 		/// <param name="e"></param>
 		private static void OnMouseButtonUp(object sender, MouseButtonEventArgs e)
 		{
-			if (Data != null)
+			// Cancel any ongoing Drag & Drop operations
+			if (DragData != null)
 			{
-				Data.Cancelled = true;
 				Cancel();
-				return;
 			}
 		}
 
@@ -1021,7 +1243,7 @@ namespace WPFhelper
 
 			var wxSender = (FrameworkElement)sender;
 
-			if (Data == null || DragIcon != null)
+			if (DragData == null || DragIcon != null)
 			{
 				// Should never come there... but handle this just in case...
 				wxSender.PreviewMouseMove -= OnMouseMove;
@@ -1030,11 +1252,11 @@ namespace WPFhelper
 
 			// Visual feedbacks on Source
 			var pos = e.GetPosition(wxSender);
-			var click = Data.RightClick ? e.RightButton : e.LeftButton;
+			var click = DragContext.RightClick ? e.RightButton : e.LeftButton;
 
 			if (click == MouseButtonState.Pressed &&
-				(Math.Abs(Data.MouseHit.X - pos.X) >= SystemParameters.MinimumHorizontalDragDistance ||
-				  Math.Abs(Data.MouseHit.Y - pos.Y) >= SystemParameters.MinimumVerticalDragDistance))
+				(Math.Abs(DragContext.MouseHit.X - pos.X) >= SystemParameters.MinimumHorizontalDragDistance ||
+				  Math.Abs(DragContext.MouseHit.Y - pos.Y) >= SystemParameters.MinimumVerticalDragDistance))
 			{
 				// --- Start dragging ---
 
@@ -1042,7 +1264,7 @@ namespace WPFhelper
 				wxSender.PreviewMouseMove -= OnMouseMove;
 
 				// Get drag and drop source and its hierarchy
-				if ( !TryGetDragDropElement(true, Data.MouseHit, wxSender, out var wxSource, 
+				if ( !TryGetDragDropElement(true, DragContext.MouseHit, wxSender, out var wxSource, 
 					out var wxSourceDecoration, out var wxSourceItemsControl, out var idx) )
 				{
 					Cancel(); // unexpected exception
@@ -1050,23 +1272,23 @@ namespace WPFhelper
 				}
 
 				// Get default operation
-				Data.DragDefaultOperation = GetDragDefaultOperation(wxSource);
+				DragContext.DragDefaultOperation = GetDragDefaultOperation(wxSource);
 
 				// Define the kind of source drag-action
 				var operation = ClipDragDropOperations.DragDrop | ClipDragDropOperations.From | 
 					(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? ClipDragDropOperations.Move :
 					Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ? ClipDragDropOperations.Copy :
 					Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) ? ClipDragDropOperations.Link :
-					Data.RightClick ? ClipDragDropOperations.Menu :
+					DragContext.RightClick ? ClipDragDropOperations.Menu :
 					wxSourceItemsControl != null && wxSource != wxSourceItemsControl  ? ClipDragDropOperations.Move :
-					(ClipDragDropOperations)Data.DragDefaultOperation);
+					(ClipDragDropOperations)DragContext.DragDefaultOperation);
 
 				// Start Source dragging
-				Data.Over = wxSender;
-				Data.Source = wxSource;
-				Data.SourceItemsControl = wxSourceItemsControl;
+				DragContext.Over = wxSender;
+				DragData.Source = wxSource;
+				DragData.SourceItemsControl = wxSourceItemsControl;
 
-				var actions = CanDragDrop(operation | (ClipDragDropOperations.From - 1), wxSource, idx, true, wxSourceItemsControl);
+				var actions = CanClipDragDrop(operation | (ClipDragDropOperations.From - 1), wxSource, idx, true, wxSourceItemsControl);
 
 				// Detect if dragging is enabled
 				if (actions == DataObjectAction.None)
@@ -1076,16 +1298,23 @@ namespace WPFhelper
 				}
 
 				// Start decoration and drag icon
-				DragIcon = new DragSystemIcon(wxSource, DataObjectCompatibleEventArgs.Data, 
-					Data.DragDropEffects, Scale, create: true);
+				DragIcon = new DragSystemIcon(wxSource, DataObjectCompatibleEventArgs.Data,
+					DragContext.DragDropEffects, Scale, create: true);
 
 				// Visual on source element
 				DragDropSourceVisual( actions.HasFlag(DataObjectAction.Move) && operation.HasFlag(ClipDragDropOperations.Move));
 
+				// Execute Operation
+				if (!Execute(DragData, null))
+				{
+					Cancel();
+					return;
+				}
+
 				// Start drag and drop
 				try
 				{
-					DragDrop.DoDragDrop(Data.Source, DataObjectCompatibleEventArgs.Data, Data.DragDropEffects);
+					DragDrop.DoDragDrop(DragData.Source, DataObjectCompatibleEventArgs.Data, DragContext.DragDropEffects);
 				}
 				finally
 				{
@@ -1110,12 +1339,13 @@ namespace WPFhelper
 		{
 			var wxSender = (FrameworkElement)sender;
 
-			if (Data == null)
+			if (DragData == null)
 			{
 				// Initiate Drag when Drag source is coming  from outside of the app
-				Data = new ClipDragDropEventArgs()
+				DragData = new ClipDragDropContext();
+
+				DragContext = new DragDropContext()
 				{
-					Cancelled = true,
 					DragDefaultOperation = GetDragDefaultOperation(wxSender)
 				};
 
@@ -1123,7 +1353,7 @@ namespace WPFhelper
 				var operations = ClipDragDropOperations.DragDrop | ClipDragDropOperations.From | (
 					(ClipDragDropOperations)e.AllowedEffects & (ClipDragDropOperations.From - 1));
 
-				var actions = CanDragDrop(operations, e.Data, -1, register: true);
+				var actions = CanClipDragDrop(operations, e.Data, -1, register: true);
 
 				// Detect if dragging is enabled
 				if (actions == DataObjectAction.None)
@@ -1133,14 +1363,14 @@ namespace WPFhelper
 				}
 
 				// Keep the system visual Icon in the application
-				DragIcon = new DragSystemIcon(wxSender, DataObjectCompatibleEventArgs.Data, 
-					Data.DragDropEffects, Scale, create: false);
+				DragIcon = new DragSystemIcon(wxSender, DataObjectCompatibleEventArgs.Data,
+					DragContext.DragDropEffects, Scale, create: false);
 
 				// Prepare for Window on top
 				Time = DateTime.Now;
 
 			}
-			else if (Data.Source == null)
+			else if (DragData.Source == null)
 			{
 				// Define the kind of source drag-action
 				HandleDestination(wxSender);
@@ -1161,12 +1391,12 @@ namespace WPFhelper
 			}
 
 			// Track over element
-			Data.Over = wxSender;
+			DragContext.Over = wxSender;
 
 			// When dragging from outside the application, we want to detect a drop, even on a pseudo
 			// non-drop-able position, to end the dragging properly
-			e.Effects = Data.Source == null && Data.DragDropEffects == DragDropEffects.None ?
-				DragDropEffects.Scroll : Data.DragDropEffects;
+			e.Effects = DragData.Source == null && DragContext.DragDropEffects == DragDropEffects.None ?
+				DragDropEffects.Scroll : DragContext.DragDropEffects;
 
 			e.Handled = true;
 
@@ -1183,13 +1413,13 @@ namespace WPFhelper
 		private static void OnDragLeave(object sender, DragEventArgs e)
 		{
 			//LimeMsg.Debug("ClipDragDrop OnDragLeave: {0} - {1}", sender, e.OriginalSource);
-			if (Data != null && Data.Source == null && Data.Over != null)
+			if (DragData != null && DragData.Source == null && DragContext.Over != null)
 			{
 				// Locate mouse relative to the currently selected window
 				if (WPF.GetCursorPos(out WPF.SysPoint spos))
 				{
 					var mpos = new Point(spos.x, spos.y);
-					var wxRoot = PresentationSource.FromVisual(Data.Over).RootVisual as FrameworkElement;
+					var wxRoot = PresentationSource.FromVisual(DragContext.Over).RootVisual as FrameworkElement;
 					var pos = wxRoot.PointFromScreen(mpos);
 
 					if (wxRoot.InputHitTest(pos) == null)
@@ -1197,7 +1427,6 @@ namespace WPFhelper
 						// Ouside a drop-able position, we can't detect when the dragging is ended by mouse
 						// release, so we'd better stop handling the dragging from now
 						LimeMsg.Debug("ClipDragDrop OnDragLeave: {0} - {1}", e.Effects, e.AllowedEffects);
-						Data.Cancelled = true;
 						Cancel();
 					}
 				}
@@ -1217,13 +1446,12 @@ namespace WPFhelper
 		{
 			//LimeMsg.Debug("ClipDragDrop OnQueryContinueDrag: {0}", e.Source);
 
-			var click = Data.RightClick ? DragDropKeyStates.RightMouseButton : DragDropKeyStates.LeftMouseButton;
+			var click = DragContext.RightClick ? DragDropKeyStates.RightMouseButton : DragDropKeyStates.LeftMouseButton;
 
 			if (DragIcon == null || e.EscapePressed)
 			{
 				e.Action = DragAction.Cancel;
-				if (Data != null) Data.Cancelled = true;
-				Cancel();
+				StopDragDrop(cancel: DragData != null);
 				return;
 			}
 			else if (e.KeyStates.HasFlag(click))
@@ -1236,7 +1464,7 @@ namespace WPFhelper
 			}
 
 			DragIcon?.UpdatePosition();
-			HandleDestination(Data.Over);
+			HandleDestination(DragContext.Over);
 
 			e.Handled = true;
 		}
@@ -1268,8 +1496,7 @@ namespace WPFhelper
 			if (!WPF.GetCursorPos(out WPF.SysPoint spos))
 			{
 				// unexpected exception
-				if (Data != null) Data.Cancelled = true;
-				Cancel(); 
+				StopDragDrop(cancel: DragData != null); 
 				return;
 			}
 
@@ -1334,30 +1561,30 @@ namespace WPFhelper
 
 
 			// Get drag and drop source and its hierarchy
-			ClipDragDropOperations operation = ClipDragDropOperations.None;
+			ClipDragDropOperations operation = ClipDragDropOperations.DragDrop | ClipDragDropOperations.To;
 
 			if (TryGetDragDropElement(false, pos, wxRoot, out var wxDest,
 				out var wxDestDecoration, out var wxDestItemsControl, out var idx))
 			{
 				// Make destination message
-				operation = ClipDragDropOperations.DragDrop | ClipDragDropOperations.To | (
+				operation |=
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? ClipDragDropOperations.Move :
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ? ClipDragDropOperations.Copy :
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) ? ClipDragDropOperations.Link :
-						 Data.RightClick ? ClipDragDropOperations.Menu :
-						 Data.SourceItemsControl == wxDestItemsControl && 
-							(wxDest == wxDestItemsControl || wxDest == Data.Source)? ClipDragDropOperations.Move :
-						 (ClipDragDropOperations)Data.DragDefaultOperation);
+						 DragContext.RightClick ? ClipDragDropOperations.Menu :
+						 DragData.SourceItemsControl == wxDestItemsControl && 
+							(wxDest == wxDestItemsControl || wxDest == DragData.Source)? ClipDragDropOperations.Move :
+						 (ClipDragDropOperations)DragContext.DragDefaultOperation;
 			}
 			else if (wxhit == null)
 			{
 				// Make destination message when getting out of the application
-				operation = ClipDragDropOperations.DragDrop | ClipDragDropOperations.To | (
+				operation |= 
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? ClipDragDropOperations.Move :
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ? ClipDragDropOperations.Copy :
 						 Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) ? ClipDragDropOperations.Link :
-						 Data.RightClick ? ClipDragDropOperations.Menu :
-						 (ClipDragDropOperations)Data.DragDefaultOperation);
+						 DragContext.RightClick ? ClipDragDropOperations.Menu :
+						 (ClipDragDropOperations)DragContext.DragDefaultOperation;
 
 				LimeMsg.Debug("ClipDragDrop HandleDestination: off {0}", operation);
 			}
@@ -1366,27 +1593,26 @@ namespace WPFhelper
 			bool updateDragIcon = false;
 
 			// Handle change in destinations (lazily, only if required)
-			if (wxDest != Data.Destination || HandleDestinationAction != operation)
+			if (wxDest != DragContext.Destination || HandleDestinationAction != operation)
 			{
 				HandleDestinationAction = operation;
 
 				// Reset visuals on previous destination
-				if (Data.Destination != null)
+				if (DragContext.Destination != null)
 				{
-					DragDropDestinationVisual(false);
+					ClipDragDropDestinationVisual(false, DragContext.Destination);
 					//DebugAdorner.Hide(Data.Destination);
 				}
 
 				// Invalidate the HitZone
-				HitZone = null;
+				DragContext.HitZone = null;
 
 				//DebugAdorner.Show(wxDest);
 
 				// Update the Destination Data
-				Data.Destination = wxDest;
-				Data.DestinationIndex = idx;
+				DragContext.Destination = wxDest;
 
-				var action = CanDragDrop(operation, wxDest, idx, register: true);
+				var action = CanClipDragDrop(operation, wxDest, -1, register: true, wxItemsControl: wxDestItemsControl);
 
 				LimeMsg.Debug("ClipDragDrop HandleDestination: {0} --> {1}", wxDest, DataObjectCompatibleEventArgs.Action);
 
@@ -1394,9 +1620,9 @@ namespace WPFhelper
 				updateDragIcon = true;
 				if (wxDest != null && action != DataObjectAction.None)
 				{
-					DragDropDestinationVisual(true);
+					ClipDragDropDestinationVisual(true, DragContext.Destination);
 					var move = action == DataObjectAction.Move && operation.HasFlag(ClipDragDropOperations.Move);
-					if (wxDestItemsControl != Data.SourceItemsControl || move)
+					if (wxDestItemsControl != DragData.SourceItemsControl || move)
 					{
 						DragDropSourceVisual(move);
 					}
@@ -1404,13 +1630,13 @@ namespace WPFhelper
 			}
 
 			// Handle change in DestinationItemsControl (lazily, only if required)
-			if (wxDestItemsControl != Data.DestinationItemsControl)
+			if (wxDestItemsControl != DragContext.DestinationItemsControl)
 			{
 				// Reset visuals on previous destination
-				DragDropInCollection(ClipDragDropOperations.None);
+				DragDropInCollection(ClipDragDropOperations.DragDrop);
 
 				// Update the destination Items Control
-				Data.DestinationItemsControl = wxDestItemsControl;
+				DragContext.DestinationItemsControl = wxDestItemsControl;
 
 				// Visual feedback
 				updateDragIcon = true;
@@ -1421,12 +1647,12 @@ namespace WPFhelper
 				}
 
 			}
-			else if (wxDestItemsControl != null && wxDestItemsControl == Data.DestinationItemsControl)
+			else if (wxDestItemsControl != null && wxDestItemsControl == DragContext.DestinationItemsControl)
 			{
 				// Update destination Items Control (lazily, only if required)
 				var dpos = wxDestItemsControl.PointFromScreen(mpos);
 
-				if (HitZone == null || !HitZone.Value.Contains(dpos))
+				if (DragContext.HitZone == null || !DragContext.HitZone.Value.Contains(dpos))
 				{
 					updateDragIcon = true;
 					DragDropInCollection(operation, dpos);
@@ -1438,10 +1664,11 @@ namespace WPFhelper
 			{
 				DropImageType type = DropImageType.Invalid;
 				string format = null;
+				var effects = DragContext.DragDropEffects;
 
-				if (Data.DragDropEffects != DragDropEffects.None && wxDest != null)
+				if (effects != DragDropEffects.None)
 				{
-					format = GetFormat(wxDest, DataObjectCompatibleEventArgs.Action);
+					format = GetFormat(wxDest ?? sender, DataObjectCompatibleEventArgs.Action);
 
 					switch (DataObjectCompatibleEventArgs.Action)
 					{
@@ -1463,7 +1690,9 @@ namespace WPFhelper
 					}
 				}
 
-				DragIcon?.UpdateEffects(Data.DragDropEffects, type, format, DataObjectCompatibleEventArgs.DestinationName);
+				LimeMsg.Debug("ClipDragDrop HandleDestination: updateDragIcon {0} --> {1}", effects, type);
+
+				DragIcon?.UpdateEffects(effects, type, format, DataObjectCompatibleEventArgs.DestinationName);
 			}
 		}
 
@@ -1477,454 +1706,11 @@ namespace WPFhelper
 		{
 			LimeMsg.Debug("ClipDragDrop OnDrop: {0}", DataObjectCompatibleEventArgs?.Action);
 			if (DataObjectCompatibleEventArgs == null) return;
-			e.Handled = Execute(DataObjectCompatibleEventArgs.Action);
+			e.Handled = Drop(DataObjectCompatibleEventArgs.Action);
 		}
 
 
 
-		/// <summary>
-		/// Retrieve Drag & Drop element and its hierarchy from a mouse position
-		/// </summary>
-		/// <param name="isSource">True if we are looking for a drag-source, false for drop-destination</param>
-		/// <param name="hit">mouse hit coordinated relative to <see cref="sender"/></param>
-		/// <param name="sender">Mouse relative reference</param>
-		/// <param name="element">element handling the the Drag and drop</param>
-		/// <param name="elementDecoration">container handling the drag and drop</param>
-		/// <param name="elementItemsControl">parent ItemsControl handling the drag and drop</param>
-		/// <param name="idx">position of the element in the <see cref="elementItemsControl"/> (-1 if none) </param>
-		/// <returns></returns>
-		private static bool TryGetDragDropElement(
-			bool isSource,
-			Point hit, FrameworkElement sender,
-			out FrameworkElement element, out FrameworkElement elementDecoration,
-			out ItemsControl elementItemsControl, out int idx)
-		{
-			var wxSource = Data.Source;
-			elementItemsControl = null;
-			idx = -1;
-			element = null;
-
-			if (sender == null)
-			{
-				elementDecoration = null;
-				return false;
-			}
-
-
-			// Find element
-			if (sender.InputHitTest(hit) is DependencyObject dep)
-			{
-				while (dep != null)
-				{
-					if (dep is FrameworkElement elm)
-					{
-						if (isSource)
-						{
-							if (GetSource(elm) != null)
-							{
-								// Found matching element
-								element = elm;
-								break;
-							}
-						}
-						else
-						{
-							if (GetDestination(elm) != null)
-							{
-								// Found matching element
-								element = elm;
-								break;
-							}
-						}
-					}
-
-					dep = VisualTreeHelper.GetParent(dep);
-				}
-			}
-
-			// default decoration
-			elementDecoration = element;
-
-			if (element == null)
-			{
-				return false;
-			}
-
-
-			// Self-check will try to detect problems in the drag/drop-element and its parents
-#if DEBUG
-			DependencyObject wxobj = element;
-			while (wxobj != null)
-			{
-				if (wxobj is Control wxctrl)
-				{
-					string msg = null;
-
-					// Check correct use of Background
-					if (GetDestination(wxctrl) != null)
-					{
-						var background = wxctrl.Background;
-
-						// Try to get background of panel if ItemsControl
-						if (background == null && wxctrl is ItemsControl wxitems)
-						{
-							var wxpan = WPF.FindFirstChild<Panel>(wxitems);
-							background = wxpan?.Background;
-
-							if (background == null)
-							{
-								msg = "This Control has " + nameof(ClipDragDrop) +
-									  ".Destination attached-property set," + Environment.NewLine + 
-									  "but cannot handle it because its Background is null";
-							}
-						}
-					}
-
-					// Check correct use of ClipDragDrop.Destination
-					if (GetDestination(wxctrl) != null && !wxctrl.AllowDrop)
-					{
-						msg = "This Control has " + nameof(ClipDragDrop) +
-							".Destination attached-property set," + Environment.NewLine +
-							"but is not drop-able because AllowDrop=false";
-					}
-
-					// Check correct use of ClipDragDrop.Enable
-					if (GetDestination(wxctrl) != null || GetSource(wxctrl) != null)
-					{
-						var root = WPF.FindFirstParent<FrameworkElement>(wxctrl, (elm) => GetEnable(elm));
-
-						if (root == null)
-						{
-							msg = "This Control has a " + nameof(ClipDragDrop) +
-								" attached-property set," + Environment.NewLine +
-								"but there is no parent with " + nameof(ClipDragDrop) + 
-								".Enable=true to handle it";
-						}
-					}
-
-
-					// Problem found
-					if (msg != null)
-					{
-						var severity = GetSelfCheckSeverity(wxctrl);
-						msg = String.Format(
-								"[" + nameof(ClipDragDrop) + ":SelfCheckSeverity={0}] {1}: {2}",
-								severity, msg, wxctrl.Name);
-
-						switch (severity)
-						{
-							case ClipDragDropSelfCheckSeverity.Warning:
-								System.Diagnostics.Debug.WriteLine(msg);
-								DebugAdorner.Show(wxctrl, msg, Colors.Red);
-								break;
-
-							case ClipDragDropSelfCheckSeverity.Error:
-								throw new Exception(msg);
-						}
-					}
-
-				}
-
-				wxobj = VisualTreeHelper.GetParent(wxobj);
-			}
-#endif
-
-
-			if (element is ItemsControl ctr)
-			{
-				// item is itself an ItemsControl
-				elementItemsControl = ctr;
-			}
-			else if (VisualTreeHelper.GetParent(elementDecoration) is ContentPresenter wxPresenter)
-			{
-				// Find out whether the element is an item in an ItemsControl
-				elementDecoration = wxPresenter;
-				var wxItemsControl = WPF.FindFirstParent<ItemsControl>(element);
-				if (wxItemsControl != null)
-				{
-					var itemgen = wxItemsControl.ItemContainerGenerator;
-					try
-					{
-						for (var i = 0; i < itemgen.Items.Count; i++)
-						{
-							var wxCont = itemgen.ContainerFromIndex(i) as ContentPresenter;
-							if (wxCont == wxPresenter)
-							{
-								elementItemsControl = wxItemsControl;
-								idx = i;
-								break;
-							}
-						}
-					}
-					catch { }
-				}
-			}
-
-			return true;
-		}
-
-
-		/// <summary>
-		/// Define and track whether a Drag & Drop operation can be applied on data (element)
-		/// </summary>
-		/// <param name="operation"></param>
-		/// <param name="data"></param>
-		/// <param name="index"></param>
-		/// <param name="register"></param>
-		/// <param name="wxItemsControl"></param>
-		/// <returns>DragDropEffects</returns>
-		private static DataObjectAction CanDragDrop(ClipDragDropOperations operation, object data,
-			int index, bool register, ItemsControl wxItemsControl = null)
-		{
-			bool start = operation.HasFlag(ClipDragDropOperations.From);
-
-			if (data is FrameworkElement elm)
-			{
-				operation &= ~GetDisable(elm);
-				if (start)
-					data = GetSource(elm) ?? elm.DataContext;
-				else
-					data = GetDestination(elm) ?? elm.DataContext;
-			}
-			else
-			{
-				elm = null;
-			}
-
-			var action = (DataObjectAction)(operation & (ClipDragDropOperations.From - 1));
-			var method =
-				operation.HasFlag(ClipDragDropOperations.Clipboard) ? DataObjectMethod.Clipboard :
-				operation.HasFlag(ClipDragDropOperations.DragDrop) ? DataObjectMethod.DragDrop :
-				DataObjectMethod.None;
-
-
-			DataObjectCompatibleEventArgs docEventArgs;
-
-			if (start)
-			{
-				IDataObject dataObject = null;
-				if (data is IDataObject ido)
-				{
-					dataObject = ido;
-				}
-				else if (data is IDataObjectCompatible sdoc)
-				{
-					dataObject = sdoc.GetDataObject(method);
-				}
-				else
-				{
-					dataObject = new DataObject(data.GetType(), data);
-				}
-
-				// Start dragging
-				docEventArgs = new DataObjectCompatibleEventArgs(
-					method: method,
-					action: DataObjectAction.None,
-					source: data,
-					data: dataObject,
-					sourceParent: wxItemsControl?.DataContext,
-					sourceCollection: wxItemsControl?.ItemsSource,
-					sourceIndex: index
-					);
-
-				if (data is IDataObjectCompatible idoc)
-				{
-					for (var i = DataObjectAction.Copy; i <= DataObjectAction.Open; i = (DataObjectAction)((int)i<<1))
-					{
-						if ((action & i) != 0)
-						{
-							docEventArgs.Handled = false;
-							docEventArgs.Action = i;
-							idoc.DataObjectCanDo(docEventArgs);
-							if (!docEventArgs.Handled) operation &= ~(ClipDragDropOperations) i;
-						}
-					}
-
-					docEventArgs.Action = DataObjectAction.None;
-				}
-
-				if (register)
-				{
-
-					Data.SourceOperations = operation;
-					DataObjectCompatibleEventArgs = docEventArgs;
-				}
-			}
-			else if (operation.HasFlag(ClipDragDropOperations.To))
-			{
-				// Handle Cache
-				DataObjectCompatibleEventArgs cache = null;
-				if (CanDragDropCache != null)
-				{
-					foreach (var cdict in CanDragDropCache)
-					{
-						var cdoc = cdict.Key;
-#if DEBUG
-						// The Source of the drag should always be the same
-						if (cdoc.Source != DataObjectCompatibleEventArgs.Source ||
-							cdoc.Data != DataObjectCompatibleEventArgs.Data ||
-							cdoc.SourceIndex != DataObjectCompatibleEventArgs.SourceIndex ||
-							cdoc.SourceParent != DataObjectCompatibleEventArgs.SourceParent ||
-							cdoc.SourceCollection != DataObjectCompatibleEventArgs.SourceCollection)
-						{
-							throw new Exception("Debug: Unexpected case: DragDrop Source doesn't match in CanDragDropCache");
-						}
-#endif
-
-						// Check Destination match
-						if (cdoc.DestinationIndex == index &&
-							cdoc.Destination == (elm ?? data) &&
-							cdoc.Method == method &&
-							cdoc.Action == action)
-						{
-							cache = cdict.Value; // cache hit
-							break;
-						}
-					}
-				}
-
-
-				if (cache != null)
-				{
-					// Result in cache: don't ask again if DragDrop is possible
-					docEventArgs = cache;
-
-					if (register)
-					{
-						DataObjectCompatibleEventArgs = docEventArgs;
-					}
-				}
-				else
-				{
-					// Ask if DragDrop is possible
-
-					docEventArgs = new DataObjectCompatibleEventArgs(
-						copy: DataObjectCompatibleEventArgs,
-						action: action,
-						destination: data,
-						destinationIndex: index,
-						destinationName: null);
-
-					if (register)
-					{
-						DataObjectCompatibleEventArgs = docEventArgs;
-					}
-
-					// Operation compatibility between source and destination
-					operation &= Data.SourceOperations | ClipDragDropOperations.To;
-
-					// Catch Drag & Drop from/to itself 
-					if (Data.Source == elm)
-					{
-						docEventArgs.Handled = false;
-						action = DataObjectAction.None;
-					}
-					else if (
-						// InterControl check
-						Data.SourceItemsControl != Data.DestinationItemsControl && (
-
-						// InterControl Source check
-						Data.SourceItemsControl != null && GetDisable(Data.SourceItemsControl).HasFlag(ClipDragDropOperations.InterControl) ||
-
-						// InterControl Destination check
-						Data.DestinationItemsControl != null && GetDisable(Data.DestinationItemsControl).HasFlag(ClipDragDropOperations.InterControl)
-
-						) ||
-
-						// Inter-application Source check
-						Data.Source != null && elm == null && GetDisable(Data.Source).HasFlag(ClipDragDropOperations.InterApplication) ||
-
-						// Inter-application Destination check
-						Data.Source == null && elm != null && GetDisable(elm).HasFlag(ClipDragDropOperations.InterApplication)
-
-						)
-					{
-						docEventArgs.Handled = false;
-						action = DataObjectAction.None;
-					}
-					else
-					{
-						// Create cache key
-						cache = new DataObjectCompatibleEventArgs(
-							copy: docEventArgs,
-							action: docEventArgs.Action,
-							destination: elm ?? data, // overrule destination
-							destinationIndex: docEventArgs.SourceIndex,
-							destinationName: docEventArgs.DestinationName
-							);
-
-						// action Compatibility with Destination
-						if (data is IDataObjectCompatible ddoc)
-						{
-							docEventArgs.Handled = false;
-							ddoc.DataObjectCanDo(docEventArgs);
-							action = docEventArgs.Handled ?	docEventArgs.Action : DataObjectAction.None;
-						}
-						else
-						{
-							// Use default decision
-							docEventArgs.Handled = false;
-
-							if (Data.SourceItemsControl != null && Data.DestinationItemsControl != null)
-							{
-								if (Data.SourceItemsControl == Data.DestinationItemsControl ||
-									Data.SourceItemsControl != null && Data.DestinationItemsControl != null &&
-									Data.SourceItemsControl.ItemsSource != null && Data.DestinationItemsControl.ItemsSource != null &&
-									Data.SourceItemsControl.ItemsSource.GetType() == Data.DestinationItemsControl.ItemsSource.GetType()
-									  )
-								{
-									// Can the use default ItemsControl DragDrop
-									docEventArgs.Handled = true;
-								}
-							}
-						}
-
-						// action compatibility with DataObjectCompatible Source
-						if (docEventArgs.Handled && Data.Source is IDataObjectCompatible sdoc)
-						{
-							docEventArgs.Direction = DataObjectDirection.From;
-							docEventArgs.Handled = false;
-							sdoc.DataObjectCanDo(docEventArgs);
-							if (!docEventArgs.Handled) action = DataObjectAction.None;
-							docEventArgs.Action = action;
-						}
-
-						// Add to cache
-						if (CanDragDropCache == null)
-						{
-							CanDragDropCache = new Dictionary<DataObjectCompatibleEventArgs, DataObjectCompatibleEventArgs>(20);
-						}
-						CanDragDropCache.Add(cache, docEventArgs);
-					}
-				}
-			}
-
-
-			LimeMsg.Debug("ClipDragDrop CanDragDrop: {0} --> {1} @ {2} (register: {3})", data, action, index, register);
-
-			// action Compatibility with Source/Destination operations
-			action &= (DataObjectAction)operation;
-
-			if (!operation.HasFlag(ClipDragDropOperations.DragDrop) ||
-				!operation.HasFlag(start ? ClipDragDropOperations.From : ClipDragDropOperations.To) ||
-				action == DataObjectAction.None)
-				action = DataObjectAction.None; // Incompatible
-
-			if (register)
-			{
-				var effects = action;
-
-				if ((action & (DataObjectAction.Menu - 1)) != 0)
-					effects &= DataObjectAction.Menu - 1; // Mask effects
-				else if (action != DataObjectAction.None)
-					effects = DataObjectAction.Copy; // default effect
-
-				Data.DragDropEffects = (DragDropEffects)effects;
-				Data.Cancelled = action == DataObjectAction.None;
-			}
-
-			return action;
-		}
 
 
 		/// <summary>
@@ -1933,7 +1719,7 @@ namespace WPFhelper
 		/// <param name="enable">indicate whether current source has visual effect</param>
 		private static void DragDropSourceVisual(bool enable)
 		{
-			var wxSource = Data.Source;
+			var wxSource = DragData.Source;
 			if (wxSource == null) return;
 
 			var animate = GetAnimate(wxSource);
@@ -1998,18 +1784,17 @@ namespace WPFhelper
 		/// Handle the visual effect on a drop destination
 		/// </summary>
 		/// <param name="over">indicate whether current destination has visual effect</param>
-		private static void DragDropDestinationVisual(bool over)
+		private static void ClipDragDropDestinationVisual(bool over, FrameworkElement dest)
 		{
-			var wxDest = Data.Destination;
-			var animate = GetAnimate(wxDest);
+			var animate = GetAnimate(dest);
 
 			if (over)
 			{
-				VisualStateManager.GoToState(wxDest, "Focused", animate);
+				VisualStateManager.GoToState(dest, "Focused", animate);
 			}
-			else
+			else if (!dest.IsFocused)
 			{
-				VisualStateManager.GoToState(wxDest, "Normal", animate);
+				VisualStateManager.GoToState(dest, "Normal", animate);
 			}
 
 
@@ -2059,7 +1844,7 @@ namespace WPFhelper
 		/// Make a visual feedback on the destination ItemsControl.
 		/// </summary>
 		/// <param name="operation">Describe the requested actions on destination</param>
-		/// <param name="hit">Mouse hit point relative to <see cref="Data.DestinationItemsControl"/></param>
+		/// <param name="hit">Mouse hit point relative to <see cref="DragData.DestinationItemsControl"/></param>
 		private static void DragDropInCollection (ClipDragDropOperations operation, Point hit = new Point())
 		{
 #if DEBUG
@@ -2069,16 +1854,16 @@ namespace WPFhelper
 #endif
 
 			// Data.Destination may be updated in this method on matching hit
-			var wxDestItemsControl = Data.DestinationItemsControl;
+			var wxDestItemsControl = DragContext.DestinationItemsControl;
 
 			// Invalid destination
 			if (wxDestItemsControl == null) return;
 
-			var wxSourceItemsControl = Data.SourceItemsControl;
-			var wxSource = Data.Source;
+			var wxSourceItemsControl = DragData.SourceItemsControl;
+			var wxSource = DragData.Source;
 
 			// Define whether insertion actions should be enabled on destination
-			var action = CanDragDrop(operation, wxDestItemsControl, 0, register: false);
+			var action = CanClipDragDrop(operation, wxDestItemsControl, 0, register: false, wxItemsControl: wxDestItemsControl);
 			bool enableDrop = action != DataObjectAction.None;
 
 			Point zeroPoint = new Point(0, 0);
@@ -2097,7 +1882,7 @@ namespace WPFhelper
 			int newIndex = -1;
 
 			// A new hit zone will be created
-			HitZone = null;
+			DragContext.HitZone = null;
 			Rect nonHit = WPF.GetVisibleArea(wxDestItemsControl, wxDestItemsControl);
 
 			for (var idx = 0; idx < itemgen.Items.Count; idx++)
@@ -2190,12 +1975,12 @@ namespace WPFhelper
 							{
 								newIndex = idx;
 							}
-							else if (wxDestItem == Data.Destination)
+							else if (wxDestItem == DragContext.Destination)
 							{
 								rescale = Scale / 2 + 0.5;
 							}
 
-							HitZone = render;
+							DragContext.HitZone = render;
 
 						}
 						else if (iconzone.Contains(hit))
@@ -2229,7 +2014,7 @@ namespace WPFhelper
 								iconzone.Y = render.Bottom;
 							}
 
-							var act = CanDragDrop(operation, wxDestItemsControl, index, register: false);
+							var act = CanClipDragDrop(operation, wxDestItemsControl, index, register: false, wxItemsControl: wxDestItemsControl);
 							if (act != DataObjectAction.None)
 							{
 								// Object can be inserted here
@@ -2238,8 +2023,8 @@ namespace WPFhelper
 								centerY = moveY;
 							}
 
-							if (HitZone != null) iconzone.Intersect(HitZone.Value);
-							HitZone = iconzone;
+							if (DragContext.HitZone != null) iconzone.Intersect(DragContext.HitZone.Value);
+							DragContext.HitZone = iconzone;
 
 						}
 						else if (nonHit.IntersectsWith(iconzone))
@@ -2316,28 +2101,977 @@ namespace WPFhelper
 			// Validate the insertion
 			if (newIndex>=0)
 			{
-				CanDragDrop(operation, wxDestItemsControl, newIndex, register: true);
+				CanClipDragDrop(operation, wxDestItemsControl, newIndex, register: true, wxItemsControl: wxDestItemsControl);
 			}
 
 #if DEBUG
 			if (debugShowHitZone)
 			{
-				if (HitZone == null)
+				if (DragContext.HitZone == null)
 					DebugAdorner.Hide(wxDestItemsControl);
 				else
-					DebugAdorner.Show(wxDestItemsControl, HitZone);
+					DebugAdorner.Show(wxDestItemsControl, DragContext.HitZone);
 			}
 #endif
 
 			// Set the non-hit zone as a hit-zone (zone where there is no need to recompute
 			// the animations and hit)
-			if (HitZone == null)
+			if (DragContext.HitZone == null)
 			{
-				HitZone = nonHit;
+				DragContext.HitZone = nonHit;
 			}
 
-			LimeMsg.Debug("ClipDragDrop DragDropInCollection: {0} --> {1}", Data.DestinationItemsControl, operation);
+			LimeMsg.Debug("ClipDragDrop DragDropInCollection: {0} --> {1}", DragContext.DestinationItemsControl, operation);
 
+		}
+
+
+		/// <summary>
+		/// Open the Clipboard context menu
+		/// </summary>
+		/// <param name="sender">FrameworkElement with Enable attached property set</param>
+		/// <param name="e"></param>
+		private static void OnClipboardContextMenuOpening(object sender, ContextMenuEventArgs e)
+		{
+			LimeMsg.Debug("ClipDragDrop OnContextMenuOpening: {0} --> {1}", sender, e.OriginalSource);
+
+			var wxsource = e.OriginalSource as UIElement;
+
+			// Check Menu possibility
+			if (wxsource is FrameworkElement elm || (elm = WPF.FindFirstParent<FrameworkElement>(wxsource)) != null)
+			{
+				if ((GetDisable(elm) & (ClipDragDropOperations.ClipboardMenu | ClipDragDropOperations.Clipboard)) != 0)
+				{
+					e.Handled = false;
+					return;
+				}
+			}
+
+			// Retrieve the target of the menu
+			if (!TryGetClipboardElement(true, true, wxsource, 
+				out var wxTarget, out var wxDecoration, out var wxItemControl, out var idx) ||
+				(GetDisable(wxTarget) & (ClipDragDropOperations.ClipboardMenu | ClipDragDropOperations.Clipboard)) != 0)
+			{
+				e.Handled = false;
+				return;
+			}
+
+			// Create Menu
+			// Generate the menu lazily
+			var wxmenu = new ContextMenu()
+			{
+				Placement = PlacementMode.Bottom
+			};
+			wxmenu.Closed += OnClipboardContextMenuClosed;
+
+			var commands = new List<RoutedUICommand>()
+				{
+					ApplicationCommands.Cut,
+					ApplicationCommands.Copy,
+					ApplicationCommands.Paste
+				};
+
+			if (!GetDisable(wxTarget).HasFlag(ClipDragDropOperations.Delete))
+			{
+				commands.Add(ApplicationCommands.Delete);
+			}
+
+			foreach (var cmd in commands)
+			{
+				var mitem = new MenuItem()
+				{
+					Header = cmd.Name,
+					Command = cmd,
+					CommandParameter = true
+				};
+				mitem.SetBinding(MenuItem.CommandTargetProperty, "");
+
+				if (cmd== ApplicationCommands.Delete)
+				{
+					wxmenu.Items.Add(new Separator());
+				}
+
+				wxmenu.Items.Add(mitem);
+			}
+
+
+			if (e.CursorLeft == -1 && e.CursorTop == -1)
+			{
+				// Place bellow the focused element
+				wxmenu.PlacementTarget = wxTarget;
+				wxmenu.PlacementRectangle = new Rect(wxTarget.ActualWidth * 0.6, wxTarget.ActualHeight * 0.6, 0 ,0);
+			}
+			else
+			{
+				// Place on Mouse position
+				wxmenu.PlacementTarget = wxsource;
+				wxmenu.PlacementRectangle = new Rect(e.CursorLeft, e.CursorTop, 0, 0);
+			}
+
+			wxmenu.DataContext = wxTarget;
+
+			wxmenu.IsOpen = true;
+			e.Handled = true;
+
+			// Update visual
+			ClipDragDropDestinationVisual(true, wxTarget);
+
+		}
+
+		/// <summary>
+		/// Make sure the visual is updated after menu closure
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private static void OnClipboardContextMenuClosed(object sender, RoutedEventArgs e)
+		{
+			var wxmenu = (ContextMenu)sender;
+			ClipDragDropDestinationVisual(false, wxmenu.DataContext as FrameworkElement);
+		}
+
+
+
+		/// <summary>
+		/// Handle the ClipboardCanExecute and ClipboardExecuted functions
+		/// </summary>
+		/// <param name="sender">FrameworkElement with Enable attached property set</param>
+		/// <param name="e">CanExecuteRoutedEventArgs</param>
+		private static void ClipboardHandler(object sender, RoutedEventArgs e)
+		{
+			LimeMsg.Debug("ClipDragDrop ClipboardHandler: {0} --> {1}", sender, e.OriginalSource);
+			var wxsender = (FrameworkElement)sender;
+			var wxdest = e.OriginalSource as FrameworkElement;
+
+			// Get command
+			ICommand cmd;
+			bool menu = false;
+			bool execute;
+			if (e is CanExecuteRoutedEventArgs ec)
+			{
+				execute = false;
+				cmd = ec.Command;
+				if (ec.Parameter is bool b) menu = b;
+			}
+			else if (e is ExecutedRoutedEventArgs ee)
+			{
+				execute = true;
+				cmd = ee.Command;
+				if (ee.Parameter is bool b) menu = b;
+			}
+			else
+			{
+				throw new InvalidOperationException();
+			}
+
+			// Readjust destination item to focused element in case of keyboard input
+			if (!menu && wxdest == sender && GetEnable(wxdest) && 
+				FocusManager.GetFocusedElement(wxsender) is FrameworkElement elm)
+			{
+				wxdest = elm;
+			}
+
+			ClipDragDropOperations operation;
+
+			if (cmd == ApplicationCommands.Paste)
+			{
+				operation = ClipDragDropOperations.Clipboard | ClipDragDropOperations.To;
+
+				// Retrieve data to get the actual opeation (cut or copy)
+				IDataObject data = Clipboard.GetDataObject();
+				var stream = (MemoryStream)data.GetData("Preferred DropEffect", true);
+				if (stream != null)
+				{
+					int flag = stream.ReadByte();
+					operation |=
+						flag == 2 ? ClipDragDropOperations.Move :
+						flag == 5 ? ClipDragDropOperations.Copy :
+						ClipDragDropOperations.None;
+				}
+				else
+				{
+					operation |= ClipDragDropOperations.Copy;
+				}
+
+			}
+			else
+			{
+				operation = ClipDragDropOperations.Clipboard | ClipDragDropOperations.From |
+				(cmd == ApplicationCommands.Cut ? ClipDragDropOperations.Move :
+				cmd == ApplicationCommands.Copy ? ClipDragDropOperations.Copy :
+				cmd == ApplicationCommands.Delete ? ClipDragDropOperations.Delete | ClipDragDropOperations.Move :
+				ClipDragDropOperations.None);
+			}
+
+			if (TryGetClipboardElement(
+				operation.HasFlag(ClipDragDropOperations.From), 
+				operation.HasFlag(ClipDragDropOperations.To), 
+				wxdest, 
+				out var wxTarget, out var wxDecoration, out var wxItemControl, out var index) )
+			{
+
+				// Re-arrange the focus in clipboard paste operations
+				if (operation.HasFlag(ClipDragDropOperations.To))
+				{
+					if (!menu && index >= 0 &&
+						TryGetClipboardElement(false, true, wxItemControl,
+							out var wxTarget2, out var wxDecoration2, out var wxItemControl2, out var index2) &&
+						wxTarget2 == wxItemControl)
+					{
+						wxTarget = wxTarget2;
+						wxDecoration = wxDecoration2;
+						wxItemControl = wxItemControl2;
+					}
+					else
+					{
+						index = -1;
+					}
+				}
+
+				var prevClipData = ClipData;
+
+				// Update visual
+				if (ClipData != null && execute && !operation.HasFlag(ClipDragDropOperations.Delete))
+				{
+					ClipboardSourceVisual(false);
+				}
+
+				var action = CanClipDragDrop(operation, wxTarget, index, register: execute, wxItemsControl: wxItemControl);
+
+				e.Handled = true;
+
+				if (e is CanExecuteRoutedEventArgs ec2)
+				{
+					ec2.CanExecute = action != DataObjectAction.None;
+				}
+				else if (e is ExecutedRoutedEventArgs ee && action != DataObjectAction.None)
+				{
+					// Execute
+
+					// Handle copy/cup to clipboard
+					if (operation.HasFlag(ClipDragDropOperations.From))
+					{
+						// Special case for Delete
+						if (operation.HasFlag(ClipDragDropOperations.Delete))
+						{
+							Execute(ClipData, null);
+							ClipData = prevClipData;
+							return;
+						}
+
+						IDataObject dataObject = ClipData.DataObjectCompatibleEventArgs.Data;
+						if (dataObject != null && dataObject.GetDataPresent(DataFormats.FileDrop))
+						{
+							// Create system clipboard cut/copy code
+							byte code =
+								action == DataObjectAction.Move ? (byte)2 : // cut
+								action == DataObjectAction.Copy ? (byte)5 : // copy
+								(byte)0;
+
+							if (code != 0)
+							{
+								try
+								{
+									var memo = new MemoryStream(4);
+									var bytes = new byte[] { code, 0, 0, 0 };
+									memo.Write(bytes, 0, bytes.Length);
+									dataObject.SetData("Preferred DropEffect", memo);
+								}
+								catch { }
+							}
+						}
+
+						// Set Clipboard data
+						Clipboard.SetDataObject(dataObject);
+
+						// Visual feedback
+						ClipboardSourceVisual(true);
+
+					}
+
+					// Watch for changes in clipboard from now on
+					ClipboardWatcher(wxsender);
+
+					// Execute the object operation
+					Execute(ClipData, wxTarget);
+
+					// Invalidate the clipboard after a cut/paste
+					if (action == DataObjectAction.Move && operation.HasFlag(ClipDragDropOperations.To))
+					{
+						ClipData = null;
+						Clipboard.Clear();
+					}
+
+				}
+
+			}
+
+		}
+
+		/// <summary>
+		/// Check if the Clipboard Cut/Copy/Paste operation is allowed
+		/// </summary>
+		/// <param name="sender">FrameworkElement with Enable attached property set</param>
+		/// <param name="e">CanExecuteRoutedEventArgs</param>
+		private static void ClipboardCanExecute(object sender, CanExecuteRoutedEventArgs e)
+		{
+			if (e.OriginalSource is FrameworkElement obj && obj.DataContext is LimeItem item)
+			{
+				LimeMsg.Debug("ClipDragDrop ClipboardCanExecute: {0} --> {1}", sender, item.Name);
+			}
+			else
+			{
+				LimeMsg.Debug("ClipDragDrop ClipboardCanExecute: {0} --> {1}", sender, e.OriginalSource);
+			}
+			ClipboardHandler(sender, e);
+		}
+
+
+		/// <summary>
+		/// Execute the Clipboard Cut/Copy/Paste operation
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private static void ClipboardExecuted(object sender, ExecutedRoutedEventArgs e)
+		{
+			LimeMsg.Debug("ClipDragDrop ClipboardExecuted: {0} --> {1}", sender, e.OriginalSource);
+			ClipboardHandler(sender, e);
+		}
+
+
+		/// <summary>
+		/// Handle the visual effect on a Clipboard source
+		/// </summary>
+		/// <param name="enable">indicate whether current source has visual effect</param>
+		private static void ClipboardSourceVisual(bool enable)
+		{
+			const double factor = 0.4;
+			var wxSource = ClipData.Source;
+			if (wxSource == null || ClipData.DataObjectCompatibleEventArgs == null) return;
+			var action = ClipData.DataObjectCompatibleEventArgs.Action;
+			if (action != DataObjectAction.Move) return;
+
+			// Get container
+			var wxSourceDecoration = wxSource;
+			if (VisualTreeHelper.GetParent(wxSourceDecoration) is ContentPresenter pre) wxSourceDecoration = pre;
+
+			var opacity = wxSourceDecoration.Opacity;
+
+			if (enable)
+			{
+				// Dim the element
+				wxSourceDecoration.SetCurrentValue(UIElement.OpacityProperty, opacity * factor);
+			}
+			else
+			{
+				// Restore the element
+				wxSourceDecoration.SetCurrentValue(UIElement.OpacityProperty, opacity / factor);
+			}
+
+		}
+
+
+		/// <summary>
+		/// Retrieve Clipboard element and its hierarchy
+		/// </summary>
+		/// <param name="matchSource">True if we are looking for a clipboard-source</param>
+		/// <param name="matchDestination">True if we are looking for a clipboard-destination</param>
+		/// <param name="sender">Focused element</param>
+		/// <param name="element">element handling the the clipboard operation</param>
+		/// <param name="elementDecoration">container handling the clipboard operation</param>
+		/// <param name="elementItemsControl">parent ItemsControl handling the clipboard operation</param>
+		/// <param name="idx">position of the element in the <see cref="elementItemsControl"/> (-1 if none) </param>
+		/// <returns></returns>
+		private static bool TryGetClipboardElement(
+			bool matchSource,
+			bool matchDestination,
+			DependencyObject sender,
+			out FrameworkElement element, out FrameworkElement elementDecoration,
+			out ItemsControl elementItemsControl, out int idx)
+		{
+			elementItemsControl = null;
+			idx = -1;
+			element = null;
+
+			if (sender == null)
+			{
+				elementDecoration = null;
+				return false;
+			}
+
+
+			// Find element
+			var dep = sender;
+			while (dep != null)
+			{
+				if (dep is FrameworkElement elm)
+				{
+					if (matchSource)
+					{
+						if (GetSource(elm) != null)
+						{
+							// Found matching element
+							element = elm;
+							break;
+						}
+					}
+
+					if (matchDestination)
+					{
+						if (GetDestination(elm) != null)
+						{
+							// Found matching element
+							element = elm;
+							break;
+						}
+					}
+
+					// Forbid clipboard menu on some controls and do a pseudo bubbling for menu
+					if (matchDestination && matchSource && (
+						elm is ScrollBar || elm is TextBoxBase || elm.ContextMenu != null))
+					{
+						elementDecoration = null;
+						return false;
+					}
+				}
+
+				dep = VisualTreeHelper.GetParent(dep);
+			}
+
+			// default decoration
+			elementDecoration = element;
+
+			if (element == null)
+			{
+				return false;
+			}
+
+			if (element is ItemsControl ctr)
+			{
+				// item is itself an ItemsControl
+				elementItemsControl = ctr;
+			}
+			else if (VisualTreeHelper.GetParent(elementDecoration) is ContentPresenter wxPresenter)
+			{
+				// Find out whether the element is an item in an ItemsControl
+				elementDecoration = wxPresenter;
+				var wxItemsControl = WPF.FindFirstParent<ItemsControl>(element);
+				if (wxItemsControl != null)
+				{
+					var itemgen = wxItemsControl.ItemContainerGenerator;
+					try
+					{
+						for (var i = 0; i < itemgen.Items.Count; i++)
+						{
+							var wxCont = itemgen.ContainerFromIndex(i) as ContentPresenter;
+							if (wxCont == wxPresenter)
+							{
+								elementItemsControl = wxItemsControl;
+								idx = i;
+								break;
+							}
+						}
+					}
+					catch { }
+				}
+			}
+
+			return true;
+
+		}
+
+		/// <summary>
+		/// Retrieve Drag & Drop element and its hierarchy from a mouse position
+		/// </summary>
+		/// <param name="isSource">True if we are looking for a drag-source, false for drop-destination</param>
+		/// <param name="hit">mouse hit coordinated relative to <see cref="sender"/></param>
+		/// <param name="sender">Mouse relative reference</param>
+		/// <param name="element">element handling the the Drag and drop</param>
+		/// <param name="elementDecoration">container handling the drag and drop</param>
+		/// <param name="elementItemsControl">parent ItemsControl handling the drag and drop</param>
+		/// <param name="idx">position of the element in the <see cref="elementItemsControl"/> (-1 if none) </param>
+		/// <returns></returns>
+		private static bool TryGetDragDropElement(
+		bool isSource,
+		Point hit, FrameworkElement sender,
+		out FrameworkElement element, out FrameworkElement elementDecoration,
+		out ItemsControl elementItemsControl, out int idx)
+		{
+			var wxsource = sender?.InputHitTest(hit) as FrameworkElement;
+
+			// Check Drag & Drop possibility
+			if (wxsource != null || (wxsource = WPF.FindFirstParent<FrameworkElement>(wxsource)) != null)
+			{
+				if ((GetDisable(wxsource) & ClipDragDropOperations.DragDrop) != 0)
+				{
+					element = null;
+					elementDecoration = null;
+					elementItemsControl = null;
+					idx = -1;
+					return false;
+				}
+			}
+
+			// Use more generic TryGetClipboardElement function
+			bool ret = TryGetClipboardElement(
+				isSource, !isSource, wxsource,
+				out element, out elementDecoration, out elementItemsControl, out idx);
+
+
+			// Self-check will try to detect problems in the drag/drop-element and its parents
+#if DEBUG
+			if (element == null)
+			{
+				return false;
+			}
+
+			DependencyObject wxobj = element;
+			while (wxobj != null)
+			{
+				if (wxobj is Control wxctrl)
+				{
+					string msg = null;
+
+					// Check correct use of Background
+					if (GetDestination(wxctrl) != null)
+					{
+						var background = wxctrl.Background;
+
+						// Try to get background of panel if ItemsControl
+						if (background == null && wxctrl is ItemsControl wxitems)
+						{
+							var wxpan = WPF.FindFirstChild<Panel>(wxitems);
+							background = wxpan?.Background;
+
+							if (background == null)
+							{
+								msg = "This Control has " + nameof(ClipDragDrop) +
+									  ".Destination attached-property set," + Environment.NewLine +
+									  "but cannot handle it because its Background is null";
+							}
+						}
+					}
+
+					// Check correct use of ClipDragDrop.Destination
+					if (GetDestination(wxctrl) != null && !wxctrl.AllowDrop)
+					{
+						msg = "This Control has " + nameof(ClipDragDrop) +
+							".Destination attached-property set," + Environment.NewLine +
+							"but is not drop-able because AllowDrop=false";
+					}
+
+					// Check correct use of ClipDragDrop.Enable
+					if (GetDestination(wxctrl) != null || GetSource(wxctrl) != null)
+					{
+						var root = WPF.FindFirstParent<FrameworkElement>(wxctrl, (elm) => GetEnable(elm));
+
+						if (root == null)
+						{
+							msg = "This Control has a " + nameof(ClipDragDrop) +
+								" attached-property set," + Environment.NewLine +
+								"but there is no parent with " + nameof(ClipDragDrop) +
+								".Enable=true to handle it";
+						}
+					}
+
+
+					// Problem found
+					if (msg != null)
+					{
+						var severity = GetSelfCheckSeverity(wxctrl);
+						msg = String.Format(
+								"[" + nameof(ClipDragDrop) + ":SelfCheckSeverity={0}] {1}: {2}",
+								severity, msg, wxctrl.Name);
+
+						switch (severity)
+						{
+							case ClipDragDropSelfCheckSeverity.Warning:
+								System.Diagnostics.Debug.WriteLine(msg);
+								DebugAdorner.Show(wxctrl, msg, Colors.Red);
+								break;
+
+							case ClipDragDropSelfCheckSeverity.Error:
+								throw new Exception(msg);
+						}
+					}
+
+				}
+
+				wxobj = VisualTreeHelper.GetParent(wxobj);
+			}
+#endif
+
+			return ret;
+		}
+
+
+		/// <summary>
+		/// Define and track whether a Clipboard operation can be applied on data (element)
+		/// </summary>
+		/// <param name="operation"></param>
+		/// <param name="data"></param>
+		/// <param name="index"></param>
+		/// <param name="register"></param>
+		/// <param name="wxItemsControl"></param>
+		/// <returns>DragDropEffects</returns>
+		private static DataObjectAction CanClipDragDrop(ClipDragDropOperations operation, object data,
+			int index, bool register, ItemsControl wxItemsControl = null)
+		{
+			bool start = operation.HasFlag(ClipDragDropOperations.From);
+
+			var method =
+				operation.HasFlag(ClipDragDropOperations.Clipboard) ? DataObjectMethod.Clipboard :
+				operation.HasFlag(ClipDragDropOperations.DragDrop) ? DataObjectMethod.DragDrop :
+				DataObjectMethod.None;
+
+#if DEBUG
+			if (method == DataObjectMethod.None) throw new InvalidProgramException();
+#endif
+
+			if (data is FrameworkElement elm)
+			{
+				operation &= ~GetDisable(elm);
+				if (start)
+					data = GetSource(elm) ?? elm.DataContext;
+				else
+					data = GetDestination(elm) ?? elm.DataContext;
+			}
+			else
+			{
+				elm = null;
+			}
+
+			var action = (DataObjectAction)(operation & (ClipDragDropOperations.From - 1));
+
+			DataObjectCompatibleEventArgs docEventArgs;
+
+			if (start)
+			{
+				IDataObject dataObject = null;
+				if (data is IDataObject ido)
+				{
+					dataObject = ido;
+				}
+				else if (data is IDataObjectCompatible sdoc)
+				{
+					dataObject = sdoc.GetDataObject(method);
+				}
+				else
+				{
+					dataObject = new DataObject(data.GetType(), data);
+				}
+
+				// Start Clipboard or Drag & Drop operation
+				docEventArgs = new DataObjectCompatibleEventArgs(
+					method: method,
+					action: DataObjectAction.None,
+					preliminary: !operation.HasFlag(ClipDragDropOperations.Delete),
+					source: data,
+					data: dataObject,
+					sourceParent: wxItemsControl?.DataContext,
+					sourceCollection: wxItemsControl?.ItemsSource,
+					sourceIndex: index
+					);
+
+				if (data is IDataObjectCompatible idoc)
+				{
+					int matches = 0;
+
+
+					for (var i = DataObjectAction.Copy; i <= DataObjectAction.Open; i = (DataObjectAction)((int)i << 1))
+					{
+						if ((action & i) != 0)
+						{
+							matches++;
+							docEventArgs.Handled = false;
+							docEventArgs.Action = i;
+							idoc.DataObjectCanDo(docEventArgs);
+							if (!docEventArgs.Handled) operation &= ~(ClipDragDropOperations)i;
+						}
+					}
+
+					docEventArgs.Action = matches == 1 ? action : DataObjectAction.None;
+				}
+
+				if (register)
+				{
+					switch (method)
+					{
+						case DataObjectMethod.DragDrop:
+							DragData.SourceOperations = operation;
+							DragData.DataObjectCompatibleEventArgs = docEventArgs;
+							break;
+
+						case DataObjectMethod.Clipboard:
+
+							var clipData = new ClipDragDropContext()
+							{
+								SourceOperations = operation,
+								Source = elm,
+								SourceItemsControl = wxItemsControl,
+								DataObjectCompatibleEventArgs = docEventArgs
+							};
+
+							ClipData = clipData;
+
+							break;
+					}
+				}
+			}
+			else if (operation.HasFlag(ClipDragDropOperations.To))
+			{
+				// Handle Cache
+				DataObjectCompatibleEventArgs cache = null;
+				if (CanDragDropCache != null && method == DataObjectMethod.DragDrop && elm != null)
+				{
+					foreach (var cdict in CanDragDropCache)
+					{
+						var cdoc = cdict.Key;
+#if DEBUG
+						// The Source of the drag must always be the same
+						if (cdoc.Source != DataObjectCompatibleEventArgs.Source ||
+							cdoc.Data != DataObjectCompatibleEventArgs.Data ||
+							cdoc.SourceIndex != DataObjectCompatibleEventArgs.SourceIndex ||
+							cdoc.SourceParent != DataObjectCompatibleEventArgs.SourceParent ||
+							cdoc.SourceCollection != DataObjectCompatibleEventArgs.SourceCollection)
+						{
+							throw new Exception("Debug: Unexpected case: DragDrop Source doesn't match in CanDragDropCache");
+						}
+#endif
+
+						// Check Destination match
+						if (cdoc.DestinationIndex == index &&
+							cdoc.Destination == elm &&
+							cdoc.Method == method &&
+							cdoc.Action == action)
+						{
+							cache = cdict.Value; // cache hit
+							break;
+						}
+					}
+				}
+
+
+				if (cache != null)
+				{
+					// Result in cache: don't ask again if DragDrop is possible
+					docEventArgs = cache;
+
+					if (register)
+					{
+						DragData.DataObjectCompatibleEventArgs = docEventArgs;
+					}
+				}
+				else
+				{
+					// Resume Clipboard operation
+
+					ClipDragDropContext context;
+
+					switch (method)
+					{
+						case DataObjectMethod.DragDrop:
+
+							docEventArgs = new DataObjectCompatibleEventArgs(
+							copy: DataObjectCompatibleEventArgs,
+							action: action,
+							destination: data,
+							destinationIndex: index,
+							destinationName: null);
+
+							if (register)
+							{
+								DragData.DataObjectCompatibleEventArgs = docEventArgs;
+							}
+
+							context = DragData;
+
+							break;
+
+
+						case DataObjectMethod.Clipboard:
+
+							// Retrieve ClipDragDropContext from that DataObject (if available)
+							context = ClipData;
+							if (context == null)
+							{
+								var dataObject = Clipboard.GetDataObject();
+
+								docEventArgs = new DataObjectCompatibleEventArgs(
+									method: method,
+									action: action,
+									preliminary: false,
+									source: null,
+									data: dataObject,
+									sourceParent: null,
+									sourceCollection: null,
+									sourceIndex: -1
+								);
+
+								context = new ClipDragDropContext()
+								{
+									SourceOperations = (operation | ClipDragDropOperations.From) & ~ClipDragDropOperations.To,
+									Source = null,
+									SourceItemsControl = null,
+									DataObjectCompatibleEventArgs = docEventArgs
+								};
+							}
+
+							// Set destination data
+							docEventArgs = new DataObjectCompatibleEventArgs(
+								copy: context.DataObjectCompatibleEventArgs,
+								action: action,
+								destination: data,
+								destinationIndex: index,
+								destinationName: null);
+
+
+							if (register)
+							{
+								context.DataObjectCompatibleEventArgs = docEventArgs;
+								ClipData = context;
+							}
+
+							break;
+
+						default:
+							throw new InvalidOperationException();
+					}
+
+
+					// Operation compatibility between source and destination
+					operation &= context.SourceOperations | ClipDragDropOperations.To;
+
+					// Catch Drag & Drop from/to itself 
+					if (context.Source == elm)
+					{
+						docEventArgs.Handled = false;
+						docEventArgs.Action = DataObjectAction.None;
+					}
+					else if (
+						// InterControl check
+						context.SourceItemsControl != wxItemsControl && (
+
+						// InterControl Source check
+						context.SourceItemsControl != null && GetDisable(context.SourceItemsControl).HasFlag(ClipDragDropOperations.InterControl) ||
+
+						// InterControl Destination check
+						wxItemsControl != null && GetDisable(wxItemsControl).HasFlag(ClipDragDropOperations.InterControl)
+
+						) ||
+
+						// Inter-application Source check
+						context.Source != null && elm == null && GetDisable(context.Source).HasFlag(ClipDragDropOperations.InterApplication) ||
+
+						// Inter-application Destination check
+						context.Source == null && elm != null && GetDisable(elm).HasFlag(ClipDragDropOperations.InterApplication)
+
+						)
+					{
+						docEventArgs.Handled = false;
+						docEventArgs.Action = DataObjectAction.None;
+					}
+					else
+					{
+						// Create cache key before any change in docEventArgs
+						if (method == DataObjectMethod.DragDrop && elm != null)
+						{
+							cache = new DataObjectCompatibleEventArgs(
+								copy: docEventArgs,
+								action: docEventArgs.Action,
+								destination: elm, // overrule destination
+								destinationIndex: docEventArgs.DestinationIndex,
+								destinationName: docEventArgs.DestinationName
+								);
+						}
+
+						// action Compatibility with Destination
+						if (data is IDataObjectCompatible ddoc)
+						{
+							docEventArgs.Handled = false;
+							ddoc.DataObjectCanDo(docEventArgs);
+							if (!docEventArgs.Handled) docEventArgs.Action = DataObjectAction.None;
+						}
+						else
+						{
+							// Use default decision
+							docEventArgs.Handled = false;
+
+							if (context.SourceItemsControl != null && wxItemsControl != null)
+							{
+								if (context.SourceItemsControl == wxItemsControl ||
+									context.SourceItemsControl != null && wxItemsControl != null &&
+									context.SourceItemsControl.ItemsSource != null && wxItemsControl.ItemsSource != null &&
+									context.SourceItemsControl.ItemsSource.GetType() == wxItemsControl.ItemsSource.GetType()
+									  )
+								{
+									// Can the use default ItemsControl DragDrop
+									docEventArgs.Handled = true;
+								}
+							}
+						}
+
+						// Action compatibility with DataObjectCompatible Source
+						if (docEventArgs.Handled && context.Source is IDataObjectCompatible sdoc)
+						{
+							docEventArgs.Direction = DataObjectDirection.From;
+							docEventArgs.Handled = false;
+							sdoc.DataObjectCanDo(docEventArgs);
+							if (!docEventArgs.Handled) docEventArgs.Action = DataObjectAction.None;
+						}
+
+						// Add to cache
+						if (method == DataObjectMethod.DragDrop && elm != null)
+						{
+							if (CanDragDropCache == null)
+							{
+								CanDragDropCache = new Dictionary<DataObjectCompatibleEventArgs, DataObjectCompatibleEventArgs>(20);
+							}
+							CanDragDropCache.Add(cache, docEventArgs);
+						}
+					}
+				}
+
+				// Retrieve active action from destination docEventArgs
+				action = docEventArgs.Action;
+			}
+
+
+			LimeMsg.Debug("ClipDragDrop CanDragDrop: {0} --> {1} @ {2} (register: {3})", data, action, index, register);
+
+			// action Compatibility with Source/Destination operations
+			action &= (DataObjectAction)operation;
+
+			if (!operation.HasFlag(method == DataObjectMethod.Clipboard ? ClipDragDropOperations.Clipboard : ClipDragDropOperations.DragDrop) ||
+				!operation.HasFlag(start ? ClipDragDropOperations.From : ClipDragDropOperations.To))
+			{
+				action = DataObjectAction.None; // Incompatible
+			}
+
+			if (register)
+			{
+				switch (method)
+				{
+					case DataObjectMethod.DragDrop:
+
+						var effects = action;
+
+						if ((action & (DataObjectAction.Menu - 1)) != 0)
+							effects &= DataObjectAction.Menu - 1; // Mask effects
+						else if (action != DataObjectAction.None)
+							effects = DataObjectAction.Copy; // default effect
+
+						DragContext.DragDropEffects = (DragDropEffects)effects;
+						break;
+
+
+					case DataObjectMethod.Clipboard:
+						break;
+
+				}
+
+			}
+
+			return action;
 		}
 
 
@@ -2347,6 +3081,6 @@ namespace WPFhelper
 		// ----------------------------------------------------------------------------------------------
 	}
 
-#endregion
+	#endregion
 
 }

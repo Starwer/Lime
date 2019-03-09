@@ -86,20 +86,22 @@ namespace LimeLauncher
         /// </summary>
         public void Refresh()
         {
-            // Initialize 
-            //AppTree = LimeItem.Load(ConfigLocal.ApplicationsPath);
-            //AppTree.Attribute.ImgSrcBigSize = 32;
-            //AppTree.Attribute.ImgSrcSmallSize = 32;
-            //AppTree.Refresh();
-            //wxAppList.DataContext = AppTree;
+			// Initialize 
+			//AppTree = LimeItem.Load(ConfigLocal.ApplicationsPath);
+			//AppTree.Attribute.ImgSrcBigSize = 32;
+			//AppTree.Attribute.ImgSrcSmallSize = 32;
+			//AppTree.Refresh();
+			//wxAppList.DataContext = AppTree;
 
 
-            AppList = new List<LimeApp>();
-            AppList.Add(new LimeApp("bla"));
-            AppList.Add(new LimeApp("blu"));
-            AppList.Add(new LimeApp("coin meuh"));
+			AppList = new List<LimeApp>
+			{
+				new LimeApp("one"),
+				new LimeApp("two"),
+				new LimeApp("three")
+			};
 
-            wxAppList.DataContext = AppList;
+			wxAppList.DataContext = AppList;
 
         }
 

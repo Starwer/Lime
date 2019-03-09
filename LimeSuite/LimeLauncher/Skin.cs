@@ -51,14 +51,13 @@ namespace LimeLauncher
         {
             if (targetType == null) throw new ArgumentNullException("targetType");
 
-            SkinParam ret = value as SkinParam;
 
-            if (ret != null)
-            {
-                base.ConvertTo(context, culture, ret.Content, targetType);
-            }
+			if (value is SkinParam ret)
+			{
+				base.ConvertTo(context, culture, ret.Content, targetType);
+			}
 
-            return base.ConvertTo(context, culture, value, targetType);
+			return base.ConvertTo(context, culture, value, targetType);
         }
     }
 
@@ -265,19 +264,14 @@ namespace LimeLauncher
             // Assign the key of the resource-dictonary to the SkinParam Ident.
             foreach (var key in resources.Keys)
             {
-                var skey = key as string;
-                if (skey != null)
-                {
-                    var res = resources[key] as SkinParam;
-                    if (res != null)
-                    {
-                        res.Ident = skey;
+				if (key is string skey && resources[key] is SkinParam res)
+				{
+					res.Ident = skey;
 
-                        // Exclude Empty elements
-                        if (res.Content == null && res.Name == null) res.Visible = false;
-                    }
-                }
-            }
+					// Exclude Empty elements
+					if (res.Content == null && res.Name == null) res.Visible = false;
+				}
+			}
 
             // Retrieve special parameters
             IconBigSize = Array.Find(parList, x => x.Ident == "ParamIconBigSize");

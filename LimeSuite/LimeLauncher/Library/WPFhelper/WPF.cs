@@ -40,9 +40,18 @@ namespace WPFhelper
 		public static T FindFirstChild<T>(DependencyObject element, Func<T, bool> condition = null) where T : DependencyObject
 		{
 			if (element == null) return null;
-			int childrenCount = VisualTreeHelper.GetChildrenCount(element);
-			var children = new DependencyObject[childrenCount];
 
+			int childrenCount;
+			try
+			{
+				childrenCount = VisualTreeHelper.GetChildrenCount(element);
+			}
+			catch
+			{
+				return null;
+			}
+
+			var children = new DependencyObject[childrenCount];
 			for (int i = 0; i < childrenCount; i++)
 			{
 				var child = VisualTreeHelper.GetChild(element, i) as DependencyObject;
@@ -80,7 +89,19 @@ namespace WPFhelper
 		public static T FindFirstParent<T>(DependencyObject child, Func<T, bool> condition = null) where T : DependencyObject
 		{
 			//get parent item
-			DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+			DependencyObject parentObject;
+			try
+			{
+				parentObject = VisualTreeHelper.GetParent(child);
+			}
+			catch
+			{
+				// Fall back to using logical tree
+				if (child is FrameworkElement elm)
+					parentObject = elm.Parent;
+				else
+					parentObject = null;
+			}
 			if (parentObject == null) return null;
 
 			//check if the parent matches the type we're looking for, and the condition (if applicable)

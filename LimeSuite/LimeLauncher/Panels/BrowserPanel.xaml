@@ -30,6 +30,7 @@
         <l:TranslateConverter x:Key="Translate" />
         <BooleanToVisibilityConverter x:Key="BoolToVisible" />
 
+        
         <!--*************************************************************************************-->
         <!-- LimeItem Icon :  Button representing a LimetItem child (thumbnail/Icon) -->
 
@@ -39,7 +40,6 @@
                           w:ClipDragDrop.Source="{Binding}"
                           w:ClipDragDrop.Destination="{Binding}"
                           ToolTip="{Binding Tooltip}" 
-                          ContextMenuOpening="LimeItem_ContextMenu" 
                           MouseEnter="Button_MouseEnter" 
                           MouseLeave="Button_MouseLeave" >
                 <Grid x:Name="wxButtonGrid" 
@@ -166,39 +166,46 @@
                         Style="{DynamicResource IconPanelStyle}" 
                         Visibility="{Binding IsPanelVisible, Mode=OneWay, Converter={StaticResource BoolToVisible}}"
                         Loaded="wxPanel_Loaded" 
-                        ContextMenuOpening="LimeItem_ContextMenu" 
                         PreviewKeyDown="wxPanel_PreviewKeyDown" >
-                <Grid x:Name="wxHeader">
+
+                <Grid x:Name="wxHeader"
+                      w:ClipDragDrop.Disable="All"
+                      w:ClipDragDrop.Destination="{Binding}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Image x:Name="wxHeaderIcon" Grid.Column="0" 
                            Source="{Binding ImgSrc, Mode=OneWay}" 
-                           SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                           SnapsToDevicePixels="True" 
+                           UseLayoutRounding="True"/>
                     <TextBlock x:Name="wxHeaderTitle" Grid.Column="1"  
                                    Text="{Binding Name}"/>
                 </Grid>
+                
                 <ItemsControl x:Name="wxLimeItems" Focusable="False" 
                               ItemsSource="{Binding Children}" 
                               ItemTemplate="{DynamicResource wxItemDataTemplate}" 
-                              w:ClipDragDrop.Destination="{Binding}"
                               w:ClipDragDrop.DragDefaultOperation="Move"
+                              w:ClipDragDrop.Disable="Clipboard"
+                              w:ClipDragDrop.Destination="{Binding}"
                               Grid.IsSharedSizeScope="true">
                 </ItemsControl>
+
             </StackPanel>
 
             <DataTemplate.Triggers>
-                <!-- Allow Drag & Drop if not the Task-Switcher panel -->
+                <!-- Allow Clipboard and Drag & Drop if not the Task-Switcher panel -->
                 <DataTrigger Binding="{Binding Task}" Value="False">
+                    <Setter TargetName="wxHeader" Property="w:ClipDragDrop.Disable" Value="None" />
                     <Setter TargetName="wxHeader" Property="w:ClipDragDrop.Source" Value="{Binding}" />
-                    <Setter TargetName="wxHeader" Property="w:ClipDragDrop.Destination" Value="{Binding}" />
+                    <Setter TargetName="wxLimeItems" Property="w:ClipDragDrop.Disable" Value="None" />
                 </DataTrigger>
             </DataTemplate.Triggers>
             
         </DataTemplate>
 
-        <!-- **************************************************************************************************************** -->
+        <!--*************************************************************************************-->
 
         <!-- No Style shall be used, so that this control is kept skinable -->
 
@@ -217,7 +224,8 @@
     <!--*************************************************************************************-->
 
 
-    <Border>
+    <Border w:ClipDragDrop.Destination="{Binding}"
+            ContextMenuOpening="LimeItem_ContextMenuOpening" >
         <Grid x:Name="wxToolGrid"  
               Style="{DynamicResource BrowserToolGridStyle}">
             <!-- In code behind wxScroll_LayoutUpdated: column and rows are adjusted -->
@@ -236,13 +244,15 @@
             <ScrollViewer x:Name="wxScroll" Grid.Column="0" Grid.Row="0"
                           Grid.ColumnSpan="4" Grid.RowSpan="3"
                           Style="{DynamicResource IconScrollViewerStyle}" 
-                          Focusable="False" IsTabStop="False"
+                          Focusable="False" 
+                          IsTabStop="False"
                           ScrollChanged="UpdatePanels" 
                           LayoutUpdated="wxScroll_LayoutUpdated">
                 <ScrollViewer.CacheMode>
                     <BitmapCache EnableClearType="False"
                                  SnapsToDevicePixels="False" />
                 </ScrollViewer.CacheMode>
+                
                 <ItemsControl x:Name="wxRoot" 
                               ItemTemplate="{StaticResource LimeItemPanel}" 
                               ItemsSource="{Binding}" 
@@ -252,6 +262,7 @@
                               Button.GotFocus="Button_GotFocus" 
                               Button.LostFocus="Button_LostFocus">
                 </ItemsControl>
+                
             </ScrollViewer>
 
             <Button x:Name="wxBack" Grid.Column="0" Grid.Row="1"
@@ -261,6 +272,7 @@
                     Command="{Binding Content}" 
                     ToolTip="{Binding Desc}"
                     IsHitTestVisible="{Binding IsEnabled, RelativeSource={RelativeSource Self}}"
+                    w:ClipDragDrop.Disable="ClipboardMenu"
                     KeyDown="wxBackNext_KeyDown" 
                     MouseEnter="Button_MouseEnter" 
                     MouseLeave="Button_MouseLeave" 
@@ -271,8 +283,9 @@
             <c:LimeToolBar x:Name="wxToolBar" Grid.Column="2" Grid.Row="0"
                            Style="{DynamicResource BrowserToolBarStyle}"
                            Orientation="Vertical"
+                           w:ClipDragDrop.Disable="ClipboardMenu"
                            DataContext="{Binding BrowserCommands, Source={x:Static l:Global.ConfigTree}}"
-                            PreviewMouseWheel="FixScroll_PreviewMouseWheel"
+                           PreviewMouseWheel="FixScroll_PreviewMouseWheel"
                            PreviewKeyDown="wxToolBar_PreviewKeyDown"/>
 
             <Button x:Name="wxNext" Grid.Column="2" Grid.Row="1"
@@ -281,6 +294,7 @@
                     Command="{Binding Content}"
                     ToolTip="{Binding Desc}"
                     IsHitTestVisible="{Binding IsEnabled, RelativeSource={RelativeSource Self}}"
+                    w:ClipDragDrop.Disable="ClipboardMenu"
                     KeyDown="wxBackNext_KeyDown" 
                     MouseEnter="Button_MouseEnter" 
                     MouseLeave="Button_MouseLeave" 

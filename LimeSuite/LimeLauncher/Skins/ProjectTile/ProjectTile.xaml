@@ -1435,6 +1435,10 @@
         </Style.Resources>
     </Style>
 
+    <Style TargetType="{x:Type c:LimeCheckBox}">
+        <Setter Property="Margin" Value="{w:ThicknessScaled '1,4,0,0'}"/>
+    </Style>
+
     <Style TargetType="{x:Type c:LimeIcon}">
         <Setter Property="Margin" Value="{w:ThicknessScaled '2'}"/>
         <Setter Property="Foreground" Value="{StaticResource IconBrush}"/>

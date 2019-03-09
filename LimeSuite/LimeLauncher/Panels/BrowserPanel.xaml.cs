@@ -10,11 +10,9 @@ using Lime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 using WPFhelper;
@@ -122,7 +120,7 @@ namespace LimeLauncher
 
         // Focus handling
         private LimeItem Refocus;
-        private ButtonBase wxButtonFocus;
+        private ButtonBase ItemFocus;
 
         // Timers
         private ImplicitFind implicitFind;
@@ -169,7 +167,7 @@ namespace LimeLauncher
             PanItems = new ObservableCollection<LimeItem>() { TaskSwitcher, Global.Root };
             Refocus = null;
             Pan = new List<PanelParameters>();
-            wxButtonFocus = null;
+            ItemFocus = null;
 
             // Panel initialization
             InitializeComponent();
@@ -194,9 +192,10 @@ namespace LimeLauncher
             // Start GUI
             node.IsPanelVisible = true;
             wxRoot.DataContext = PanItems;
+			DataContext = node;
 
-            // Enable Directory Watch (UIElement is used for Watch thread-Safety)
-            node.Tree.UIElement = this;
+			// Enable Directory Watch (UIElement is used for Watch thread-Safety)
+			node.Tree.UIElement = this;
             node.Tree.ChildrenChanged += OnChangeInPanelContent;
             node.Watch();
 
@@ -310,9 +309,10 @@ namespace LimeLauncher
                     // Open panels
                     TaskSwitcher.IsPanelVisible = tvisible;
                     PanItems[_PanIdx].IsPanelVisible = true;
+					DataContext = PanItems[_PanIdx];
 
-                    // Try to restore the scroll position
-                    wxScroll.ScrollToVerticalOffset(Pan[_PanIdx].scroll);
+					// Try to restore the scroll position
+					wxScroll.ScrollToVerticalOffset(Pan[_PanIdx].scroll);
 
                     // Force Prev/Next Button to activate
                     CommandManager.InvalidateRequerySuggested();
@@ -332,7 +332,7 @@ namespace LimeLauncher
         {
             get
             {
-                return PanIdx < Pan.Count && wxButtonFocus != null ? Global.Local.FocusItem : null;
+                return PanIdx < Pan.Count && ItemFocus != null ? Global.Local.FocusItem : null;
             }
         }
 
@@ -368,7 +368,11 @@ namespace LimeLauncher
                 {
                     foreach (var node in pan.Children)
                     {
-                        node.IsTaskThumbVisible = false;
+						try
+						{
+							node.IsTaskThumbVisible = false;
+						}
+						catch { }
                     }
                 }
             }
@@ -958,7 +962,7 @@ namespace LimeLauncher
 						AutoSelectionTimer.Stop();
 
 						// Updated Mouse-Overed states
-						if (Global.Local.InfoEditMode && wxButtonFocus == null)
+						if (Global.Local.InfoEditMode && ItemFocus == null)
 						{
 							LimeMsg.Debug("Button_MouseEnter: Edit");
 							// When no LimeItem is focused yet, avoid to steal focus, but decorate the item anyway
@@ -1280,7 +1284,7 @@ namespace LimeLauncher
             }
 
             // Change current focus information
-            wxButtonFocus = wxobj;
+            ItemFocus = wxobj;
 
             if (item != null)
             {
@@ -1362,7 +1366,7 @@ namespace LimeLauncher
                 VisualStateManager.GoToState(wxobj, wxToggle != null && wxToggle.IsChecked == true ? "Checked" : "Normal", true);
             }
 
-            wxButtonFocus = null;
+            ItemFocus = null;
         }
 
 
@@ -1376,7 +1380,7 @@ namespace LimeLauncher
 
 			// Retrieve item to open (from GUI event, or programmatically)
 			if (e != null) e.Handled = true;
-			if (!(e?.OriginalSource is ToggleButton wxobj)) wxobj = wxButtonFocus as ToggleButton;
+			if (!(e?.OriginalSource is ToggleButton wxobj)) wxobj = ItemFocus as ToggleButton;
 			if (wxobj == null) return;
 
             wxobj.Focus();
@@ -1455,50 +1459,70 @@ namespace LimeLauncher
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void LimeItem_ContextMenu(object sender = null, ContextMenuEventArgs e = null)
+        public void LimeItem_ContextMenuOpening(object sender = null, ContextMenuEventArgs e = null)
         {
 
-            LimeMsg.Debug("LimeItem_ContextMenu");
+            LimeMsg.Debug("LimeItem_ContextMenuOpening");
 
-			// Retrieve item to open (from GUI event, or programmatically)
+			e.Handled = false;
+			if (!Global.User.SystemMenuEnable) return;
+
+			var wxsource = e.OriginalSource as UIElement;
+
+			LimeItem item = null;
+			FrameworkElement wxobj;
+
+			if (wxsource == null)
+			{
+				wxobj = ItemFocus;
+				item = ClipDragDrop.GetSource(wxobj) as LimeItem;
+			}
+			else if (wxsource is FrameworkElement elm && ClipDragDrop.GetSource(elm) is LimeItem it)
+			{
+				wxobj = elm;
+				item = it;
+			}
+			else
+			{ 
+				wxobj = WPF.FindFirstParent<FrameworkElement>(wxsource,
+					(el) => ClipDragDrop.GetSource(el) is LimeItem);
+				if (wxobj != null)
+				{
+					item = ClipDragDrop.GetSource(wxobj) as LimeItem;
+				}
+			}
+
+			if (item == null) return;
 			if (e != null) e.Handled = true;
-			if (!(sender is FrameworkElement wxobj)) wxobj = wxButtonFocus;
-			if (wxobj == null) return;
-            if (wxobj is ToggleButton) wxobj.Focus();
-            LimeItem item = (LimeItem)wxobj.DataContext;
-            if (item == null) return;
 
 			// Select item
 			if (wxobj is ToggleButton wxbut)
 			{
-				var prev = WPF.FindFirstChild<ToggleButton>(wxRoot, (wx) => wx.DataContext == Global.Local.SelectedItem);
-				if (prev != null)
-				{
-					prev.IsChecked = false;
-				}
-
-				Global.Local.SelectedItem = item;
-				wxbut.IsChecked = true;
+				Keyboard.Focus(wxbut);
 			}
 
-			// Execute
-			Point wpos;
-            if (Global.Local.CtrlMode == CtrlMode.Mouse)
+			// Set position on screen where the menu should open
+			Point spos;
+            if (e != null && e.CursorLeft != -1 && e.CursorTop != -1)
             {
-                wpos = Mouse.GetPosition(Application.Current.MainWindow);
-            }
+                spos = wxsource.PointToScreen(new Point(e.CursorLeft, e.CursorTop));
+			}
             else
             {
-                wpos = wxobj.TransformToAncestor(Application.Current.MainWindow).Transform(new Point(wxobj.ActualWidth * 0.75, wxobj.ActualHeight * 0.75));
+                spos = wxobj.PointToScreen(new Point(wxobj.ActualWidth * 0.6, wxobj.ActualHeight * 0.6));
             }
 
-            Application.Current.MainWindow.Topmost = false;
-            item.ShellMenu(WPF.Windows2DrawingPoint(wpos));
+			// Convert to pixel position
+			var spoint = new System.Drawing.Point((int)spos.X, (int)spos.Y);
 
-        }
+			// Show the menu
+			Application.Current.MainWindow.Topmost = false;
+            item.ShellMenu(spoint);
+
+		}
 
 
-        #endregion
+		#endregion
 
 
 	}

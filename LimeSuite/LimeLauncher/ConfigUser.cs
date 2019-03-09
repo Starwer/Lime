@@ -451,10 +451,29 @@ namespace LimeLauncher
         private bool _DoubleClickFullScreen = true;
 
 
-        /// <summary>
-        /// Enable the animations
-        /// </summary>
-        [XmlElement]
+		/// <summary>
+		/// Enable the use of System menu.
+		/// </summary>
+		[XmlElement]
+		public bool SystemMenuEnable
+		{
+			get { return _SystemMenuEnable; }
+			set
+			{
+				if (value != _SystemMenuEnable)
+				{
+					_SystemMenuEnable = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+		private bool _SystemMenuEnable = true;
+
+
+		/// <summary>
+		/// Enable the animations
+		/// </summary>
+		[XmlElement]
         public bool EnableAnimations
         {
             get { return _EnableAnimations; }
