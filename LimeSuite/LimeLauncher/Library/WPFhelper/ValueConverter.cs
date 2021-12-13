@@ -305,7 +305,7 @@ namespace WPFhelper
 
 	// ----------------------------------------------------------------------------------------------
 	/// <summary>
-	/// Scale a value by multiplying it by the parameter (default: TypeScaled.Scale)
+	/// Multiply a color by a parameter
 	/// </summary>
 	public class ColorConverter : IValueConverter
     {
@@ -339,7 +339,7 @@ namespace WPFhelper
                 catch (Exception)
                 {
                     //return TypeDescriptor.GetConverter(typeof(double)).ConvertFrom(value);
-                    return new ValidationResult(false, "ScaleConverter: Input Format error");
+                    return new ValidationResult(false, "ColorConverter: Input Format error");
                 }
             }
 

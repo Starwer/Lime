@@ -49,7 +49,8 @@ namespace LimeLauncher.Controls
 				// do nothing
 			}
 			else if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == "Value" || e.PropertyName == "Percentage" 
-			      || e.PropertyName == "Maximum" || e.PropertyName == "Minimum" || e.PropertyName == "ReadOnly")
+			      || e.PropertyName == "Maximum" || e.PropertyName == "Minimum" || e.PropertyName == "ReadOnly"
+                   || e.PropertyName == "AllowEmpty")
             {
                 var min = prop.Minimum;
                 var max = prop.Maximum;
@@ -77,7 +78,7 @@ namespace LimeLauncher.Controls
 
                 if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == "Value")
                 {
-                    if ( !prop.Percentage && (prop.Type == typeof(float) ||prop.Type == typeof(double)))
+                    if ( !prop.Percentage && (prop.Type == typeof(float) || prop.Type == typeof(double)))
                     {
                         var diff = max - min;
                         wxSlider.SmallChange = 
@@ -93,7 +94,11 @@ namespace LimeLauncher.Controls
 
                     wxSlider.LargeChange = wxSlider.SmallChange * 10;
 
-					if (double.TryParse(prop.Value, out double val))
+                    if (prop.AllowEmpty && prop.Value == "")
+                    {
+                        wxTextBox.Text = "";
+                    } 
+                    else if (double.TryParse(prop.Value, out double val))
 					{
 						if (prop.Percentage) val *= 100;
 						if (wxSlider.Visibility == Visibility.Visible)
@@ -134,8 +139,7 @@ namespace LimeLauncher.Controls
 
             LimeMsg.Debug("LimeNumBox ValidateValue: {0}", txt);
 
-            double val;
-            if (double.TryParse(txt, out val))
+            if (double.TryParse(txt, out double val) || txt == "" && wxMain.DataContext is LimeProperty lp && lp.AllowEmpty)
             {
                 // Trigger Validation
                 if (wxMain.DataContext is LimeProperty prop)
@@ -173,8 +177,15 @@ namespace LimeLauncher.Controls
             // Handle percents
             if (txt.EndsWith("%")) txt = txt.Substring(0, txt.Length - 1);
 
-            double val;
-            if (double.TryParse(txt, out val))
+            if (txt == "" && wxMain.DataContext is LimeProperty prop && prop.AllowEmpty)
+            {
+                // Trigger Validation
+                if (ValidateOnChange)
+                {
+                    ValidateValue();
+                }
+            }
+            else if (double.TryParse(txt, out double val))
             {
                 // Slider
                 if (wxSlider.Visibility == Visibility.Visible)
@@ -197,8 +208,9 @@ namespace LimeLauncher.Controls
             string txt = wxTextBox.Text.Trim();
             if (txt.EndsWith("%")) txt = txt.Substring(0, txt.Length - 1);
 
-            double val;
-            if (double.TryParse(txt, out val))
+            var prop = wxMain.DataContext as LimeProperty;
+
+            if (double.TryParse(txt, out double val) || prop != null && prop.AllowEmpty)
             {
                 val += e.OriginalSource == wxMinus ? -wxSlider.SmallChange : wxSlider.SmallChange;
 
@@ -209,7 +221,7 @@ namespace LimeLauncher.Controls
                     if (val >= wxSlider.Maximum) val = wxSlider.Maximum;
                 }
 
-                if (wxMain.DataContext is LimeProperty prop)
+                if (prop != null)
                 {
                     if (prop.CanConvertFrom(val.ToString()))
                     {
@@ -276,18 +288,27 @@ namespace LimeLauncher.Controls
 
 			if (wxMain.DataContext is LimeProperty prop)
             {
-                double val;
-                if (!double.TryParse(txt, out val))
+                if (txt != "" || !prop.AllowEmpty)
                 {
-                    // Recover from invalidation
-                    if (double.TryParse(prop.Value, out val))
+                    if (!double.TryParse(txt, out double val))
                     {
-                        if (prop.Percentage) val *= 100;
+                        // Recover from invalidation
+                        if (double.TryParse(prop.Value, out val))
+                        {
+                            if (prop.Percentage) val *= 100;
+                        }
+                    }
+
+                    // Reformat
+                    if (val == 0.0 && prop.AllowEmpty)
+                    {
+                        wxTextBox.Text = "";
+                    }
+                    else
+                    { 
+                        wxTextBox.Text = val.ToString() + (prop.Percentage ? "%" : "");
                     }
                 }
-
-                // Reformat
-                wxTextBox.Text = val.ToString() + (prop.Percentage ? "%" : "");
 
                 if (!ValidateOnChange)
                 {
@@ -307,7 +328,7 @@ namespace LimeLauncher.Controls
         /// <param name="e"></param>
         private void TextBoxUpdateSourceOnKey_KeyEvent(object sender, KeyEventArgs e)
         {
-            var textBox = sender as TextBox;
+            TextBox textBox = sender as TextBox;
             if (textBox == null) return;
             _KeyPressing = false;
 

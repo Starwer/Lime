@@ -34,7 +34,7 @@
         <!--*************************************************************************************-->
         <!-- LimeItem Icon :  Button representing a LimetItem child (thumbnail/Icon) -->
 
-        <DataTemplate x:Key="wxItemDataTemplate">
+        <DataTemplate x:Key="ItemDataTemplate">
             <ToggleButton x:Name="wxItem" 
                           Style="{DynamicResource LimeItemButtonStyle}" 
                           w:ClipDragDrop.Source="{Binding}"
@@ -182,14 +182,16 @@
                     <TextBlock x:Name="wxHeaderTitle" Grid.Column="1"  
                                    Text="{Binding Name}"/>
                 </Grid>
-                
-                <ItemsControl x:Name="wxLimeItems" Focusable="False" 
-                              ItemsSource="{Binding Children}" 
-                              ItemTemplate="{DynamicResource wxItemDataTemplate}" 
-                              w:ClipDragDrop.DragDefaultOperation="Move"
-                              w:ClipDragDrop.Disable="Clipboard"
-                              w:ClipDragDrop.Destination="{Binding}"
-                              Grid.IsSharedSizeScope="true">
+
+                <ItemsControl x:Name="wxLimeItems" 
+                          Focusable="False" 
+                          ItemsSource="{Binding Children}" 
+                          ItemTemplate="{DynamicResource ItemDataTemplate}"
+                          w:DataVirtualization.Target="{Binding}"
+                          w:ClipDragDrop.DragDefaultOperation="Move"
+                          w:ClipDragDrop.Disable="Clipboard"
+                          w:ClipDragDrop.Destination="{Binding}"
+                          Grid.IsSharedSizeScope="true">
                 </ItemsControl>
 
             </StackPanel>
@@ -252,15 +254,15 @@
                     <BitmapCache EnableClearType="False"
                                  SnapsToDevicePixels="False" />
                 </ScrollViewer.CacheMode>
-                
+
                 <ItemsControl x:Name="wxRoot" 
-                              ItemTemplate="{StaticResource LimeItemPanel}" 
-                              ItemsSource="{Binding}" 
-                              Focusable="False"
-                              KeyDown="wxRoot_KeyDown" 
-                              Button.Click="LimeItem_Click" 
-                              Button.GotFocus="Button_GotFocus" 
-                              Button.LostFocus="Button_LostFocus">
+                          ItemTemplate="{StaticResource LimeItemPanel}" 
+                          ItemsSource="{Binding}" 
+                          Focusable="False"
+                          KeyDown="wxRoot_KeyDown" 
+                          Button.Click="LimeItem_Click" 
+                          Button.GotFocus="Button_GotFocus" 
+                          Button.LostFocus="Button_LostFocus">
                 </ItemsControl>
                 
             </ScrollViewer>

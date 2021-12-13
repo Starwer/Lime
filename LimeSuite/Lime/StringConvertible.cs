@@ -229,7 +229,7 @@ namespace Lime
         /// <summary>
         /// Source Type
         /// </summary>
-        private Type _Type;
+        private readonly Type _Type;
 
 
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

@@ -135,8 +135,8 @@ namespace Lime
     /// An item can represent anything that can be manipulated by Lime, like file, folder, task, configuration items, shortcut...
     /// Items are organized as a tree, so these can have a parent node and child nodes.
     /// </summary>
-    public class LimeItem : INotifyPropertyChangedWeak, IDataObjectCompatible
-    {
+    public class LimeItem : INotifyPropertyChangedWeak, IDataObjectCompatible, IItemsRangeInfo
+	{
 
 		// --------------------------------------------------------------------------------------------------
 		#region INotifyPropertyChangedWeak implementation
@@ -927,7 +927,7 @@ namespace Lime
 		/// <summary>
 		/// Request the object to take action
 		/// </summary>
-		/// <param name="e">DataObject event reauest</param>
+		/// <param name="e">DataObject event request</param>
 		public void DataObjectDo(DataObjectCompatibleEventArgs e)
 		{
 			LimeMsg.Debug("LimeItem DataObjectDo: {0} : {1} {2} @ {3}", Name, e.Action, e.Direction, e.Direction == DataObjectDirection.From ? e.SourceIndex : e.DestinationIndex);
@@ -997,6 +997,75 @@ namespace Lime
 
 		#endregion
 
+
+		// --------------------------------------------------------------------------------------------------
+		#region IItemsRangeInfo implementation
+
+		/// <summary>
+		/// Releases system resources that are exposed by a Windows Runtime object.
+		/// </summary>
+		public void Close()
+		{
+			Cancel();
+		}
+
+		/// <summary>
+		/// Updates the ranges of items in the data source that are visible in the list control and that are 
+		/// tracked in the instance of the object that implements the <see cref="IItemsRangeInfo"/> interface.
+		/// </summary>
+		/// <param name="visibleRange">
+		/// The updated range of items in the data source that are visible in the 
+		/// list control.</param>
+		/// <param name="trackedItems">The updated collection of ranges of items in the data source that are 
+		/// tracked in the instance of the object that implements the <see cref="IItemsRangeInfo"/> interface.</param>
+		public void RangesChanged(ItemIndexRange visibleRange, IReadOnlyList<ItemIndexRange> trackedItems)
+		{
+			if (Children == null) return;
+			Cancel();
+
+			foreach (var range in trackedItems)
+			{
+				var length = (int)(range.Length + 1) / 2;
+				var median = range.FirstIndex + (int)range.Length / 2;
+
+				// Start loading from the center of the visible area
+				for (int i = 0; i < length; i++)
+				{
+					int idx = median - i;
+					Children[idx]?.LoadAsync();
+
+					idx = median + i + 1;
+					if (idx <= range.LastIndex) Children[idx]?.LoadAsync();
+				}
+
+				// Continue off boundary
+				if (trackedItems.Count == 1)
+				{
+					var count = (Children.Count + 1) / 2;
+
+					for (int i = length; i < count; i++)
+					{
+						int idx = median - i;
+						if (idx >= 0) Children[idx]?.LoadAsync();
+
+						idx = median + i + 1;
+						if (idx < Children.Count) Children[idx]?.LoadAsync();
+					}
+
+				}
+			}
+
+		}
+
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// </summary>
+		public void Dispose()
+		{
+
+		}
+
+		#endregion
 
 
 		// --------------------------------------------------------------------------------------------------
@@ -1093,7 +1162,7 @@ namespace Lime
                 // Close this Queue
                 LimeMsg.Debug("LimeItem Cancel: {0}", Tree.Queue.Count);
 
-                // One these will eventually kill the Consumer in LoadAsync
+                // One of those will eventually kill the Consumer in LoadAsync
                 queue.Add(null);
                 Tree.Queue = null;
             }
@@ -1103,7 +1172,7 @@ namespace Lime
         /// <summary>
         /// Schedule the loading asynchronously of the Items icons.
         /// The Order in which it was requested is respected, using a Thread-Safe Queue.
-        /// A LimeItem Tree share the same Queue.
+        /// A LimeItem Tree shares the same Queue.
         /// This Queue can be cancelled using <see cref="Cancel"/>.
         /// </summary>
         public void LoadAsync()
@@ -2003,7 +2072,10 @@ namespace Lime
             dirs.AddRange(files);
             Children = new ObservableCollection<LimeItem>(dirs);
 
-            LimeMsg.Debug("LimeItem RefreshDirectory: Done.");
+			Watch();
+
+			LimeMsg.Debug("LimeItem RefreshDirectory: Done.");
+
             return true;
         }
 

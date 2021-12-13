@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LimeLauncher</RootNamespace>
     <AssemblyName>LimeLauncher</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -28,6 +28,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,8 +59,8 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net45\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
+    <Reference Include="Hardcodet.NotifyIcon.Wpf, Version=1.1.0.0, Culture=neutral, PublicKeyToken=682384a853a08aad, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.1.0\lib\net472\Hardcodet.NotifyIcon.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="InputSimulator">
       <HintPath>Library\InputSimulator.dll</HintPath>
@@ -99,6 +100,7 @@
       <DependentUpon>LimeToolBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Library\WPFhelper\ComDataObject.cs" />
+    <Compile Include="Library\WPFhelper\DataVirtualization.cs" />
     <Compile Include="Library\WPFhelper\DebugAdorner.cs" />
     <Compile Include="Library\WPFhelper\DragSystemIcon.cs" />
     <Compile Include="Library\WPFhelper\FrameworkElementAvatar.cs" />
@@ -107,10 +109,8 @@
     <Compile Include="Library\WPFhelper\ExtensionMethods.cs" />
     <Compile Include="Library\WPFhelper\ValueConverter.cs" />
     <Compile Include="Library\WPFhelper\ClipDragDrop.cs" />
+    <Compile Include="Library\WPFhelper\VirtualizingWrapPanel.cs" />
     <Compile Include="Library\WPFhelper\WaitingWheel.cs" />
-    <Compile Include="Panels\ApplicationPanel.xaml.cs">
-      <DependentUpon>ApplicationPanel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ConfigTree.cs" />
     <Compile Include="Controls\LimeColorPicker.xaml.cs">
       <DependentUpon>LimeColorPicker.xaml</DependentUpon>
@@ -186,10 +186,6 @@
     <Page Include="Controls\LimeToolBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Panels\ApplicationPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\LimeColorPicker.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -362,9 +358,9 @@
       <Project>{ee85a931-b7a2-43ee-a4af-a9d12c2733b5}</Project>
       <Name>Lime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj">
-      <Project>{bdb907e9-5a07-45c3-850d-5865989134b3}</Project>
-      <Name>taglib-sharp</Name>
+    <ProjectReference Include="..\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
+      <Project>{95603f52-9aea-4bb7-a1ca-7ce3ccbc571a}</Project>
+      <Name>TaglibSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -92,7 +92,7 @@ namespace WPFhelper
 		Menu = 0x08,
 
 		/// <summary>
-		/// Show a drop-menu by default
+		/// Enable to open the object
 		/// </summary>
 		Open = 0x10,
 
@@ -149,7 +149,7 @@ namespace WPFhelper
 		Delete = 0x4000,
 
 		/// <summary>
-		/// Enable all drag and drop operation
+		/// Enable all drag and drop operations
 		/// </summary>
 		All = 0x8000 - 1
 	}
@@ -215,7 +215,7 @@ namespace WPFhelper
 
 
 	/// <summary>
-	/// Provide a MVVM way to handle Drag & Drop operation and Clipboard operation in WPF.
+	/// Provide a MVVM way to handle Drag & Drop operation and Clipboard operations in WPF.
 	/// To fully leverage the use of this class, it is recommended to use IDataObjectCompatible objects
 	/// for the View-Model, as Drag-Sources and Drop-Destination data.
 	/// </summary>
@@ -409,7 +409,7 @@ namespace WPFhelper
 
 
 		/// <summary>
-		/// Set the Drag data-Source (View-Model) and enable Dragging the FrameworkElement (View).
+		/// Set the Drag data-Source (View-Model) and enable dragging the FrameworkElement (View).
 		/// Preferably reference a <see cref="IDataObjectCompatible"/> there to leverage the MVVM.
 		/// </summary>
 		public static readonly DependencyProperty SourceProperty =
@@ -427,7 +427,7 @@ namespace WPFhelper
 		}
 
 		/// <summary>
-		/// Set the Drop data-Destination (View-Model) and enable Droppping to the FrameworkElement (View).
+		/// Set the Drop data-Destination (View-Model) and enable droppping to the FrameworkElement (View).
 		/// Preferably reference a <see cref="IDataObjectCompatible"/> there to leverage the MVVM.
 		/// </summary>
 		public static readonly DependencyProperty DestinationProperty =
@@ -527,7 +527,7 @@ namespace WPFhelper
 
 		/// <summary>
 		/// Gets or sets the ClipDragDrop self check severity in Debug mode.
-		/// It has no effect in Release.
+		/// It has no effect in Release mode.
 		/// </summary>
 		public static readonly DependencyProperty SelfCheckSeverityProperty =
 		DependencyProperty.RegisterAttached("SelfCheckSeverity", typeof(ClipDragDropSelfCheckSeverity),
@@ -541,7 +541,7 @@ namespace WPFhelper
 #if DEBUG
 			return (ClipDragDropSelfCheckSeverity)obj.GetValue(SelfCheckSeverityProperty);
 #else
-			return DragDropSelfCheckSeverity.Off;
+			return ClipDragDropSelfCheckSeverity.Off;
 #endif
 		}
 
@@ -892,8 +892,9 @@ namespace WPFhelper
 				ContextMenu.IsOpen = false;
 			}
 
+#if DEBUG
 			DebugAdorner.Hide();
-
+#endif
 			CanDragDropCache = null;
 			HandleDestinationAction = ClipDragDropOperations.From | ClipDragDropOperations.To; // Invalidate
 			DragData = null;
@@ -1235,7 +1236,7 @@ namespace WPFhelper
 		/// <summary>
 		/// Detect and start dragging from the application
 		/// </summary>
-		/// <param name="sender">Control when <see cref="EnableProperty"/> is set</param>
+		/// <param name="sender">Control where <see cref="EnableProperty"/> is set</param>
 		/// <param name="e"></param>
 		private static void OnMouseMove(object sender, MouseEventArgs e)
 		{
@@ -1333,7 +1334,7 @@ namespace WPFhelper
 		/// <summary>
 		/// Detect and start dragging from outside of the application
 		/// </summary>
-		/// <param name="sender">Control when <see cref="EnableProperty"/> is set</param>
+		/// <param name="sender">Control where <see cref="EnableProperty"/> is set</param>
 		/// <param name="e"></param>
 		private static void OnDragOver(object sender, DragEventArgs e)
 		{
@@ -1440,7 +1441,7 @@ namespace WPFhelper
 		/// <summary>
 		/// Handle the drag over a destination
 		/// </summary>
-		/// <param name="sender">Control when <see cref="EnableProperty"/> is set</param>
+		/// <param name="sender">Control where <see cref="EnableProperty"/> is set</param>
 		/// <param name="e"></param>
 		private static void OnQueryContinueDrag(object sender, QueryContinueDragEventArgs e)
 		{
@@ -2583,9 +2584,9 @@ namespace WPFhelper
 		/// Retrieve Drag & Drop element and its hierarchy from a mouse position
 		/// </summary>
 		/// <param name="isSource">True if we are looking for a drag-source, false for drop-destination</param>
-		/// <param name="hit">mouse hit coordinated relative to <see cref="sender"/></param>
+		/// <param name="hit">mouse hit coordinates relative to <see cref="sender"/></param>
 		/// <param name="sender">Mouse relative reference</param>
-		/// <param name="element">element handling the the Drag and drop</param>
+		/// <param name="element">element handling the Drag and drop</param>
 		/// <param name="elementDecoration">container handling the drag and drop</param>
 		/// <param name="elementItemsControl">parent ItemsControl handling the drag and drop</param>
 		/// <param name="idx">position of the element in the <see cref="elementItemsControl"/> (-1 if none) </param>

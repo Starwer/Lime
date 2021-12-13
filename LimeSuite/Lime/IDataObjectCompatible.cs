@@ -46,7 +46,7 @@ namespace Lime
 		Menu = 0x08,
 
 		/// <summary>
-		/// Enable to show drop-menu
+		/// Enable to open the object
 		/// </summary>
 		Open = 0x10
 	}

@@ -499,7 +499,7 @@ namespace Lime
 
 				if (ptag != null)
 				{
-					Add("Date", ptag, "DateTime");
+					Add("Date", ptag, "DateTime", allowEmpty: true);
 					Add("Model", ptag, "Model");
 					Add("ISO", ptag, "ISOSpeedRatings");
 				}
@@ -510,7 +510,7 @@ namespace Lime
                 Add("Description", TagLibFile.Tag, "Description", multiline: true);
                 Add("Comment", TagLibFile.Tag, "Comment", multiline: true);
 
-				Add("DateTagged", TagLibFile.Tag, "DateTagged", readOnly: true);
+				Add("DateTagged", TagLibFile.Tag, "DateTagged", readOnly: true, allowEmpty: true);
 
 				if (TagLibFile.Properties != null && TagLibFile.Properties.Duration > TimeSpan.Zero)
 				{
@@ -519,16 +519,16 @@ namespace Lime
 						TagLibFile.Properties.Duration.Minutes,
 						TagLibFile.Properties.Duration.Seconds);
 
-					Add("Duration", val, true);
+					Add("Duration", val, true, allowEmpty: true);
 				}
 
 				Add("Genres", new StringComposite<string>(TagLibFile.Tag.Genres));
-                Add("Released", TagLibFile.Tag, "Year");
+                Add("Released", TagLibFile.Tag, "Year", allowEmpty: true);
 				Add(isVideo ? "Collection" : "Album", TagLibFile.Tag, "Album");
-				Add(isVideo ? "Season" : "Disc", TagLibFile.Tag, "Disc");
-				Add(isVideo ? "SeasonCount" : "DiscCount", TagLibFile.Tag, "DiscCount");
-				Add(isVideo ? "Episode" : "Track", TagLibFile.Tag, "Track");
-				Add(isVideo ? "EpisodeCount" : "TrackCount", TagLibFile.Tag, "TrackCount");
+				Add(isVideo ? "Season" : "Disc", TagLibFile.Tag, "Disc", allowEmpty: true);
+				Add(isVideo ? "SeasonCount" : "DiscCount", TagLibFile.Tag, "DiscCount", allowEmpty: true);
+				Add(isVideo ? "Episode" : "Track", TagLibFile.Tag, "Track", allowEmpty: true);
+				Add(isVideo ? "EpisodeCount" : "TrackCount", TagLibFile.Tag, "TrackCount", allowEmpty: true);
 
 				// retrieve the conductor
                 Add(isVideo ? "Director" : "Conductor", TagLibFile.Tag, "Conductor");
@@ -795,7 +795,7 @@ namespace Lime
 					Persons = null;
 				}
 
-				// Start with the end as this is a FIFO stack
+				// Start with the end as this is a LIFO stack
 				for (int i = list.Count - 1; i>=0; i--)
                 {
 					var pers = list[i];

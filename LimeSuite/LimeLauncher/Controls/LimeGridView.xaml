@@ -40,6 +40,7 @@
         
         <Expander.Header>
             <TextBlock Text="{Binding Name}" 
+                       TextWrapping="NoWrap"
                        TextTrimming="WordEllipsis"/>
         </Expander.Header>
         

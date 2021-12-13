@@ -59,8 +59,6 @@ namespace Lime
 
         #endregion
 
-
-
         // --------------------------------------------------------------------------------------------------
         #region Boilerplate INotifyPropertyChanged
 

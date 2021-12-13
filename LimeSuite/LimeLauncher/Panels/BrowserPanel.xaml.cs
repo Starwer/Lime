@@ -109,7 +109,7 @@ namespace LimeLauncher
         #region Attributes/Properties
 
         /// <summary>
-        /// LimeItem representign the Task-switcher
+        /// LimeItem representing the Task-switcher
         /// </summary> 
         public LimeItem TaskSwitcher { get; private set; }
 
@@ -197,7 +197,6 @@ namespace LimeLauncher
 			// Enable Directory Watch (UIElement is used for Watch thread-Safety)
 			node.Tree.UIElement = this;
             node.Tree.ChildrenChanged += OnChangeInPanelContent;
-            node.Watch();
 
             // Preload directory content
             node.Refresh();
@@ -285,7 +284,6 @@ namespace LimeLauncher
 								{
 									focus = open.Children != null && open.Children.Count > 0 ? open.Children[0] : null
 								};
-								open.Watch();
                                 Pan.Add(child); // select first child-item
                             }
                         }
@@ -393,6 +391,7 @@ namespace LimeLauncher
         /// <param name="e"></param>
         private void UpdatePanels(object sender = null, ScrollChangedEventArgs e = null)
         {
+
             if (AnimateAction.IsAnimated)
             {
                 LimeMsg.Debug("UpdatePanels: Cancelled because animated");
@@ -412,9 +411,6 @@ namespace LimeLauncher
 					e.VerticalOffset, Pan[PanIdx].scroll);
 				return;
 			}
-
-			// Cancel previous Item Loading (not only on Root, but on all the tree)
-				Global.Root.Cancel();
 
             // Set Selection
             if (!Global.Local.ConfigVisible || Global.User.ConfigWindow)
@@ -480,11 +476,6 @@ namespace LimeLauncher
             // Adjust current Selection
             var selectedItem = Global.Local.SelectedItem;
 
-            // Create priority queues
-            var queue = new List<LimeItem>(100);
-            var before = new List<LimeItem>(100);
-            var after = new List<LimeItem>(100);
-
             // Handle geometry
             bool enableRescroll = wxScroll != null
                 && sender == wxScroll
@@ -516,9 +507,6 @@ namespace LimeLauncher
                         double panelMaxBound = -1.0;
                         int last = wxLimeItems.Items.Count - 1;
                         LimeMsg.Debug("UpdatePanels: refocus {1}, {2} elements : {0}", item.Name, refocus != null, last + 1);
-
-                        // Load icon panel in priority
-                        if (!item.IconValidated) queue.Insert(0, item);
 
                         for (int i = 0; i <= last; i++)
                         {
@@ -620,36 +608,7 @@ namespace LimeLauncher
 
                                     if (!item.Task) node.TaskMatcher(TaskSwitcher, Global.User.TaskMatchEnable);
 
-                                    if (!node.IconValidated)
-                                    {
-                                        if (node == focus)
-                                        {
-                                            queue.Insert(0, node);
-                                        }
-                                        else
-                                        {
-                                            queue.Add(node);
-                                        }
-                                    }
                                 }
-                                else if (node != null && !node.IconValidated)
-                                {
-                                    // Set priority to the item up/down the visible zone
-                                    if (queue.Count > 0)
-                                    {
-                                        after.Add(node);
-                                        if (before.Count > 0)
-                                        {
-                                            after.Add(before[before.Count - 1]);
-                                            before.RemoveAt(before.Count - 1);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        before.Add(node);
-                                    }
-                                }
-
 
                                 // Handle focus
                                 if (node == refocus)
@@ -673,11 +632,6 @@ namespace LimeLauncher
 									node.MetadataUnload();
 								}
                             }
-                            else if (node != null)
-                            {
-                                LimeMsg.Debug("UpdatePanels: loading: {0} ", node.Name);
-                                after.Add(node);
-                            }
 
                         }
 
@@ -696,13 +650,6 @@ namespace LimeLauncher
             Commands.MainWindow.Geometry.IconWidth = buttonWidth;
             LimeMsg.Debug("UpdatePanels: Geometry: columns: {1}, button: {0}", buttonWidth, columnCount);
             Commands.MainWindow.AdjustInfoPane();
-
-            // Handle background queue priorities
-            before.Reverse();
-            foreach (var item in queue) item.LoadAsync();
-            foreach (var item in after) item.LoadAsync();
-            foreach (var item in before) item.LoadAsync();
-
 
             // Handle focus
             if (refocus != null)

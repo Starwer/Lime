@@ -191,7 +191,6 @@ namespace LimeLauncher.Controls
 			var obj = Index < count ? Cache[Index] : null;
 			var img = LimeLib.ImageSourceFrom(obj);
 
-
 			// Swap buffers 
 			var tmp = wxBackground;
 			wxBackground = wxForeground;
@@ -237,6 +236,8 @@ namespace LimeLauncher.Controls
 			}
 			else
 			{
+				LimeLib.LifeTrace(img);
+
 				wxIcon.Visibility = Visibility.Collapsed;
 				wxForeground.IsEnabled = true;
 
@@ -333,7 +334,7 @@ namespace LimeLauncher.Controls
 
 		/// <summary>
 		///  Create a dummy DependencyProperty which receive the "Next-Slide" message via the NotifyPropertyChanged
-		///  mechanism. It value toogles every new request.
+		///  mechanism. Its value toogles every new request.
 		/// </summary>
 		/// <remarks>
 		/// This Dependency property must be bound in the control constructor, using:

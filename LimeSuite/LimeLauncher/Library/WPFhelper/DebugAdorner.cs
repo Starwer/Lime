@@ -155,7 +155,8 @@ namespace WPFhelper
 					System.Globalization.CultureInfo.InvariantCulture,
 					FlowDirection.LeftToRight,
 					new Typeface("Arial"), 12,
-					new SolidColorBrush(Color));
+					new SolidColorBrush(Color),
+					1.0);
 
 				drawingContext.DrawText(format, layoutZone.TopLeft);
 			}

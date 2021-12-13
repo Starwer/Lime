@@ -49,6 +49,9 @@ namespace WPFhelper
                 set { base.Source = _Source = value; }
 
             }
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", 
+                Justification = " Don't 'simplify': this object is absolutely required to keep Source alive")]
             private object _Source = null;
 
             /// <summary>
@@ -113,17 +116,15 @@ namespace WPFhelper
             // Default: return Binding (Style Setter)
             object ret = binding;
 
-            IProvideValueTarget target = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
-            if (target != null)
+            if (serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget target)
             {
                 // Template: defer construction
                 if (target.TargetObject.GetType().FullName == "System.Windows.SharedDp") return this;
 
                 // Retrieve object and property
-                DependencyObject targetObject = target.TargetObject as DependencyObject;
-                DependencyProperty targetProperty = target.TargetProperty as DependencyProperty;
 
-                if (targetObject != null && targetProperty != null)
+                if ( target.TargetObject is DependencyObject targetObject && 
+                     target.TargetProperty is DependencyProperty targetProperty )
                 {
                     // Instanciated DependencyObject
                     BindingOperations.SetBinding(targetObject, targetProperty, binding);

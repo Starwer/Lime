@@ -179,18 +179,25 @@ namespace Lime
 		/// </summary>
 		public void Connect()
 		{
-			LimeMsg.Debug("LimeMetaSearch: Connecting...");
+			if (TmdbClient == null)
+            {
+				LimeMsg.Debug("LimeMetaSearch: Connecting...");
 
-			// Initialize WEB client to download data
-			WebClient = new WebClient();
+				// Initialize WEB client to download data
+				WebClient = new WebClient();
 
-			// Initialize TMDB
-			TmdbClient = new TMDbClient(TmdbApiKey);
+				// Initialize TMDB
+				TmdbClient = new TMDbClient(TmdbApiKey);
 
-			// Retrieve TMDB config
-			TmdbClient.GetConfig();
+				// Retrieve TMDB config
+				TmdbClient.GetConfigAsync();
 
-			LimeMsg.Debug("LimeMetaSearch: Connected.");
+				LimeMsg.Debug("LimeMetaSearch: Connected.");
+			}
+
+			// Make sure the language settings are up-to-date
+			TmdbClient.DefaultLanguage = _Language;
+			TmdbClient.DefaultImageLanguage = _Language;
 		}
 
 
@@ -207,7 +214,7 @@ namespace Lime
 				// Retrieve LUT Genres Id --> Description
 				LimeMsg.Debug("LimeMetaSearch: GetGenresAsync: {0}", _Language);
 				GenresLUTLanguage = _Language;
-				if (TmdbClient == null) Connect();
+				Connect();
 				GenresLUT = await TmdbClient.GetMovieGenresAsync(_Language);
 			}
 
@@ -238,16 +245,14 @@ namespace Lime
 		/// <returns>List of Metadata objects representing the match found</returns>
 		public async Task<List<LimeOpus>> SearchVideoAsync(string name)
 		{
-			List<LimeOpus> ret = null;
-
-			if (TmdbClient == null) Connect();
+			Connect();
 
 			SearchContainer<SearchMovie> results = await TmdbClient.SearchMovieAsync(name, _Language, 0, Adult);
 
 			// TODO: Retrieve TvShow if a number is mentioned
 			//var tvshow = await TmdbClient.SearchTvShowAsync(name);
 
-			ret = new List<LimeOpus>(results.Results.Count);
+			var ret = new List<LimeOpus>(results.Results.Count);
 			if (results.Results.Count == 0) return ret;
 
 			foreach (SearchMovie result in results.Results)
@@ -289,9 +294,9 @@ namespace Lime
 		{
 			LimeMetadata meta = null;
 
-			if (TmdbClient == null) Connect();
+			Connect();
 
-			Movie movie = await TmdbClient.GetMovieAsync(id, _Language, MovieMethods.Images | MovieMethods.Videos | MovieMethods.Reviews | MovieMethods.Credits);
+			Movie movie = await TmdbClient.GetMovieAsync(id, MovieMethods.Images | MovieMethods.Videos | MovieMethods.Reviews | MovieMethods.Credits);
 
 			// Create Metadata object representing the movie
 			meta = new LimeMetadata(MediaType.Video);
@@ -366,7 +371,7 @@ namespace Lime
 			uint seasonCount = 0;
 			if (movie.BelongsToCollection != null)
 			{
-				var collec = await TmdbClient.GetCollectionAsync(movie.BelongsToCollection.Id, _Language);
+				var collec = await TmdbClient.GetCollectionAsync(movie.BelongsToCollection.Id);
 
 				if (collec != null && collec.Parts != null)
 				{
@@ -406,7 +411,7 @@ namespace Lime
 		/// <returns>true if updated</returns>
 		public async Task<bool> GetPersonAsync(LimePerson person)
 		{
-			if (TmdbClient == null) Connect();
+			Connect();
 
 			// Retrieve person-ID by name
 			if (person.TmdbId == 0)

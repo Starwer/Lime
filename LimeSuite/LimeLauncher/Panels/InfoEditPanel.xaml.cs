@@ -138,9 +138,9 @@ namespace LimeLauncher
 				_Metadata.PropertyChangedWeak += Metadata_PropertyChanged;
 
 #if TRACE
-				StopWatch.Stop();
-				var time = StopWatch.Elapsed;
-				LimeMsg.Info("TraceStopWatch", time);
+				//StopWatch.Stop();
+				//var time = StopWatch.Elapsed;
+				//LimeMsg.Info("TraceStopWatch", time);
 #endif
 				// Force to start the Loading of person metadata asynchronously and after the main page has been rendered
 				meta.LoadAsync((int)Global.User.PersonAutoDownload);

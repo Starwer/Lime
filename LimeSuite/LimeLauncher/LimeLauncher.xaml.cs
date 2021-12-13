@@ -31,7 +31,7 @@ namespace LimeLauncher
 #if TRACE
             LimeMsg.Handlers += LimeMsg.DebugLog;
 #endif
-            LimeMsg.Handlers += LimeMsg.WinLog;
+            //LimeMsg.Handlers += LimeMsg.WinLog;
             LimeMsg.Handlers += LimeMsg.WinDialog;
 
             // Display version

@@ -109,7 +109,8 @@ namespace Lime
             ReqRestart = 0x04,
             ReqAdmin = 0x08,
             Multiline = 0x10,
-            Percentage = 0x20
+            Percentage = 0x20,
+            AllowEmpty = 0x40
         }
 
 
@@ -234,6 +235,25 @@ namespace Lime
             set
             {
                 const LimePropertyFlags mask = LimePropertyFlags.Percentage;
+                LimePropertyFlags val = value ? mask : 0;
+                if ((Flags & mask) != val)
+                {
+                    Flags = (Flags & ~mask) | val;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Define if a numeric Is considered Empty when zero-ed
+        /// </summary>
+        [XmlIgnore]
+        public bool AllowEmpty
+        {
+            get { return Flags.HasFlag(LimePropertyFlags.AllowEmpty); }
+            set
+            {
+                const LimePropertyFlags mask = LimePropertyFlags.AllowEmpty;
                 LimePropertyFlags val = value ? mask : 0;
                 if ((Flags & mask) != val)
                 {
@@ -725,6 +745,21 @@ namespace Lime
                 return sconv.ToString(culture);
             }
 
+            if (AllowEmpty)
+            {
+                // if Content reprents zero, return empty string
+                try
+                {
+                    object zero = Activator.CreateInstance(Type);
+                    if (val != null && val.Equals(zero))
+                    {
+                        return "";
+                    }
+                }
+                catch { }
+
+            }
+
             TypeConverter converter = TypeDescriptor.GetConverter(typeof(string));
             if (converter.CanConvertFrom(Type))
                 return (string)converter.ConvertFrom(null, culture, val);
@@ -754,22 +789,26 @@ namespace Lime
             {
                 object val = null;
 
-                if (false && Content is IStringConvertible sconv)
+                //if (Content is IStringConvertible sconv)
+                //{
+                //    var old = sconv.ToString(culture);
+                //    if (old != source)
+                //    {
+                //        ret = sconv.FromString(source, culture);
+                //        if (ret)
+                //        {
+                //            OnPropertyChanged("Content");
+                //            OnPropertyChanged("Value");
+                //            OnPropertyChanged("Serialize");
+                //        }
+                //    }
+                //} else
                 {
-                    var old = sconv.ToString(culture);
-                    if (old != source)
+                    if (source == "" && AllowEmpty)
                     {
-                        ret = sconv.FromString(source, culture);
-                        if (ret)
-                        {
-                            OnPropertyChanged("Content");
-                            OnPropertyChanged("Value");
-                            OnPropertyChanged("Serialize");
-                        }
+                        source = "0";
                     }
-                }
-                else
-                {
+
                     TypeConverter converter = TypeDescriptor.GetConverter(Type);
                     try
                     {

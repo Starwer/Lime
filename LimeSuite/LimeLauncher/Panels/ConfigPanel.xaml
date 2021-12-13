@@ -144,9 +144,6 @@
                     <l:SkinPanel x:Name="Skin" Visibility="Hidden" />
 
                     <!--*************************************************************************************-->
-                    <l:ApplicationPanel x:Name="Applications" Visibility="Hidden" />
-
-                    <!--*************************************************************************************-->
                     <StackPanel x:Name="Advanced" Visibility="Collapsed" Grid.IsSharedSizeScope="True">
                         <c:LimeLabel DataContext="Developpers" />
                         <c:LimeControl DataContext="{Binding [DevMode]}"/>

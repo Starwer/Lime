@@ -246,7 +246,7 @@ namespace LimeLauncher
 
                 src = await Global.Search.GetVideoAsync(movieid);
 			}
-			catch (Exception ex)
+			catch
 			{
 				LimeMsg.Error("ErrMetaDownload", item.Title);
 				src = null;

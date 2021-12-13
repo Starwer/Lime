@@ -286,18 +286,18 @@ namespace Lime
             }
         }
 
-        #endregion
+		#endregion
 
 
-        // --------------------------------------------------------------------------------------------------
-        #region Override Collection, to subscribe/unsubscribe to the properties
+		// --------------------------------------------------------------------------------------------------
+		#region ObservableCollection implementation: subscribe/unsubscribe to the properties
 
-        /// <summary>
-        /// Insert a LimeProperty to the collection
-        /// </summary>
-        /// <param name="InsertItem">Index at which the property should be added</param>
-        /// <param name="prop">LimeProperty to be added</param>
-        protected override void InsertItem(int index, LimeProperty prop)
+		/// <summary>
+		/// Insert a LimeProperty to the collection
+		/// </summary>
+		/// <param name="InsertItem">Index at which the property should be added</param>
+		/// <param name="prop">LimeProperty to be added</param>
+		protected override void InsertItem(int index, LimeProperty prop)
         {
             if (StringComparer != null) index = FindBestIndex(prop?.Ident, index);
             if (prop != null) prop.PropertyChanged += ItemPropertyChanged;
@@ -533,13 +533,15 @@ namespace Lime
         /// <param name="readOnly">Define if the the property in read-only</param>
         /// <param name="visible">Define if the the property is visible to the user</param>
         /// <param name="multiline">Define if the the property is a multiline string</param>
+        /// <param name="allowEmpty">Define if a numeric Is considered Empty when zero-ed</param>
         /// <returns>The created LimeProperty</returns>
-        public LimeProperty Add(string key, object source, string path, bool? readOnly = null, bool? visible = null, bool? multiline = null)
+        public LimeProperty Add(string key, object source, string path, bool? readOnly = null, bool? visible = null, bool? multiline = null, bool? allowEmpty = null)
 		{
 			//LimeMsg.Debug("LimePropertyCollection: Add: {0}", key);
 
 			var prop = new LimeProperty(key, source, path, null, readOnly, visible);
             if (multiline != null) prop.Multiline = multiline == true;
+            if (allowEmpty != null) prop.AllowEmpty = allowEmpty == true;
             Add(prop);
             return prop;
         }
@@ -553,13 +555,14 @@ namespace Lime
         /// <param name="readOnly">Define if the the property is read-only</param>
         /// <param name="visible">Define if the the property is visible to the user</param>
         /// <returns>The created LimeProperty</returns>
-        public LimeProperty Add(string key, object value, bool readOnly = false, bool visible = true)
+        public LimeProperty Add(string key, object value, bool readOnly = false, bool visible = true, bool? allowEmpty = null)
 		{
             if (value is LimeProperty)
                 throw new InvalidOperationException("LimePropertyCollection Add new");
 
 			if (value == null) value = "";
 			var prop = new LimeProperty(key, value, null, null, readOnly, visible);
+            if (allowEmpty != null) prop.AllowEmpty = allowEmpty == true;
 			Add(prop);
             return prop;
         }

@@ -483,6 +483,8 @@ namespace LimeLauncher.Controls
 			// go to the next slide.
 			var val = (bool)AutoSlideMessenger.Content;
 			AutoSlideMessenger.Content = !val;
+
+			LimeLib.LifeCheck();
 		}
 
 		/// <summary>
@@ -744,31 +746,41 @@ namespace LimeLauncher.Controls
 			Type ret;
 
 			var attrs = prop?.PInfo?.GetCustomAttributes(typeof(PickCollectionAttr), true);
+			var type = prop?.Type;
+
+			// Handle nullable types (example: bool?)
+			if (type!= null)
+			{
+				if ( Nullable.GetUnderlyingType(type) is Type under)
+				{
+					type = under;
+				}
+			}
 
 			if (prop == null)
 				ret = null;
-			else if (prop.Type == null)
+			else if (type == null)
 				ret = typeof(LimeLabel);
-			else if (typeof(ICommand).IsAssignableFrom(prop.Type))
+			else if (typeof(ICommand).IsAssignableFrom(type))
 				ret = typeof(LimeButton);
-			else if (typeof(LimePerson).IsAssignableFrom(prop.Type))
+			else if (typeof(LimePerson).IsAssignableFrom(type))
 				ret = typeof(LimePersonCtrl);
-			else if (typeof(IStringComposite).IsAssignableFrom(prop.Type))
+			else if (typeof(IStringComposite).IsAssignableFrom(type))
 				ret = typeof(LimeTextBox);
-			else if (typeof(IPickCollection).IsAssignableFrom(prop.Type) || attrs != null && attrs.Length > 0)
+			else if (typeof(IPickCollection).IsAssignableFrom(type) || attrs != null && attrs.Length > 0)
 				ret = typeof(LimeDropDown);
-			else if (typeof(System.Drawing.Image).IsAssignableFrom(prop.Type)
-				  || typeof(ImageSource).IsAssignableFrom(prop.Type)
-				  || typeof(System.Drawing.Image).IsAssignableFrom(prop.Type)
-				  || typeof(TagLib.IPicture).IsAssignableFrom(prop.Type)
-				  || typeof(IEnumerable<System.Drawing.Image>).IsAssignableFrom(prop.Type)
-				  || typeof(IEnumerable<ImageSource>).IsAssignableFrom(prop.Type)
-				  || typeof(IEnumerable<TagLib.IPicture>).IsAssignableFrom(prop.Type))
+			else if (typeof(System.Drawing.Image).IsAssignableFrom(type)
+				  || typeof(ImageSource).IsAssignableFrom(type)
+				  || typeof(System.Drawing.Image).IsAssignableFrom(type)
+				  || typeof(TagLib.IPicture).IsAssignableFrom(type)
+				  || typeof(IEnumerable<System.Drawing.Image>).IsAssignableFrom(type)
+				  || typeof(IEnumerable<ImageSource>).IsAssignableFrom(type)
+				  || typeof(IEnumerable<TagLib.IPicture>).IsAssignableFrom(type))
 				ret = typeof(LimeImage);
-			else if (typeof(IEnumerable).IsAssignableFrom(prop.Type) && prop.Type != typeof(string))
+			else if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
 			{
 				// Find item type of a generic (for example T in Collection<T>) 
-				var itemType = prop.Type.GetInterfaces()
+				var itemType = type.GetInterfaces()
 								.Where( t => t.IsGenericType && 
 										t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
 								.Select(t => t.GenericTypeArguments.Length == 1 ? 
@@ -784,23 +796,23 @@ namespace LimeLauncher.Controls
 			}
 			else if (prop.Minimum < prop.Maximum)
 				ret = typeof(LimeNumBox);
-			else if (prop.Type == typeof(bool) || prop.Type == typeof(bool?))
+			else if (type == typeof(bool))
 				ret = typeof(LimeCheckBox);
-			else if (prop.Type == typeof(Color) || prop.Type == typeof(System.Drawing.Color))
+			else if (type == typeof(Color) || type == typeof(System.Drawing.Color))
 				ret = typeof(LimeColorPicker);
-			else if (prop.Type.IsEnum || prop.Type == typeof(FontFamily)
-					|| prop.Type == typeof(FontWeight) || prop.Type == typeof(FontStyle))
+			else if (type.IsEnum || type == typeof(FontFamily)
+					|| type == typeof(FontWeight) || type == typeof(FontStyle))
 				ret = typeof(LimeDropDown);
-			else if (prop.Type == typeof(byte) || prop.Type == typeof(short)
-				  || prop.Type == typeof(int) || prop.Type == typeof(long)
-				  || prop.Type == typeof(float) || prop.Type == typeof(double)
-				  || prop.Type == typeof(ushort) || prop.Type == typeof(uint)
-				  || prop.Type == typeof(ulong)
+			else if (type == typeof(byte) || type == typeof(short)
+				  || type == typeof(int) || type == typeof(long)
+				  || type == typeof(float) || type == typeof(double)
+				  || type == typeof(ushort) || type == typeof(uint)
+				  || type == typeof(ulong)
 				  )
 				ret = typeof(LimeNumBox);
-			else if (prop.Type == typeof(string)
-				|| typeof(DateTime).IsAssignableFrom(prop.Type)
-				|| typeof(Uri).IsAssignableFrom(prop.Type))
+			else if (type == typeof(string)
+				|| typeof(DateTime).IsAssignableFrom(type)
+				|| typeof(Uri).IsAssignableFrom(type))
 				ret = typeof(LimeTextBox);
 			else
 				ret = typeof(LimeComposite);

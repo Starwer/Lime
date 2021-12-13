@@ -476,7 +476,7 @@ namespace LimeLauncher.Controls
         IEnumerable<ScrollViewer> GetParentScrollViewers()
         {
             for (DependencyObject element = this; element != null; element = VisualTreeHelper.GetParent(element))
-                if (element is ScrollViewer) yield return element as ScrollViewer;
+                if (element is ScrollViewer wxscroll) yield return wxscroll;
         }
 
 

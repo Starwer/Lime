@@ -196,6 +196,11 @@ namespace LimeLauncher
 
             if (prop != null && !prop.CanConvertFrom(value))
             {
+                if (prop.AllowEmpty && value is string str && str == "")
+                {
+                    return ValidationResult.ValidResult;
+                }
+                
                 LimeMsg.Debug("LimePropertyValidationRule: Parameter Error from {0} to {1}", value, prop.Ident);
                 return new ValidationResult(false, "Parameter error");
             }

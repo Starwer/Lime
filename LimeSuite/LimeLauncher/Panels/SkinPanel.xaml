@@ -59,9 +59,10 @@
                   PreviewKeyDown="Expander_PreviewKeyDown">
             <Expander.Header>
                 <TextBlock x:Name="wxSkinInfoText" 
-                            Text="{Binding Path=MetaDescription}" 
-                            VerticalAlignment="Top" HorizontalAlignment="Left" 
-                            TextTrimming="WordEllipsis" />
+                           Text="{Binding Path=MetaDescription}" 
+                           VerticalAlignment="Top" HorizontalAlignment="Left" 
+                           TextWrapping="NoWrap"
+                           TextTrimming="WordEllipsis" />
             </Expander.Header>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -84,7 +85,7 @@
                            Text="{Binding ConverterParameter=Contact, Converter={StaticResource Translate}}" />
                 <TextBlock Grid.Row="1" Grid.Column="2">
                     <Hyperlink NavigateUri="{Binding MetaContact, Converter={StaticResource URIConvert}, ConverterParameter=mailto:}">
-                        <Run Text="{Binding MetaContact}"/>
+                        <Run Text="{Binding MetaContact, Mode=OneWay}"/>
                     </Hyperlink>
                 </TextBlock>
 
@@ -93,7 +94,7 @@
                            Text="{Binding ConverterParameter=Website, Converter={StaticResource Translate}}" />
                 <TextBlock Grid.Row="2" Grid.Column="2">
                     <Hyperlink NavigateUri="{Binding MetaWebsite, Converter={StaticResource URIConvert}}">
-                        <Run Text="{Binding MetaWebsite}"/>
+                        <Run Text="{Binding MetaWebsite, Mode=OneWay}"/>
                     </Hyperlink>
                 </TextBlock>
             </Grid>

@@ -48,7 +48,7 @@ namespace LimeLauncher.Controls
 
 				if (prop != null)
 				{
-					LimePropertyCollection collec = null;
+					LimePropertyCollection collec;
 
 					if (typeof(LimePropertyCollection).IsAssignableFrom(prop.Type))
 					{

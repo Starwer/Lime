@@ -106,7 +106,7 @@ namespace Lime
                     {
                         // Prefer PIDL to unhandled path-formats
                         IntPtr pidl = link.PIDL;
-                        path = String.Format(":{0}", pidl);
+                        path = string.Format(":{0}", pidl);
                         break;
                     }
                 }
@@ -542,7 +542,7 @@ namespace Lime
 #endif
 
         /// <summary>
-        /// Enable instrumentation of an object to gloabbly trace the amount of reserved/freed objects.
+        /// Enable instrumentation of an object to globally trace the amount of reserved/freed objects.
         /// This is mainly designed to diagnoze memory leaks.
         /// Usage: Insert in object-constructors: <code>LifeTrace(this);</code>
         /// </summary>

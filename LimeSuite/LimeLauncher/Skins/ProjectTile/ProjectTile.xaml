@@ -449,6 +449,7 @@
                                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <!-- check mark [v] -->
                                     <Path x:Name="CheckMark"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" 
                                           Opacity="0"
                                           Width="8" Height="8"
                                           SnapsToDevicePixels="True"
@@ -457,9 +458,13 @@
                                         <Path.Stroke>
                                             <SolidColorBrush Color="{Binding Color, Source={StaticResource ControlSelectedBrush}}"/>
                                         </Path.Stroke>
+                                        <Path.LayoutTransform>
+                                            <ScaleTransform ScaleX="{w:DoubleScaled 1}" ScaleY="{w:DoubleScaled 1}"/>
+                                        </Path.LayoutTransform>
                                     </Path>
                                     <!-- cross mark [x] -->
                                     <Path x:Name="IndeterminateMark"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" 
                                           Opacity="0"
                                           Width="8" Height="8"
                                           SnapsToDevicePixels="True"
@@ -468,6 +473,9 @@
                                         <Path.Stroke>
                                             <SolidColorBrush Color="{Binding Color, Source={StaticResource GlyphBrush}}"/>
                                         </Path.Stroke>
+                                        <Path.LayoutTransform>
+                                            <ScaleTransform ScaleX="{w:DoubleScaled 1}" ScaleY="{w:DoubleScaled 1}"/>
+                                        </Path.LayoutTransform>
                                     </Path>
                                 </Grid>
                             </Border>
@@ -616,7 +624,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="{w:ThicknessScaled 1}"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
                 <Path x:Name="CollapsedArrow" 
@@ -704,11 +712,11 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="{w:ThicknessScaled 1}"/>
+                    <ColumnDefinition Width="{w:DoubleScaled 1}"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="{w:ThicknessScaled 1}" />
+                    <RowDefinition Height="{w:DoubleScaled 1}" />
                 </Grid.RowDefinitions>
 
                 <Path x:Name="CollapsedArrow" 
@@ -740,6 +748,7 @@
 
     <Style TargetType="{x:Type Expander}">
         <Setter Property="Foreground" Value="{StaticResource IconFontBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Expander}">
@@ -1872,7 +1881,7 @@
         <Setter Property="Control.Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <!-- Glow Effect by Starwer -->
+                    <!-- Glow Effect -->
                     <Border x:Name="Border" BorderThickness="{Binding Scaled, Source={StaticResource ButtonIconMargin}}" CornerRadius="{Binding Scaled, Source={StaticResource ButtonFocusVisualBorderRadius}}" BorderBrush="White">
                         <Border.Effect>
                             <BlurEffect KernelType="Gaussian" Radius="{Binding Scaled, Source={StaticResource ButtonFocusVisualBlurRadius}}"/>
@@ -1966,12 +1975,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="ToggleButton.IsPressed" Value="True">
-                            <Setter Property="RenderTransform">
-                                <Setter.Value>
-                                    <ScaleTransform ScaleX=".9" ScaleY=".9"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                            <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
                         </Trigger>
                         <DataTrigger Binding="{Binding ListView, Source={x:Static l:Global.Local}}" Value="True">
                             <Setter TargetName="Border" Property="BorderThickness" Value="{Binding Scaled, Source={StaticResource ButtonIconMarginListView}}" />
