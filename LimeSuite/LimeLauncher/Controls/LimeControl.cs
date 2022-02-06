@@ -579,7 +579,7 @@ namespace LimeLauncher.Controls
 		// --------------------------------------------------------------------------------------------------
 
 		/// <summary>
-		/// Get or set whther the control is ReadOnly
+		/// Get or set whether the control is ReadOnly
 		/// </summary>
 		public bool ReadOnly
 		{

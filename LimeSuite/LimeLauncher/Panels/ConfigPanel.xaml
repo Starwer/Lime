@@ -118,6 +118,7 @@
                         <c:LimeControl DataContext="{Binding [ShowAppTasks]}"
                                        IsEnabled="{Binding ShowTaskSwitcher, Source={x:Static l:Global.User}}"
                                        Visibility="{Binding Source={x:Static lime:LimeLib.IsWindows8}, Converter={StaticResource BoolToVisible}}"/>
+                        <c:LimeControl DataContext="{Binding [HideFileAttribute]}"/>
                     </StackPanel>
                     
                     <!--*************************************************************************************-->

@@ -48,7 +48,7 @@ namespace LimeLauncher
 
 		// -------------------------------------------
 		/// <summary>
-		/// Application Menu
+		/// Browser Commands (Menu)
 		/// </summary>
 		public LimePropertyCollection BrowserCommands { get; private set; } = Factory(
 			"ItemAddApp",
@@ -59,7 +59,7 @@ namespace LimeLauncher
 			"ShowInfoPane",
 			"InfoEditMode",
 			"ConfigVisible"
-		);
+        );
 
 
 		// -------------------------------------------

@@ -874,10 +874,22 @@ namespace WPFhelper
 				if (cancel && animate)
 				{
 					var wxsrc = DragData.Source;
-					// Bring dragged object back to its position
+
+					// Bring dragged object back to its original position
 					var wnd = PresentationSource.FromVisual(wxsrc).RootVisual;
 					var offset = new Point(wxsrc.ActualWidth / 2, wxsrc.ActualHeight / 2);
 					Point pos = wxsrc.TransformToAncestor(wnd).Transform(offset);
+
+					// Detect off-window position (when object has been scrolled out)
+					if (wnd is Window win)
+					{ 
+						// Adjust to go always inside the window
+						if (pos.X < 0) { pos.X = 0; }
+						if (pos.Y < 0) { pos.Y = 0; }
+						if (pos.X > win.ActualWidth) { pos.X = win.ActualWidth; }
+						if (pos.Y > win.ActualHeight) { pos.Y = win.ActualHeight;}
+					}
+
 					DragIcon.GotoPosition(wnd.PointToScreen(pos), AnimDuration, destroy: true);
 				}
 				else

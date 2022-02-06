@@ -10,10 +10,8 @@ using MSjogren.Samples.ShellLink;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Lime
 {
@@ -64,7 +62,7 @@ namespace Lime
 		private const string IniLanguageSection = "Text";
 
 		/// <summary>
-		/// Maximum number of performers sow in tooltip
+		/// Maximum number of performers shown in tooltip
 		/// </summary>
 		private const int MaxPerformersTip = 4;
 
@@ -82,12 +80,12 @@ namespace Lime
 		/// <summary>
 		/// Get the type of media.
 		/// </summary>
-		public MediaType Type;
+		public readonly MediaType Type;
 		
 		/// <summary>
 		/// Store the Tag informations
 		/// </summary>
-		private TagLib.File TagLibFile = null;
+		private readonly TagLib.File TagLibFile = null;
 
         /// <summary>
         /// Generate a tooltip from the metadata
@@ -206,7 +204,8 @@ namespace Lime
 		/// Construct and retrieve Metadata from a directory/file path
 		/// </summary>
 		/// <param name="item">The <see cref="LimeItem"/> element to construct Metadata for.</param>
-		public LimeMetadata(LimeItem item) : this()
+		/// <param name="coverOnly">Try to load only a cover, not the system icon</param>
+		public LimeMetadata(LimeItem item, bool coverOnly) : this()
 		{
             LimeLib.LifeTrace(this);
 
@@ -215,29 +214,32 @@ namespace Lime
 
 
 			LimeMsg.Debug("LimeMetadata: {0}", item.Name);
-
-			// Add Name
-			Add("Name", item.Name, true, false);
-
 			string path = item.Path;
-            if (item.Link != null)
+
+			if (!coverOnly)
             {
-                // Link
-                path = item.Link;
-                Add("LinkLabel");
-            }
+				// Add Name
+				Add("Name", item.Name, true, false);
+				if (item.Link != null)
+				{
+					// Link
+					path = item.Link;
+					Add("LinkLabel");
+				}
 
-            // Handle tasks
-            if (item.Task)
-            {
-                Add("Task", item.Name, true);
-            }
+				// Handle tasks
+				if (item.Task)
+				{
+					Add("Task", item.Name, true);
+				}
 
-            // Display path
-            Add("Path", item, "Path", readOnly: item.Task);
+				// Display path
+				Add("Path", item, "Path", readOnly: item.Task);
 
-            // Retrieve Tags
-            if (!item.Task && !item.Directory && !LimeLib.IsPIDL(path) && !LimeLib.IsSSPD(path))
+			}
+
+			// Retrieve Tags
+			if (!item.Task && !item.Directory && !LimeLib.IsPIDL(path) && !LimeLib.IsSSPD(path))
 			{
                 LimeMsg.Debug("LimeMetadata: TagLib: {0}", item.Name);
                 try
@@ -288,7 +290,7 @@ namespace Lime
             }
 
             // Handle Links
-            if (item.Link != null)
+            if (!coverOnly && item.Link != null)
             {
                 using (var link = new ShellShortcut(item.Path))
                 {
@@ -335,20 +337,25 @@ namespace Lime
 
 
 				// Build the Pictures image
-				BuildCover();
+				BuildCover(coverOnly);
 			}
-			else
+			else if (!coverOnly)
 			{
 				// Build the Pictures image from the file icon
-				Pictures = item.Bitmap(256);
+				using (var bmp = item.Bitmap(256))
+                {
+					Pictures = LimeLib.ImageSourceFrom(bmp);
+				}
 			}
 
-
-            // Finalize
-            BuildToolTip();
+			if (!coverOnly)
+            {
+				// Finalize
+				BuildToolTip();
+			}
 
 			// re-enable modification detection
-            _Modified = false;
+			_Modified = false;
             LimeMsg.Debug("LimeMetadata End: {0}", item.Name);
 
         }
@@ -382,7 +389,7 @@ namespace Lime
 
             if (buildcover)
             {
-                BuildCover();
+                BuildCover(coverOnly: false);
             }
         }
 
@@ -699,8 +706,9 @@ namespace Lime
 		/// Build the Pictures image from the content of the file
 		/// </summary>
 		/// <param name="path">path to the file</param>
+		/// <param name="coverOnly">Try to load only a cover, not the system icon</param>
 		/// <returns>Pictures image</returns>
-		public void BuildCover()
+		public void BuildCover(bool coverOnly)
 		{
 			TagLib.IPicture[] ret = null;
 
@@ -716,11 +724,27 @@ namespace Lime
 					}
 					else if (TagLibFile.Tag.Pictures != null && TagLibFile.Tag.Pictures.Length > 0)
 					{
-                        ret = TagLibFile.Tag.Pictures;
+						// Retain only the pictures, no the attachments of other types
+
+						int count = 0;
+						var pics = new List<TagLib.IPicture>(TagLibFile.Tag.Pictures.Length);
+						foreach (TagLib.IPicture pic in TagLibFile.Tag.Pictures)
+                        {
+							if (pic.Type != TagLib.PictureType.NotAPicture)
+                            {
+								count++;
+								pics.Add(pic);
+							}
+						}
+
+						if (count>0)
+                        {
+							ret = count == TagLibFile.Tag.Pictures.Length ? TagLibFile.Tag.Pictures : pics.ToArray();
+						}
 					}
 				}
 
-				if (ret == null)
+				if (ret is null && !coverOnly)
 				{
 					BuildCover(path);
                     return;
@@ -739,12 +763,15 @@ namespace Lime
 		public void BuildCover(string path)
 		{
             LimeMsg.Debug("LimeMetadata BuildCover: path: {0}", path);
-            Bitmap ret = null;
+            ImageSource ret = null;
 
 			try
 			{
 				LimeItem item = new LimeItem(path);
-				ret = item.Bitmap(256);
+				using (var bmp = item.Bitmap(256))
+				{
+					ret = LimeLib.ImageSourceFrom(bmp);
+				}
 			}
 			catch
 			{

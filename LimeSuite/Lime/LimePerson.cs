@@ -103,13 +103,8 @@ namespace Lime
 
 
 		/// <summary>
-		/// Regulate the the async loading/saving
-		/// </summary>
-		private static SemaphoreSlim Mutex = new SemaphoreSlim(1, 1);
-
-
-		/// <summary>
-		/// Thread-safe stack to schedule the Loading/saving of persons in the background
+		/// Thread-safe stack to schedule the Loading/saving of persons in the background.
+		/// This object is also used as key for lock.
 		/// </summary>
 		private static BlockingCollection<LimePerson> Stack = null;
 
@@ -598,22 +593,29 @@ namespace Lime
 
 		public LimePerson()
         {
+			LimeLib.LifeTrace(this);
         }
 
 		public LimePerson(string namerole)
 		{
+			LimeLib.LifeTrace(this);
+
 			FromString(namerole, CultureInfo.CurrentCulture);
 		}
 
 		public LimePerson(string name, string[] roles)
         {
-            Name = name;
+			LimeLib.LifeTrace(this);
+			
+			Name = name;
             Roles = roles;
         }
 
         public LimePerson (int id, string name, string[] roles)
         {
-            TmdbId = id;
+			LimeLib.LifeTrace(this);
+			
+			TmdbId = id;
             Name = name;
             Roles = roles;
         }
@@ -759,15 +761,16 @@ namespace Lime
 						}
 
 						LimeMsg.Debug("LimePerson LoadAsync: {0}", person?.Name);
-						try
-						{
-							Mutex.WaitAsync();
-							person.Load();
-						}
-						finally
-						{
-							person.IsDownloading = false;
-							Mutex.Release(1);
+						lock (Stack)
+                        {
+							try
+							{
+								person.Load();
+							}
+							finally
+							{
+								person.IsDownloading = false;
+							}
 						}
 					}
 				});

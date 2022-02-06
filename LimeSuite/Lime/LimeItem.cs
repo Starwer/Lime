@@ -83,6 +83,11 @@ namespace Lime
         public bool AllowLinkOfLink = false;
 
         /// <summary>
+        /// Hide files/directories which have one of those attribute
+        /// </summary>
+        public FileAttributes HideFileAttribute = FileAttributes.Hidden | FileAttributes.System;
+
+        /// <summary>
         /// Register the Tree Root UIElement (if any)
         /// </summary>
         public UIElement UIElement = null;
@@ -552,7 +557,7 @@ namespace Lime
 					if (iconSize == 0) iconSize = size;
 				}
 
-				return _ImgSrc != null && _ImgSrc.Height == iconSize
+                return _ImgSrc != null && Math.Abs(_ImgSrc.Height - iconSize) < 1.0
 					&& Flags.HasFlag(LimeItemFlags.IsUseCover) == Tree.ImgSrcUseCover;
             }
         }
@@ -1031,24 +1036,24 @@ namespace Lime
 				// Start loading from the center of the visible area
 				for (int i = 0; i < length; i++)
 				{
-					int idx = median - i;
-					Children[idx]?.LoadAsync();
+					int idx = median - i - 1;
+                    if (idx >= range.FirstIndex) Children[idx]?.LoadAsync();
 
-					idx = median + i + 1;
-					if (idx <= range.LastIndex) Children[idx]?.LoadAsync();
-				}
+                    idx = median + i;
+                    Children[idx]?.LoadAsync();
+                }
 
-				// Continue off boundary
-				if (trackedItems.Count == 1)
+                // Continue off boundary
+                if (trackedItems.Count == 1)
 				{
 					var count = (Children.Count + 1) / 2;
 
 					for (int i = length; i < count; i++)
 					{
-						int idx = median - i;
+						int idx = median - i - 1;
 						if (idx >= 0) Children[idx]?.LoadAsync();
 
-						idx = median + i + 1;
+						idx = median + i;
 						if (idx < Children.Count) Children[idx]?.LoadAsync();
 					}
 
@@ -1225,85 +1230,144 @@ namespace Lime
         /// </summary>
         public ImageSource IconLoad()
         {
-            ImageSource ret = _ImgSrc;
+            if (IconValidated) return _ImgSrc;
 
-            if (!IconValidated)
+            ImageSource ret = null;
+
+            uint size = (IsTaskThumbVisible || !Tree.ImgSrcEnableBigSize) && Children == null 
+                      ? Tree.ImgSrcSmallSize : Tree.ImgSrcBigSize;
+
+            if (Tree.ImgSrcUseCover)
             {
-                uint size = (IsTaskThumbVisible || !Tree.ImgSrcEnableBigSize) && Children == null ? Tree.ImgSrcSmallSize : Tree.ImgSrcBigSize;
-				ret = null;
+                // Try to get Icon image from the file's metadata
 
-				if (Tree.ImgSrcUseCover)
-				{
-					var meta = Metadata;
+                var meta = Metadata;
 
-					if (meta == null)
-					{
-						meta = MetadataLoad();
-						MetadataUnload();
-					}
-
-					var pic = meta?.Pictures;
-					if (pic is IEnumerable enu)
-					{
-						IEnumerator enumer = enu.GetEnumerator();
-						if (enumer.MoveNext()) pic = enumer.Current;
-
-						var img = LimeLib.ImageSourceFrom(pic);
-						if (img is System.Windows.Media.Imaging.BitmapImage bmpi)
-						{
-							// Round-off Icon size
-							uint iconSize = size;
-							if (Tree.ImgSrcSizeRoundOff)
-							{
-								iconSize &= 0xFFFFFFF8;
-								if (iconSize == 0) iconSize = size;
-							}
-
-							using (MemoryStream outStream = new MemoryStream())
-							{
-								System.Windows.Media.Imaging.BitmapEncoder enc = new System.Windows.Media.Imaging.BmpBitmapEncoder();
-								enc.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmpi));
-								enc.Save(outStream);
-								var bmp = new Bitmap(outStream);
-								var source = LimeLib.BitmapResize(bmp, (int)iconSize, (int)iconSize);
-
-								IntPtr gdi = source.GetHbitmap();
-								ret = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-									gdi, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions()
-									);
-								Win32.DeleteObject(gdi);
-								source.Dispose();
-								ret.Freeze();
-							}
-						}
-					}
-				}
-
-				if (ret == null)
-				{
-					var source = Bitmap(size);
-					if (source != null)
-					{
-						IntPtr gdi = source.GetHbitmap();
-						ret = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-							gdi, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions()
-							);
-						Win32.DeleteObject(gdi);
-						source.Dispose();
-						ret.Freeze();
-					}
-				}
-
-				if (ret != null)
+                if (meta == null)
                 {
-					// Handle flags
-					Flags &= ~(LimeItemFlags.IsSizeRoundOff | LimeItemFlags.IsUseCover);
-					if (Tree.ImgSrcSizeRoundOff) Flags |= LimeItemFlags.IsSizeRoundOff;
-					if (Tree.ImgSrcUseCover) Flags |= LimeItemFlags.IsUseCover;
-
-					ImgSrc = ret;
+                    meta = MetadataLoad(coverOnly:true);
                 }
 
+                var pic = meta?.Pictures;
+
+                uint iconSize = size;
+                if (pic != null)
+                {
+                    // Round-off Icon size
+                    if (Tree.ImgSrcSizeRoundOff)
+                    {
+                        iconSize &= 0xFFFFFFF8;
+                        if (iconSize == 0) iconSize = size;
+                    }
+
+                }
+
+
+                if (pic is IEnumerable<TagLib.IPicture> enupic)
+                {
+                    // Select best picture for the icon, by order of preference:
+                    //    FileIcon, but only if the size of icon should be less or equal than 32x32;
+                    //    OtherFileIcon (represent the present file icon of any size);
+                    //    FrontCover (represent the album / collection)
+                    //    MovieScreenCapture
+                    //    DuringPerformance
+                    //    DuringRecording
+                    //    Illustration
+                    TagLib.PictureType typeLevel = TagLib.PictureType.NotAPicture;
+                    pic = null;
+                    foreach (var ipic in enupic)
+                    {
+                        if ( ipic.Type == TagLib.PictureType.FileIcon && iconSize <= 32 ||
+                                ipic.Type == TagLib.PictureType.OtherFileIcon )
+                        {
+                            pic = ipic;
+                            break;
+                        }
+                        else if (
+                            ipic.Type == TagLib.PictureType.FrontCover ||
+                                typeLevel != TagLib.PictureType.FrontCover && (
+                                    ipic.Type == TagLib.PictureType.MovieScreenCapture ||
+                                        typeLevel != TagLib.PictureType.MovieScreenCapture && 
+                                            (ipic.Type == TagLib.PictureType.DuringPerformance || 
+                                                typeLevel != TagLib.PictureType.DuringPerformance && 
+                                                    (ipic.Type == TagLib.PictureType.DuringRecording ||
+                                                        typeLevel != TagLib.PictureType.DuringRecording && 
+                                                            (ipic.Type == TagLib.PictureType.Illustration ||
+                                                                typeLevel != TagLib.PictureType.Illustration &&
+                                                                    ipic.Type == TagLib.PictureType.FileIcon ))))
+                            )
+                        {
+                            if (typeLevel != ipic.Type)
+                            {
+                                typeLevel = ipic.Type;
+                                pic = ipic;
+                            }
+                        }
+                    }
+                }
+                else if (pic is IEnumerable enu)
+                { 
+                    IEnumerator enumer = enu.GetEnumerator();
+                    if (enumer.MoveNext()) pic = enumer.Current;
+                }
+
+                // Convert only the Images retrieved by TagLib#. Others type (ImageSource) are the System Icon Jumbo.
+                if (pic is TagLib.IPicture tagpic)
+                {
+                    ret = LimeLib.ImageSourceFrom(tagpic.Data?.ToArray(), (int)iconSize, (int)iconSize);
+                }
+                //else if (pic is Bitmap bitmap)
+                //{
+                //    var img = LimeLib.BitmapResize(bitmap, (int)iconSize, (int)iconSize);
+                //    ret = LimeLib.ImageSourceFrom(img);
+                //    bitmap.Dispose();
+                //}
+                //else if (fpic != null)
+                //{ 
+                //    // Fall back to GDI method if fail
+                //    var img = LimeLib.ImageSourceFrom(pic);
+                //    if (img is System.Windows.Media.Imaging.BitmapImage bmpi)
+                //    {
+
+                //        using (MemoryStream outStream = new MemoryStream())
+                //        {
+                //            System.Windows.Media.Imaging.BitmapEncoder enc = new System.Windows.Media.Imaging.BmpBitmapEncoder();
+                //            enc.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmpi));
+                //            enc.Save(outStream);
+                //            var bmp = new Bitmap(outStream);
+                //            var source = LimeLib.BitmapResize(bmp, (int)iconSize, (int)iconSize);
+
+                //            IntPtr gdi = source.GetHbitmap();
+                //            ret = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                //                gdi, IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions()
+                //                );
+                //            Win32.DeleteObject(gdi);
+                //            source.Dispose();
+                //            ret.Freeze();
+                //        }
+                //    }
+                //}
+			}
+
+            // Fall back to System Icon if no success with metadata
+
+			if (ret is null)
+			{
+                using (var source = Bitmap(size))
+                {
+                    ret = LimeLib.ImageSourceFrom(source);
+                }
+
+            }
+
+			if (ret != null)
+            {
+				// Handle flags
+				Flags &= ~(LimeItemFlags.IsSizeRoundOff | LimeItemFlags.IsUseCover);
+				if (Tree.ImgSrcSizeRoundOff) Flags |= LimeItemFlags.IsSizeRoundOff;
+				if (Tree.ImgSrcUseCover) Flags |= LimeItemFlags.IsUseCover;
+
+				ImgSrc = ret;
             }
 
             return ret;
@@ -1998,19 +2062,21 @@ namespace Lime
                 foreach (var info in fInfos)
                 {
                     FileAttributes attr = info.CachedAttributes; // don't reload attributes
-
-                    // create the child item
-                    var child = new LimeItem
+                    if ((attr & Tree.HideFileAttribute) == 0)
                     {
-                        Name = info.Label,
-                        FileAttributes = attr,
-                        Path = info.FullName
-                    };
+                        // create the child item
+                        var child = new LimeItem
+                        {
+                            Name = info.Label,
+                            FileAttributes = attr,
+                            Path = info.FullName
+                        };
 
-                    LimeMsg.Debug("LimeItem Refresh: Special: {0} : {1}", child.Name, child.Path);
+                        LimeMsg.Debug("LimeItem Refresh: Special: {0} : {1}", child.Name, child.Path);
 
-                    // Add/sort to list
-                    if (child.Directory) dirs.Add(child); else files.Add(child);
+                        // Add/sort to list
+                        if (child.Directory) dirs.Add(child); else files.Add(child);
+                    }
                 }
 
             }
@@ -2049,7 +2115,7 @@ namespace Lime
                 foreach (var info in fInfos)
                 {
                     FileAttributes attr = info.Attributes;
-                    if ((attr & FileAttributes.Hidden) == 0)
+                    if ((attr & Tree.HideFileAttribute) == 0)
                     {
                         // create the child item
                         LimeItem child = new LimeItem
@@ -2327,10 +2393,15 @@ namespace Lime
 
             foreach (var node in this.Children)
             {
+                if (node is null)
+                {
+                    LimeMsg.Debug("LimeItem RefreshTaskSwitcher: Cancel {0} (Re-entrance)", this.Name);
+                    return false;
+                }
                 node.IsTaskThumbVisible = false;
             }
 
-            // Mark by null the limit between old qnd refreshed items
+            // Mark by null the limit between old and refreshed items
             this.Children.Add(null);
 
             try
@@ -2351,10 +2422,12 @@ namespace Lime
             this.Children.RemoveAt(0);
 
             // Refresh task found
-            foreach (var node in this.Children)
+            int i = 0;
+            LimeItem nodet;
+            while (i < this.Children.Count() && (nodet = this.Children[i++]) != null)
             {
-                node.Refresh();
-                node.IsTaskThumbVisible = this.IsPanelVisible;
+                nodet.Refresh();
+                nodet.IsTaskThumbVisible = this.IsPanelVisible;
             }
 
             return ret;
@@ -2468,7 +2541,7 @@ namespace Lime
             this.Description = desc;
 
             // Load data
-            MetadataLoad();
+            MetadataLoad(coverOnly: false);
 
             return true;
         }
@@ -2573,7 +2646,7 @@ namespace Lime
             }
 
             // Create new item
-            LimeItem node = new LimeItem(hWnd, this);
+            _ = new LimeItem(hWnd, this);
 
             return true;
         }
@@ -2588,20 +2661,21 @@ namespace Lime
         /// <summary>
         /// Load the Metadata contained in this item
         /// </summary>
+		/// <param name="coverOnly">Try to load only a cover, not the system icon</param>
         /// <returns>Metadata for this item</returns>
-        public LimeMetadata MetadataLoad()
+        public LimeMetadata MetadataLoad(bool coverOnly)
         {
             if (Metadata != null) return Metadata;
 
             LimeMsg.Debug("LimeItem MetadataLoad: {0}", Name);
 
             IsLoading = true;
-            Metadata = new LimeMetadata(this);
+            var meta = new LimeMetadata(this, coverOnly);
             IsLoading = false;
 
+            if (!coverOnly) Metadata = meta;
             if (Metadata != null) BuildToolTip();
-
-            return Metadata;
+            return meta;
         }
 
 
@@ -2639,7 +2713,7 @@ namespace Lime
                 {
                     await System.Threading.Tasks.Task.Run(() =>
                     {
-                        MetadataLoad();
+                        MetadataLoad(coverOnly: false);
                     });
                 }
                 else

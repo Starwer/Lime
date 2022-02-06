@@ -69,7 +69,7 @@ namespace WPFhelper
 
 		// ----------------------------------------------------------------------------------------------
 		/// <summary>
-		/// Drag Adorner
+		/// Waiting wheel Adorner
 		/// </summary>
 		public class WaitingWheelAdorner : Adorner
 		{

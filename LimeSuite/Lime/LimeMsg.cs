@@ -6,11 +6,10 @@
 * Copyright :   Sebastien Mouy © 2015  
 **************************************************************************/
 
-using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System;
-using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Lime
 {
@@ -158,26 +157,15 @@ namespace Lime
         /// <param name="msg">Textual description of the message</param>
         /// <param name="args">arguments to be expanded (using String.Format) in the msg.</param>
         /// <returns>The resulting Lime message</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Level(Severity lvl, string msg, params object[] args)
         {
             if (lvl < Verbosity) return;
 
             msg = Compose(lvl, msg, args);
 
-            Process(Handlers, lvl, msg);
+            Handlers?.Invoke(lvl, msg);
         }
-
-        /// <summary>
-        /// Process the message/level with all the handlers.
-        /// </summary>
-        /// <param name="handler">List of handlers to be called back</param>
-        /// <param name="lvl">severity level of the message</param>
-        /// <param name="msg">Textual description of the message</param>
-        private static void Process(Handler handler, Severity lvl, string msg)
-        {
-            handler?.Invoke(lvl, msg);
-        }
-
 
         /// <summary>
         /// Issue a Lime message of a severity level: Error.

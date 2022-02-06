@@ -200,7 +200,7 @@ namespace LimeLauncher
 
             // Preload directory content
             node.Refresh();
-            node.MetadataLoad();
+            node.MetadataLoad(coverOnly: false);
 
             // Preload Icons
             if (node.Directory && node.Children != null)

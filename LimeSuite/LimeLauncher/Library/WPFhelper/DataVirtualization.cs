@@ -233,6 +233,7 @@ namespace WPFhelper
 
 			var reflist = References[wxscroll];
 
+			// TODO: optimize to take into account what was visible previously to not loop all over again
 			foreach (var wref in reflist)
 			{
 				if (!wref.IsAlive || !(wref.Target is ItemsControl wxctrl)) continue;

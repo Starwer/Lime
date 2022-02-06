@@ -846,6 +846,8 @@ namespace Lime
         /// <param name="visible">Define visibility to the user</param>
         private void Factory(string ident, object source, PropertyInfo pi, LimePropertyAttribute attr, string name = null, bool? readOnly = null, bool? visible = null)
         {
+            LimeLib.LifeTrace(this);
+
             Source = source;
             string languageSection = IniLanguageSection;
 
@@ -982,6 +984,8 @@ namespace Lime
         /// </summary>
         public LimeProperty()
         {
+            LimeLib.LifeTrace(this);
+
             Source = null;
             PInfo = null;
             Type = null;

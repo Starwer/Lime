@@ -210,7 +210,7 @@ namespace Lime
         /// <returns>true if PIDL, false otherwise</returns>
         public static bool IsLibrary(string path)
         {
-            return (path != null && Path.GetExtension(path).ToLower() == ".library-ms");
+			return path != null && Path.GetExtension(path).Equals(".library-ms", StringComparison.InvariantCultureIgnoreCase);
         }
 
 
@@ -369,10 +369,10 @@ namespace Lime
 		/// </summary>
 		/// <param name="str">string containing a list</param>
 		/// <param name="separator">list-separator</param>
-		/// <returns></returns>
+		/// <returns>First word, or empty string if none found</returns>
 		public static string FirstWord(string str, string separator = ",", bool trim = true)
 		{
-			if (string.IsNullOrEmpty(str)) return "";
+			if (string.IsNullOrEmpty(str)) return string.Empty;
 			var idx = str.IndexOf(separator);
 			var ret = idx >= 0 ? str.Substring(0, idx) : str;
 			if (trim) ret = ret.Trim();
@@ -386,10 +386,14 @@ namespace Lime
 		/// Render an image of any type supported by Lime
 		/// </summary>
 		/// <param name="image">image of any type</param>
-		public static ImageSource ImageSourceFrom(object image)
+		public static ImageSource ImageSourceFrom(in object image)
 		{
 			ImageSource ret;
-			if (image is Uri uri)
+			if (image is ImageSource imgsrc)
+			{
+				ret = imgsrc;
+			}
+			else if (image is Uri uri)
 			{
 				ret = new BitmapImage(uri);
 			}
@@ -403,17 +407,31 @@ namespace Lime
 			}
 			else if (image is LimePicture lpic)
 			{
-				ret = BitmapFromRaw(lpic.Raw);
+				// Maybe not so efficient
+				ret = BitmapImageFromRaw(lpic.Raw);
 			}
+			else if (image is TagLib.IPicture ipic)
+			{
+				ret = BitmapImageFromRaw(ipic.Data?.ToArray());
+			}
+			//else if (image is Bitmap bmp)
+            //{
+			//	using (MemoryStream ms = new MemoryStream())
+            //{
+			//		bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+			//		var bmpimg = new BitmapImage();
+			//		bmpimg.BeginInit();
+			//		ms.Seek(0, SeekOrigin.Begin);
+			//		bmpimg.StreamSource = ms;
+			//		bmpimg.EndInit();
+			//		ret = bmpimg;
+			//	}
+			//}
 			else if (image is Image img)
 			{
 				ImageConverter converter = new ImageConverter();
 				var vect = (byte[])converter.ConvertTo(img, typeof(byte[]));
-				ret = BitmapFromRaw(vect);
-			}
-			else if (image is TagLib.IPicture ipic)
-			{
-				ret = BitmapFromRaw(ipic.Data?.ToArray());
+				ret = BitmapImageFromRaw(vect);
 			}
 			else
 			{
@@ -423,31 +441,117 @@ namespace Lime
 			return ret;
 		}
 
+
+		/// <summary>
+		/// Build an image from Picture bytes
+		/// </summary>
+		/// <param name="imageData">Picture as array of bytes</param>
+		/// <param name="imageData">image as array of bytes</param>
+		/// <param name="width">target width</param>
+		/// <param name="height">target height</param>
+		/// <param name="allowSmallerWidth">allow width to be smaller than target</param>
+		/// <returns>Pictures as BitmapImage</returns>
+		public static ImageSource ImageSourceFrom(byte[] imageData, int width, int height, bool allowSmallerWidth = true)
+		{
+			if (imageData == null) return null;
+			ImageSource image = null;
+
+			// byte[] to Bitmap
+			ImageConverter converter = new ImageConverter();
+			using (Bitmap bmp = (Bitmap)converter.ConvertFrom(imageData))
+			{
+				if (bmp == null) return null;
+
+				// Force DPI to normal (96 DPI = no rescale) to avoid ugly rescaling in WPF when image comes from format with DPI
+				bmp.SetResolution(96, 96);
+
+				int x = bmp.Width;
+				int y = bmp.Height;
+				int offsetX = 0;
+				int offsetY = 0;
+				bool enlarged = false;
+
+				// Compute new size if any is set
+				if (width > 0 && height > 0)
+				{
+					// minimum is not lower than 1 fouth of total size
+					int minx = width / 4;
+					if (x > width)
+					{
+						y = y * width / x;
+						x = width;
+					}
+					else if (x < minx)
+					{
+						y = y * minx / x;
+						x = minx;
+						enlarged = true;
+					}
+
+					int miny = height / 4;
+					if (y > height)
+					{
+						x = x * height / y;
+						y = height;
+					}
+					else if (y < miny && !enlarged)
+					{
+						x = x * miny / y;
+						y = miny;
+					}
+
+					if (allowSmallerWidth && width > x)
+					{
+						width = x;
+					}
+
+					offsetX = (width - x) / 2;
+					offsetY = (height - y) / 2;
+				}
+
+				using (Bitmap dest = new Bitmap(x, y))
+				{
+					if (dest == null) return null;
+					using (Graphics g = Graphics.FromImage(dest))
+					{
+						g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+						g.DrawImage(bmp, offsetX, offsetY, x, y);
+
+					}
+
+					var vect = (byte[])converter.ConvertTo(dest, typeof(byte[]));
+					image = BitmapImageFromRaw(vect);
+				}
+			}
+
+			return image;
+		}
+
+
 		/// <summary>
 		/// Build an image from Picture bytes
 		/// </summary>
 		/// <param name="imageData">Picture as array of bytes</param>
 		/// <returns>Pictures as BitmapImage</returns>
-		public static BitmapImage BitmapFromRaw(byte[] imageData)
+		public static BitmapImage BitmapImageFromRaw(byte[] imageData)
 		{
 			if (imageData == null) return null;
 			BitmapImage ret = null;
 
 			try
 			{
-				if (imageData == null) return ret;
+				if (imageData == null) return null;
 				var image = new BitmapImage();
-				using (var mem = new MemoryStream(imageData))
-				{
-					mem.Position = 0;
-					image.BeginInit();
-					image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-					image.CacheOption = BitmapCacheOption.OnLoad;
-					image.UriSource = null;
-					image.StreamSource = mem;
-					image.EndInit();
-				}
-
+				var mem = new MemoryStream(imageData, false);
+				//mem.Position = 0;
+				image.BeginInit();
+				//image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+				//image.CacheOption = BitmapCacheOption.None;
+				//image.UriSource = null;
+				image.StreamSource = mem;
+				image.EndInit();
+				//mem.Close();
+				//mem.Dispose();
 				image.Freeze();
 				ret = image;
 			}
@@ -531,6 +635,7 @@ namespace Lime
 		}
 
 
+
 		#endregion
 
 
@@ -538,7 +643,7 @@ namespace Lime
 		#region Memory Leak detection (Debugging Only)
 
 #if DEBUG
-		private static Dictionary<Type, List<WeakReference>> _LifeTrace = null;
+		private static readonly Dictionary<Type, List<WeakReference>> _LifeTrace = new Dictionary<Type, List<WeakReference>>();
 #endif
 
         /// <summary>
@@ -551,23 +656,21 @@ namespace Lime
         public static void LifeTrace(object obj)
         {
 #if DEBUG
-			if (_LifeTrace == null)
-			{
-				// Enable LifeTrace
-				_LifeTrace = new Dictionary<Type, List<WeakReference>>();
+			lock (_LifeTrace)
+			{ 
+				var type = obj.GetType();
+				var wref = new WeakReference(obj);
+				try
+				{
+					_LifeTrace[type].Add(wref);
+				}
+				catch
+				{
+					_LifeTrace.Add(type, new List<WeakReference> { wref });
+				}
 			}
-			var type = obj.GetType();
-            var wref = new WeakReference(obj);
-            try
-            {
-                _LifeTrace[type].Add(wref);
-            }
-            catch
-            {
-                _LifeTrace.Add(type, new List<WeakReference> { wref });
-            }
 
-            //LimeMsg.Debug("LifeTrace: {0} : {1}", type.Name, _LifeTrace[type].Count);
+			//LimeMsg.Debug("LifeTrace: {0} : {1}", type.Name, _LifeTrace[type].Count);
 #endif
 		}
 
@@ -581,43 +684,41 @@ namespace Lime
         public static void LifeCheck()
         {
 #if DEBUG
-            if (_LifeTrace == null)
-            {
-                // Enable LifeTrace
-                _LifeTrace = new Dictionary<Type, List<WeakReference>>();
-            }
+			LimeMsg.Debug("LifeCheck: +++++++++++++++++++++++");
+			//GC.Collect();
+			//GC.WaitForPendingFinalizers();
 
-            LimeMsg.Debug("LifeCheck: +++++++++++++++++++++++");
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+			int tot_count = 0;
+			int tot_freed = 0;
 
-            int tot_count = 0;
-            int tot_freed = 0;
-            foreach (var dict in _LifeTrace)
-            {
-                var type = dict.Key;
-				int alive = 0;
-				int freed = 0;
-				int count = dict.Value.Count;
-                while (alive < dict.Value.Count)
-                {
-                    if (dict.Value[alive].IsAlive)
-                    {
-                        alive++;
-                    }
-                    else
-                    {
-                        dict.Value.RemoveAt(alive);
-						freed++;
+			lock (_LifeTrace)
+			{
+				foreach (var dict in _LifeTrace)
+				{
+					var type = dict.Key;
+					int alive = 0;
+					int freed = 0;
+					int count = dict.Value.Count;
+					while (alive < dict.Value.Count)
+					{
+						if (dict.Value[alive].IsAlive)
+						{
+							alive++;
+						}
+						else
+						{
+							dict.Value.RemoveAt(alive);
+							freed++;
+						}
 					}
-                }
-                tot_count += alive;
-                tot_freed += freed;
-                LimeMsg.Debug("LifeCheck: {0} : {1} (Freed: {2})", type.Name, alive, freed);
-            }
+					tot_count += alive;
+					tot_freed += freed;
+					LimeMsg.Debug("LifeCheck: {0} : {1} (Freed: {2})", type.Name, alive, freed);
+				}
+			}
 
-            LimeMsg.Debug("LifeCheck: Total : {0} (Freed: {1})", tot_count, tot_freed);
-            LimeMsg.Debug("LifeCheck: -----------------------");
+			LimeMsg.Debug("LifeCheck: Total : {0} (Freed: {1})", tot_count, tot_freed);
+			LimeMsg.Debug("LifeCheck: -----------------------");
 #endif
 		}
 

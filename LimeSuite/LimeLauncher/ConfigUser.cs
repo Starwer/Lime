@@ -915,11 +915,28 @@ namespace LimeLauncher
 		private MediaType _ShowInfoPaneMediaTypes = MediaType.Video | MediaType.Audio | MediaType.Image;
 
 
+        /// <summary>
+        /// Hide files/directories which have one of those attribute
+        /// </summary>
+        [XmlElement]
+        public FileAttributes HideFileAttribute
+        {
+            get { return Global.Root.Tree.HideFileAttribute; }
+            set
+            {
+                if (value != Global.Root.Tree.HideFileAttribute)
+                {
+                    Global.Root.Tree.HideFileAttribute = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
-		/// <summary>
-		/// List of file extensions recognized as video, comma-separated
-		/// </summary>
-		[XmlElement]
+
+        /// <summary>
+        /// List of file extensions recognized as video, comma-separated
+        /// </summary>
+        [XmlElement]
 		public string ExtensionsVideo
 		{
 			get { return LimeLib.DeltaListFrom(LimeLib.VideoExtensions, LimeLib.cstVideoExtensions); }
