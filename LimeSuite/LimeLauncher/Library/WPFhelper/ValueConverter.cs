@@ -7,9 +7,11 @@
 **************************************************************************/
 
 
+using Lime;
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -55,6 +57,11 @@ namespace WPFhelper
                 {
                     // return the converted value
                     return converter.ConvertFrom(null, culture, value);
+                }
+                else if (targetType == typeof(ImageSource))
+                {
+                    // Try to convert anything to ImageSource
+                    return LimeLib.ImageSourceFrom(value);
                 }
                 else
                 {
