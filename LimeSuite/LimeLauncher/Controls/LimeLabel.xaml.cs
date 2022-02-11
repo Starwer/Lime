@@ -9,13 +9,15 @@
 using Lime;
 using System.Windows;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
-    /// <summary>
-    /// Interaction logic for LimeLabel.xaml
-    /// </summary>
-    public partial class LimeLabel : LimeControl
+	/// <summary>
+	/// Interaction logic for LimeLabel.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public partial class LimeLabel : LimeControl
     {
         public LimeLabel()
         {

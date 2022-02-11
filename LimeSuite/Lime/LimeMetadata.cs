@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Windows.Media;
 
 namespace Lime
@@ -42,15 +43,16 @@ namespace Lime
     }
 
 
-    // --------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------
 
 
 
 
-    /// <summary>
-    /// Represent the Metadata contained in a <see cref="LimeItem"/> as a collection of LimeProperty
-    /// </summary>
-    public class LimeMetadata : LimePropertyCollection
+	/// <summary>
+	/// Represent the Metadata contained in a <see cref="LimeItem"/> as a collection of LimeProperty
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public class LimeMetadata : LimePropertyCollection
 	{
 		// --------------------------------------------------------------------------------------------------
 		#region Constants & Static properties

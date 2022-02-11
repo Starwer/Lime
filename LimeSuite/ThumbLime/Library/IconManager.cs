@@ -11,10 +11,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
+[SupportedOSPlatform("windows")]
 public class IconManager
 {
     // Constants that we need in the function call

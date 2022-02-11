@@ -10,6 +10,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -31,6 +32,7 @@ namespace WPFhelper
     /// </code>
     /// </summary>
     /// <typeparam name="T">Type of the object handled by the derived class</typeparam>
+    [SupportedOSPlatform("windows")]
     [MarkupExtensionReturnType(typeof(object))]
     public abstract class BindingConstructorExtension<T> : MarkupExtension
     {

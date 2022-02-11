@@ -16,8 +16,8 @@ using TMDbLib.Objects.General;
 using TMDbLib.Objects.Search;
 using System.IO;
 using TMDbLib.Objects.Movies;
-using System.Net;
-using System.Drawing;
+using System.Net.Http;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -25,6 +25,7 @@ namespace Lime
 	/// <summary>
 	/// Retrieve metadata of a file (Video...) and handle file-tags 
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class LimeMetaSearch
 	{
 
@@ -78,7 +79,7 @@ namespace Lime
 		/// <summary>
 		/// Store a Web access to download pitures
 		/// </summary>
-		private WebClient WebClient;
+		private HttpClient HttpClient;
 
 
 		/// <summary>
@@ -129,7 +130,7 @@ namespace Lime
 			var posterUri = TmdbClient.GetImageUrl(TmdbClient.Config.Images.PosterSizes.Last(), url);
 
 			// Download the image
-			var bytes = WebClient.DownloadData(posterUri);
+			byte[] bytes = HttpClient.GetByteArrayAsync(posterUri).Result;
 
 			string ext;
 			try
@@ -183,8 +184,8 @@ namespace Lime
             {
 				LimeMsg.Debug("LimeMetaSearch: Connecting...");
 
-				// Initialize WEB client to download data
-				WebClient = new WebClient();
+				// Initialize HTTP client to download data
+				HttpClient = new HttpClient();
 
 				// Initialize TMDB
 				TmdbClient = new TMDbClient(TmdbApiKey);
@@ -572,41 +573,6 @@ namespace Lime
 			}
 
 			return false;
-		}
-
-
-		#endregion
-
-
-
-		// --------------------------------------------------------------------------------------------------
-		#region Class functions
-
-		/// <summary>
-		/// Retrieve an image as Bitmap from an URL/URI
-		/// </summary>
-		/// <param name="uri">URI representing an image</param>
-		/// <returns>the bitmap object representing the image</returns>
-		public static Bitmap URItoBitmap(string uri)
-		{
-			Bitmap ret = null;
-			if (String.IsNullOrEmpty(uri)) return null;
-
-			if (uri.StartsWith("data:image/")) // data URI
-			{
-				// decode header of data URI
-				int pos = uri.IndexOf(";base64,");
-				if (pos < 0) return null;
-
-				// Decode data body
-				var binData = Convert.FromBase64String(uri.Substring(pos + 8));
-
-				// Get Image from bytes in memory
-				var stream = new MemoryStream(binData);
-				ret = new Bitmap(stream);
-			}
-
-			return ret;
 		}
 
 

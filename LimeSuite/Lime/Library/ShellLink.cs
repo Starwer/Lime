@@ -30,16 +30,16 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows.Forms;
-using MSjogren.Samples.ShellLink;
-using FILETIME = System.Runtime.InteropServices.FILETIME;
 
 namespace MSjogren.Samples.ShellLink
 {
     /// <remarks>
     ///   .NET friendly wrapper for the ShellLink class
     /// </remarks>
+    [SupportedOSPlatform("windows")]
     public class ShellShortcut : IDisposable
     {
         private const int INFOTIPSIZE = 1024;

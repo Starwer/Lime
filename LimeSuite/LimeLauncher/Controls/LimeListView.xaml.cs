@@ -9,17 +9,16 @@
 using Lime;
 using System.Windows;
 using System.ComponentModel;
-using System.Collections;
 using System;
-using WPFhelper;
-using System.Windows.Controls;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
-    /// <summary>
-    /// Interaction logic for LimeListView.xaml
-    /// </summary>
-    public partial class LimeListView : LimeControl
+	/// <summary>
+	/// Interaction logic for LimeListView.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public partial class LimeListView : LimeControl
     {
         public LimeListView()
         {

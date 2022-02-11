@@ -13,6 +13,7 @@ using System.Xml.Serialization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Globalization;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -61,6 +62,7 @@ namespace Lime
     /// <summary>
     /// Associate additional LimeConfig attributes to a Lime configuration property
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [Serializable]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class LimePropertyAttribute : Attribute, INotifyPropertyChangedWeak
@@ -348,6 +350,7 @@ namespace Lime
     /// Represent a configuration property object with value, type and description, 
     /// which can reference directly an observable property.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [Serializable]
     public class LimeProperty : LimePropertyAttribute, IMatryoshka, IStringConvertible
     {

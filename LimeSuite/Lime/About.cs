@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace Lime
     /// <summary>
     /// Access the application meta-informations, installation, paths and versions
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public static class About
     {
         //***********************************************************************************************
@@ -49,7 +51,7 @@ namespace Lime
         {
             get
             {
-                return Path.GetFileName(Assembly.GetEntryAssembly().CodeBase);
+                return Path.GetFileName(Assembly.GetEntryAssembly().Location);
             }
         }
 
@@ -60,7 +62,7 @@ namespace Lime
         {
             get
             {
-                return new Uri(Assembly.GetEntryAssembly().CodeBase).LocalPath;
+                return new Uri(Assembly.GetEntryAssembly().Location).LocalPath;
             }
         }
 
@@ -81,7 +83,7 @@ namespace Lime
                         return titleAttribute.Title;
                     }
                 }
-                return Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().CodeBase);
+                return Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
             }
         }
 

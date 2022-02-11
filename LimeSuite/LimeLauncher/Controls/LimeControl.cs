@@ -19,6 +19,7 @@ using System.Windows.Input;
 using System.Collections.Generic;
 using System.Windows.Threading;
 using System.Linq;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
@@ -49,6 +50,7 @@ namespace LimeLauncher.Controls
 	/// <summary>
 	/// LimeControl provides the proper control for a LimePropoerty, depending on its content-type
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public partial class LimeControl : UserControl
     {
 

@@ -9,6 +9,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +24,7 @@ namespace WPFhelper
 	/// <summary>
 	/// Helper function for handling WPF in Code. 
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class WPF
 	{
 

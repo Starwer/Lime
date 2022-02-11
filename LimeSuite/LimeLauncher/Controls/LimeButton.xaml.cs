@@ -14,13 +14,15 @@ using System.Windows.Data;
 using System.Windows.Controls.Primitives;
 using System;
 using System.Windows.Input;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
-    /// <summary>
-    /// Interaction logic for LimeButton.xaml
-    /// </summary>
-    public partial class LimeButton : LimeControl
+	/// <summary>
+	/// Interaction logic for LimeButton.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public partial class LimeButton : LimeControl
     {
 
 		/// <summary>

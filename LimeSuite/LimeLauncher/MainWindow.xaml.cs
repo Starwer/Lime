@@ -26,12 +26,14 @@ using static LimeLauncher.ConfigLocal;
 using System.Windows.Threading;
 using System.Windows.Controls.Primitives;
 using LimeLauncher.Controls;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public partial class MainWindow : Window
     {
         // --------------------------------------------------------------------------------------------------

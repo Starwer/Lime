@@ -16,6 +16,7 @@ using MSjogren.Samples.ShellLink;
 using WindowsInput;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
@@ -24,6 +25,7 @@ namespace LimeLauncher
     /// <summary>
     /// Provides an unified and exhaustive description of all the LimeLauncher commands.
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public static class Commands
     {
 

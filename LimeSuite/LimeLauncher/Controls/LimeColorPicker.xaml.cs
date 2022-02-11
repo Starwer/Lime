@@ -19,12 +19,14 @@ using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Windows.Media;
 using System.Windows.Data;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
     /// <summary>
     /// Interaction logic for LimeColorPicker.xaml
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class LimeColorPicker : LimeControl
     {
         public LimeColorPicker()

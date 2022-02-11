@@ -27,12 +27,14 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 /// <summary>
 /// Win32 native method class.
 /// </summary>
+[SupportedOSPlatform("windows")]
 public static class Win32
 {
     // --------------------------------------------------------------------------------------------------
@@ -2022,15 +2024,15 @@ public static class Win32
 
 #endregion Enumerations
 
-// --------------------------------------------------------------------------------------------------
-#region Structures
+    // --------------------------------------------------------------------------------------------------
+    #region Structures
 
-#region Nested type: COPYDATASTRUCT
+    #region Nested type: COPYDATASTRUCT
 
-/// <summary>
-/// Data structure for sending data over a windows message.
-/// </summary>
-[StructLayout(LayoutKind.Sequential)]
+    /// <summary>
+    /// Data structure for sending data over a windows message.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
     public struct COPYDATASTRUCT
     {
         /// <summary>

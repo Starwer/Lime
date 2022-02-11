@@ -7,16 +7,12 @@
 **************************************************************************/
 
 using Lime;
-using LimeLauncher.Controls;
 using System;
-using System.Collections;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Threading;
 using WPFhelper;
 
 namespace LimeLauncher
@@ -24,6 +20,7 @@ namespace LimeLauncher
 	/// <summary>
 	/// Interaction logic for InfoPanel.xaml
 	/// </summary>
+	[SupportedOSPlatform("windows7.0")]
 	public partial class InfoPanel : UserControl
 	{
 		// --------------------------------------------------------------------------------------------------

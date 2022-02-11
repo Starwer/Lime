@@ -10,6 +10,7 @@ using Lime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -22,6 +23,7 @@ namespace LimeLauncher
     /// <summary>
     /// Main panel containing the browseable items (directory/forlders)
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public partial class BrowserPanel : UserControl
     {
         // --------------------------------------------------------------------------------------------------
@@ -203,7 +205,7 @@ namespace LimeLauncher
             node.MetadataLoad(coverOnly: false);
 
             // Preload Icons
-            if (node.Directory && node.Children != null)
+            if (node.Directory && node.Children != null && Global.Local.WindowState != WindowState.Maximized)
             {
                 LimeMsg.Debug("BrowserPanel Load: Preload");
                 foreach (var item in node.Children)

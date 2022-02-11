@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,10 +16,11 @@ using Lime;
 
 namespace LimeLauncher
 {
-    /// <summary>
-    /// Interaction logic for sysAbout.xaml
-    /// </summary>
-    public partial class AboutPanel : UserControl
+	/// <summary>
+	/// Interaction logic for sysAbout.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public partial class AboutPanel : UserControl
     {
         // --------------------------------------------------------------------------------------------------
         #region Basic Control logic

@@ -15,13 +15,15 @@ using System.ComponentModel;
 using System.Windows;
 using LimeLauncher.Controls;
 using System.Windows.Input;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
-    /// <summary>
-    /// Interaction logic for HelpPanel.xaml
-    /// </summary>
-    public partial class HelpPanel : UserControl
+	/// <summary>
+	/// Interaction logic for HelpPanel.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows7.0")]
+	public partial class HelpPanel : UserControl
     {
         // --------------------------------------------------------------------------------------------------
         #region Basic Control logic

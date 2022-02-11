@@ -77,7 +77,7 @@ namespace System.IO
                     System.IO.DirectoryInfoEx di = new System.IO.DirectoryInfoEx(sf);
                     retVal.Add(sf, di.FullName);
                 }
-                catch (ArgumentException ex)
+                catch
                 {
                 }
             }

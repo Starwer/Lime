@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
-using System.Security.Permissions;
+using System.Runtime.Versioning;
 
 namespace Peter
 {
@@ -26,6 +25,9 @@ namespace Peter
     /// Andreas Johansson
     /// afjohansson@hotmail.com
     /// http://afjohansson.spaces.live.com
+    /// 
+    /// *  10-02-2022 - Changed by Sebastien Mouy (Starwer)  
+    ///    * Fixed: HiWord/LoWord overflow in .NET 6.0
     /// </summary>
     /// <example>
     ///    ShellContextMenu scm = new ShellContextMenu();
@@ -33,6 +35,7 @@ namespace Peter
     ///    files[0] = new FileInfo(@"c:\windows\notepad.exe");
     ///    scm.ShowContextMenu(this.Handle, files, Cursor.Position);
     /// </example>
+    [SupportedOSPlatform("windows")]
     public class ShellContextMenu : NativeWindow
     {
         #region Constructor
@@ -1581,10 +1584,11 @@ namespace Peter
         /// <returns>The unsigned integer for the High Word</returns>
         public static uint HiWord(IntPtr ptr)
         {
-            if (((uint)ptr & 0x80000000) == 0x80000000)
-                return ((uint)ptr >> 16);
+            ulong val = unchecked((ulong)(ptr.ToInt64()));
+            if (val >= 0x80000000)
+                return (uint)(val >> 16);
             else
-                return ((uint)ptr >> 16) & 0xffff;
+                return (uint)(val >> 16) & 0xffff;
         }
 
         /// <summary>
@@ -1594,7 +1598,8 @@ namespace Peter
         /// <returns>The unsigned integer for the Low Word</returns>
         public static uint LoWord(IntPtr ptr)
         {
-            return (uint)ptr & 0xffff;
+            ulong val = unchecked((ulong)(ptr.ToInt64()));
+            return (uint)(val & 0xffff);
         }
 
         #endregion

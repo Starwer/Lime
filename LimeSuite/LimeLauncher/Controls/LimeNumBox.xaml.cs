@@ -14,12 +14,14 @@ using System.Windows;
 using System.ComponentModel;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
     /// <summary>
     /// Interaction logic for LimeNumBox.xaml
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class LimeNumBox : LimeControl
     {
         public LimeNumBox()

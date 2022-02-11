@@ -157,8 +157,10 @@ namespace System.IO
                     Marshal.ReleaseComObject(_iShellFolder2);
                     _iShellFolder2 = null;
                 }
-                catch (Exception ex) { Debug.WriteLine(ex.Message); }
-                catch { Debug.WriteLine("Exception thorown when releasing IShellFolder2."); }
+                catch (Exception ex) 
+                { 
+                    Debug.WriteLine(ex.Message); 
+                }
             }
 
             if (_ptrShellFolder2 != IntPtr.Zero)
@@ -167,7 +169,6 @@ namespace System.IO
                 {
                     Marshal.Release(_ptrShellFolder2);
                 }
-                catch (Exception) { }
                 catch { Debug.WriteLine("Exception thorown when releasing IShellFolder2's Ptr."); }
                 finally
                 {

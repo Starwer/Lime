@@ -10,22 +10,22 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.IO;
 using System.Threading.Tasks;
-using System.Threading;
 using ZeroFormatter;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Concurrent;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
-    /// <summary>
-    /// Represents a person (performer, writer, director...) and 
-    /// enables to save/retrieve information on this person from a local Person database or on Internet
-    /// </summary>
-    [ZeroFormattable]
+	/// <summary>
+	/// Represents a person (performer, writer, director...) and 
+	/// enables to save/retrieve information on this person from a local Person database or on Internet
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	[ZeroFormattable]
     public class LimePerson : StringConvertible, INotifyPropertyChanged
     {
 

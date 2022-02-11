@@ -12,6 +12,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,6 +29,7 @@ namespace WPFhelper
     /// Credit: Colin Eberhardt, modified by Starwer
     ///         http://blog.scottlogic.com/2010/07/09/a-universal-value-converter-for-wpf.html
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class UniversalValueConverter : IValueConverter
     {
 
@@ -468,33 +470,5 @@ namespace WPFhelper
 		}
 
 	}
-
-
-	// ----------------------------------------------------------------------------------------------
-	/// <summary>
-	/// Convert an icon to an ImageSource
-	/// </summary>
-	public class IconToImageConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var icon = value as System.Drawing.Icon;
-            if (icon == null)
-            {
-                return null;
-            }
-
-            ImageSource imageSource = Imaging.CreateBitmapSourceFromHIcon(
-                icon.Handle,
-                Int32Rect.Empty,
-                System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-            return imageSource;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
 
 }

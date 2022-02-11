@@ -10,12 +10,11 @@ using Lime;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Threading;
 using WPFhelper;
 
 namespace LimeLauncher
@@ -23,6 +22,7 @@ namespace LimeLauncher
 	/// <summary>
 	/// Interaction logic for InfoEditPanel.xaml
 	/// </summary>
+	[SupportedOSPlatform("windows7.0")]
 	public partial class InfoEditPanel : UserControl
 	{
 		// --------------------------------------------------------------------------------------------------

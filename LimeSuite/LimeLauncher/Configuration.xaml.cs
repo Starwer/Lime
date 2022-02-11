@@ -6,15 +6,10 @@
 * Copyright :   Sebastien Mouy © 2016  
 **************************************************************************/
 
-using Lime;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Runtime.Versioning;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Markup;
 using WPFhelper;
 
 namespace LimeLauncher
@@ -22,6 +17,7 @@ namespace LimeLauncher
     /// <summary>
     /// Lime Launcher Configuration Panel
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public partial class Configuration : Window
     {
         // --------------------------------------------------------------------------------------------------

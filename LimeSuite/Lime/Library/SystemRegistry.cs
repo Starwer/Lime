@@ -1,11 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Runtime.Versioning;
 using System.Security.Permissions;
 
 /// <summary>
 /// Windows System Registry access
 /// </summary>
-[RegistryPermission(SecurityAction.Demand, Read = @"HKEY_CURRENT_USER\SOFTWARE", Write = @"HKEY_CURRENT_USER\SOFTWARE")]
+[SupportedOSPlatform("windows")]
 public static class SystemRegistry
 {
     private const string AutoRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";

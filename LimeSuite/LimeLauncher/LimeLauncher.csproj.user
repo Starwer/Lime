@@ -15,4 +15,14 @@
     <StartArguments>
     </StartArguments>
   </PropertyGroup>
+  <ItemGroup>
+    <None Update="Skins\ProjectTile\ProjectTile.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Skins\System\System.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
 </Project>

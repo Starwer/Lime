@@ -7,6 +7,7 @@
 **************************************************************************/
 
 using System;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -20,6 +21,7 @@ namespace WPFhelper
 	/// <summary>
 	/// FrameworkElement representation, which can be moved anywhere on the screen
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class FreeFrameworkElementAvatar : IDisposable
 	{
 		private Popup DragIcon = null;

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -22,6 +23,7 @@ namespace LimeLauncher.Controls
     /// <summary>
     /// Interaction logic for LimePersonCtrl.xaml
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class LimePersonCtrl : LimeControl
     {
         public LimePersonCtrl()

@@ -13,12 +13,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace Lime
 {
 
 #if DEBUG
+    [SupportedOSPlatform("windows")]
     public static class AppxPackageTry
     {
         public static void Try()
@@ -97,6 +99,7 @@ namespace Lime
     }
 #endif
 
+    [SupportedOSPlatform("windows")]
     public sealed class AppxPackage
     {
         private List<AppxApp> _apps = new List<AppxApp>();
@@ -529,6 +532,7 @@ namespace Lime
         }
     }
 
+    [SupportedOSPlatform("windows")]
     public sealed class AppxApp
     {
         private AppxPackage.IAppxManifestApplication _app;

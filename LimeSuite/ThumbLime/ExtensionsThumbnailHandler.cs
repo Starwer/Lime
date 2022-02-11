@@ -7,27 +7,29 @@
 **************************************************************************/
 
 using SharpShell.Attributes;
+using System.Runtime.Versioning;
 
 namespace ThumbLime
 {
     /// <summary>
     /// Create all the extension classes supported by ThumbLime
     /// </summary>
+    [SupportedOSPlatform("windows")]
     class ExtensionsThumbnailHandler
     {
-        [COMServerAssociation(AssociationType.FileExtension, ".avi")]
+        [COMServerAssociation(AssociationType.ClassOfExtension, ".avi")]
         public class AviThumbnailHandler : LimeThumbnailHandler { }
 
-        [COMServerAssociation(AssociationType.FileExtension, ".mkv")]
+        [COMServerAssociation(AssociationType.ClassOfExtension, ".mkv")]
         public class MkvThumbnailHandler : LimeThumbnailHandler { }
 
-        [COMServerAssociation(AssociationType.FileExtension, ".m4v")]
+        [COMServerAssociation(AssociationType.ClassOfExtension, ".m4v")]
         public class M4vThumbnailHandler : LimeThumbnailHandler { }
 
-        [COMServerAssociation(AssociationType.FileExtension, ".wmv")]
+        [COMServerAssociation(AssociationType.ClassOfExtension, ".wmv")]
         public class WmvThumbnailHandler : LimeThumbnailHandler { }
 
-        [COMServerAssociation(AssociationType.FileExtension, ".mp4")]
+        [COMServerAssociation(AssociationType.ClassOfExtension, ".mp4")]
         public class Mp4ThumbnailHandler : LimeThumbnailHandler { }
 
     }

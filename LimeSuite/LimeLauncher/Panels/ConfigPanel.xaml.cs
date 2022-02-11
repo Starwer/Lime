@@ -7,6 +7,7 @@
 **************************************************************************/
 
 using Lime;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +17,7 @@ namespace LimeLauncher
     /// <summary>
     /// Interaction logic for ConfigPanel.xaml
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public partial class ConfigPanel : UserControl
     {
 

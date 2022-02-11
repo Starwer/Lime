@@ -13,6 +13,7 @@ using System.Xml.Serialization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Xml;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -21,6 +22,7 @@ namespace Lime
     /// and collection on LimeProperties.
     /// This exclude LimeItems, files and metadata.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [XmlRoot("LimeConfig")]
     public abstract class LimeConfig : INotifyPropertyChangedWeak
 	{

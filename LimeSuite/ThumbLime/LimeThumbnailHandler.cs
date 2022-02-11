@@ -14,6 +14,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows.Media.Imaging;
 
 namespace ThumbLime
@@ -21,6 +22,7 @@ namespace ThumbLime
     /// <summary>
     /// Base class to be use as a factory for the each ThumbnailHandler Extension class
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [ComVisible(true)]
     public abstract class LimeThumbnailHandler : SharpThumbnailHandler
     {

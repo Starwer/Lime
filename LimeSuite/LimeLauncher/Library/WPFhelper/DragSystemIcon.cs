@@ -6,9 +6,9 @@
 * Copyright :   Sebastien Mouy © 2019  
 **************************************************************************/
 
-using Lime;
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,6 +21,7 @@ namespace WPFhelper
 	/// <summary>
 	/// System-style Drag & Drop Icon handling (Windows desktop)
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class DragSystemIcon
 	{
 

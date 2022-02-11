@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using ZeroFormatter;
 
 namespace Lime
@@ -40,6 +41,7 @@ namespace Lime
     /// <summary>
     /// Represents a Movie, TvShow, Album... ViewModel and Serializable to binary
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [ZeroFormattable]
     public class LimeOpus : StringConvertible, INotifyPropertyChanged
     {

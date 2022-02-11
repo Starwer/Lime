@@ -15,6 +15,7 @@ using System.Windows;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using LimeLauncher.Controls;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
@@ -23,6 +24,7 @@ namespace LimeLauncher
     /// Contains the Local configuration of LimeLauncher (machine-related).
     /// This exclude LimeItems, files and metadata.
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     [XmlRoot("LimeConfig")]
     public class ConfigLocal : LimeConfig
     {

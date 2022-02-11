@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Media.Animation;
 using Lime;
 using LimeLauncher.Controls;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
@@ -74,6 +75,7 @@ namespace LimeLauncher
     /// <br/>Usage in Xaml: <Button Content="{Binding Converter={StaticResource TranslateConverter}, ConverterParameter='Hello'} " />
     /// <br/>Usage in Xaml: <Button Content="{Binding Converter={StaticResource TranslateConverter}, Path=ObjString} " />
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class TranslateConverter : IValueConverter
     {
 
@@ -123,6 +125,7 @@ namespace LimeLauncher
     /// <br/>Usage in Xaml: <Button Content="{l:Translate Hello} " />
     /// <br/>Usage in Xaml: <Button Content="{l:Translate Key=Hello, Section=Translator, Format='\{0\}.name'} " />
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [MarkupExtensionReturnType(typeof(string))]
     public class TranslateExtension : MarkupExtension
     {
@@ -177,6 +180,7 @@ namespace LimeLauncher
     /// <summary>
     /// Dedicated Validation procedure for the LimeProperty types
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimePropertyValidationRule : ValidationRule
     {
         /// <summary>
@@ -231,11 +235,12 @@ namespace LimeLauncher
             return ValidationResult.ValidResult;
         }
     }
-    
+
 
     /// <summary>
     /// Convert a LimeProperty to its CLI representation (string).
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimeProperty2CliConverter : IValueConverter
     {
         // Define formats
@@ -443,7 +448,7 @@ namespace LimeLauncher
         }
     }
 
-    
+
     #endregion
 
 
@@ -458,6 +463,7 @@ namespace LimeLauncher
     /// <ContextMenu ItemsSource="{l:EnumToItemsSource {x:Type l:DragDropActionType}}"  />
     /// </code>
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [MarkupExtensionReturnType(typeof(Dictionary<string, string>))]
     public class EnumToItemsSourceExtension : MarkupExtension
     {
@@ -493,17 +499,18 @@ namespace LimeLauncher
 
 
 
-	#endregion
+    #endregion
 
 
-	// --------------------------------------------------------------------------------------------------
-	#region Converters
+    // --------------------------------------------------------------------------------------------------
+    #region Converters
 
-	// ----------------------------------------------------------------------------------------------
-	/// <summary>
-	/// Convert any <see cref="IEnumerable"/> to a <see cref="string"/> representation.
-	/// </summary>
-	public class ListToStringConverter : IValueConverter
+    // ----------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Convert any <see cref="IEnumerable"/> to a <see cref="string"/> representation.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    public class ListToStringConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -561,13 +568,14 @@ namespace LimeLauncher
 
 	}
 
-	#endregion
+    #endregion
 
 
-	// --------------------------------------------------------------------------------------------------
-	#region AnimateAction
+    // --------------------------------------------------------------------------------------------------
+    #region AnimateAction
 
-	public static class AnimateAction
+    [SupportedOSPlatform("windows7.0")]
+    public static class AnimateAction
     {
         /// <summary>
         /// Indicate if an animation is ongoing.

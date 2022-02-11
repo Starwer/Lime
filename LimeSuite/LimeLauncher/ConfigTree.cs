@@ -8,20 +8,17 @@
 
 
 using Lime;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
-	/// <summary>
-	/// Provide all the ViewModel Structure as LimePropertyCollection properties.
-	/// A <see cref="null"/> represents a separator.
-	/// A string represents a LimeProperty from <see cref="Global.Properties"/> (command, boolean...).
-	/// </summary>
-	public class ConfigTree
+    /// <summary>
+    /// Provide all the ViewModel Structure as LimePropertyCollection properties.
+    /// A <see cref="null"/> represents a separator.
+    /// A string represents a LimeProperty from <see cref="Global.Properties"/> (command, boolean...).
+    /// </summary>
+    [SupportedOSPlatform("windows7.0")]
+    public class ConfigTree
     {
         // --------------------------------------------------------------------------------------------------
         #region Tree definition

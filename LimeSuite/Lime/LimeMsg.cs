@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -17,6 +18,7 @@ namespace Lime
     /// <summary>
     /// Handle all kinds of messages issued by Lime and use the appropriate way to display or log these.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimeMsg
     {
 
@@ -256,32 +258,6 @@ namespace Lime
 
             MessageBox.Show(msg, "Lime " + lvl.ToString(), MessageBoxButtons.OK, icon);
 
-        }
-
-
-        /// <summary>
-        /// Default LimeMsgHandler logging messages to the Windows Log system.
-        /// Only the message above the verbosity-level set in Verbosity property are displayed. 
-        /// </summary>
-        /// <param name="lvl">severity level of the message</param>
-        /// <param name="msg">Textual description of the message</param>
-        public static void WinLog(Severity lvl, string msg)
-        {
-            if (lvl < Verbosity) return;
-
-            EventLogEntryType logtype;
-            switch (lvl)
-            {
-                case Severity.Error: logtype = EventLogEntryType.Error; break;
-                case Severity.Warning: logtype = EventLogEntryType.Warning; break;
-                case Severity.Info: logtype = EventLogEntryType.Information; break;
-                default: logtype = EventLogEntryType.Information; break;
-            }
-
-            if (!EventLog.SourceExists(WinLogName))
-                EventLog.CreateEventSource(WinLogName, WinLogName + ".dll");
-
-            EventLog.WriteEntry(WinLogName, msg, logtype);
         }
 
 

@@ -16,13 +16,15 @@ using System.Diagnostics;
 using System.Windows.Media.Imaging;
 using System.Drawing;
 using System.Windows.Media;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
-    /// <summary>
-    /// Library of general purpose functions (commodities) for handling Lime
-    /// </summary>
-    public static class LimeLib
+	/// <summary>
+	/// Library of general purpose functions (commodities) for handling Lime
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public static class LimeLib
 	{
 		// --------------------------------------------------------------------------------------------------
 		#region Constants
@@ -167,8 +169,8 @@ namespace Lime
             if (path != null && path.Length > 2 && path[0] == ':' && path[1] != ':')
             {
                 LimeMsg.Debug("LimeLib FreePIDL: PIDL: {0}", path);
-                int pidli = int.Parse(path.Substring(1));
-                Win32.ILFree((IntPtr)pidli);
+				IntPtr pidli = IntPtr.Parse(path.Substring(1));
+                Win32.ILFree(pidli);
                 return true;
             }
             return false;

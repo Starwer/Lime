@@ -10,6 +10,7 @@ using Lime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -20,6 +21,7 @@ namespace WPFhelper
 	/// <summary>
 	/// Enable to do Data-Virtualization on any Control, without the need of UWP
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class DataVirtualization
 	{
 		/// <summary>

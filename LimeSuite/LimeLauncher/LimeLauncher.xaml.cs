@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Windows;
 using Lime;
-using Microsoft.Shell;
 
 namespace LimeLauncher
 {
@@ -18,7 +18,8 @@ namespace LimeLauncher
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application, ISingleInstanceApp 
+    [SupportedOSPlatform("windows7.0")]
+    public partial class App : Application 
     {
         /// <summary>
         /// Function called back when the application starts: Initialize the application
@@ -190,23 +191,11 @@ namespace LimeLauncher
         [STAThread]
         public static void Main()
         {
-            if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
-            {
-                var application = new App();
+            var application = new App();
 
-                application.InitializeComponent();
-                application.Run();
+            application.InitializeComponent();
+            application.Run();
 
-                // Allow single instance code to perform cleanup operations
-                SingleInstance<App>.Cleanup();
-            }
-        }
-
-
-        public bool SignalExternalCommandLineArgs(IList<string> args)
-        {
-            // handle command line arguments of second instance
-            return CommandLineInterface(false, args);
         }
 
         #endregion

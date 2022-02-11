@@ -15,12 +15,14 @@ using System.Windows.Data;
 using System.Windows.Controls.Primitives;
 using System.Collections;
 using WPFhelper;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
 	/// <summary>
 	/// Interaction logic for LimeToolBar.xaml
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public partial class LimeToolBar : LimeControl
     {
 

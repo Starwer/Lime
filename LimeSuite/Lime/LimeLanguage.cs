@@ -11,12 +11,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
     /// <summary>
     /// Static Class to handle languages in Lime
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimeLanguage : PickCollection
     {
 

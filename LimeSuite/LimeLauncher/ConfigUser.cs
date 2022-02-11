@@ -13,6 +13,7 @@ using Lime;
 using WPFhelper;
 using System.Collections.Generic;
 using LimeLauncher.Controls;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
@@ -20,6 +21,7 @@ namespace LimeLauncher
     /// Contains the User-configuration of LimeLauncher (and basic LIME configuration).
     /// This exclude LimeItems, files and metadata.
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     [XmlRoot("LimeConfig")]
     public class ConfigUser : LimeConfig
     {

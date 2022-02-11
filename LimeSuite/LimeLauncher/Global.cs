@@ -11,12 +11,14 @@ using Lime;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher
 {
     /// <summary>
     /// Main entry point to the application object-structure
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public static class Global
     {
         // --------------------------------------------------------------------------------------------------

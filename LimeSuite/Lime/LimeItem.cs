@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Text.RegularExpressions;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -140,6 +141,7 @@ namespace Lime
     /// An item can represent anything that can be manipulated by Lime, like file, folder, task, configuration items, shortcut...
     /// Items are organized as a tree, so these can have a parent node and child nodes.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimeItem : INotifyPropertyChangedWeak, IDataObjectCompatible, IItemsRangeInfo
 	{
 

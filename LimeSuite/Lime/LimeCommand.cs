@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Windows.Input;
 
 namespace Lime
@@ -15,6 +16,7 @@ namespace Lime
     /// <summary>
     /// Properties defining a command in an exhaustive way.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimeCommand : ICommand
     {
         // --------------------------------------------------------------------------------------------------

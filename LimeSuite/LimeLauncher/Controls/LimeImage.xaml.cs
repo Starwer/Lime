@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,10 +19,11 @@ using System.Windows.Input;
 
 namespace LimeLauncher.Controls
 {
-    /// <summary>
-    /// Interaction logic for LimeImage.xaml
-    /// </summary>
-    public partial class LimeImage : LimeControl, IAutoSlide
+	/// <summary>
+	/// Interaction logic for LimeImage.xaml
+	/// </summary>
+	[SupportedOSPlatform("windows")]
+	public partial class LimeImage : LimeControl, IAutoSlide
 	{
         public LimeImage()
         {

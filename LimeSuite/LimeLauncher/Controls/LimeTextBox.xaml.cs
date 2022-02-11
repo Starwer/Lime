@@ -6,7 +6,6 @@
 * Copyright :   Sebastien Mouy © 2018  
 **************************************************************************/
 
-using System;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Lime;
@@ -14,12 +13,14 @@ using System.Windows;
 using System.ComponentModel;
 using System.Windows.Data;
 using WPFhelper;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
 	/// <summary>
 	/// Interaction logic for LimeTextBox.xaml
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public partial class LimeTextBox : LimeControl
     {
         public LimeTextBox()

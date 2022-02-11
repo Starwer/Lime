@@ -6,15 +6,15 @@
 //                                                                                                               //
 // 01/06/2016 - Changed by Sebastien Mouy (Starwer)                                                              //
 //              Added property CachedAttributes                                                                  //
+// 10/02/2022 - Changed by Sebastien Mouy (Starwer)                                                              //
+//              Fixed warnings on .NET 6.0                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.IO;
+
 using System.Runtime.InteropServices;
 using System.Text;
 using ShellDll;
 using System.Runtime.Serialization;
-using System.Diagnostics;
-using System.Collections.Generic;
+
 
 namespace System.IO
 {
@@ -83,7 +83,6 @@ namespace System.IO
 
                     this.RequestPIDL((pidl) =>
                         {
-                            PIDL relPIDL;
                             _parent = new DirectoryInfoEx(getParentPIDL(pidl));                            
                             _parentInited = true;
                             
@@ -479,7 +478,7 @@ namespace System.IO
         /// Refresh the file / directory info. Does not refresh directory contents 
         /// because it refresh every time GetFiles/Directories/FileSystemInfos is called.
         /// </summary>
-        public new void Refresh(RefreshModeEnum mode = RefreshModeEnum.AllProps )
+        public void Refresh(RefreshModeEnum mode = RefreshModeEnum.AllProps )
         {
             RefreshMode |= mode; //0.23 : Delay loading some properties.
 

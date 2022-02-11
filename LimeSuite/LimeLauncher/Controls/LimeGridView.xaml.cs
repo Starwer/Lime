@@ -9,17 +9,16 @@
 using Lime;
 using System.Windows;
 using System.ComponentModel;
-using System.Collections;
-using System;
-using WPFhelper;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Runtime.Versioning;
 
 namespace LimeLauncher.Controls
 {
 	/// <summary>
 	/// Interaction logic for LimeGridView.xaml
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public partial class LimeGridView : LimeControl
     {
         public LimeGridView()

@@ -6,6 +6,7 @@
 * Copyright :   Sebastien Mouy © 2018  
 **************************************************************************/
 
+using System.Runtime.Versioning;
 using TagLib;
 using ZeroFormatter;
 
@@ -15,6 +16,7 @@ namespace Lime
     /// <summary>
     /// Provide a Serializable Picture representation compatible with TagLib#
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [ZeroFormattable]
     public class LimePicture : IPicture
     {

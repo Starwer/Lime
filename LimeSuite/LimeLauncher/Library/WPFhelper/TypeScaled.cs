@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -97,6 +98,7 @@ namespace WPFhelper
     /// Base class for deriving multiple TypeScaled class
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [SupportedOSPlatform("windows")]
     [ContentProperty("Value")]
     public abstract class TypeScaled<T> : TypeScaled
     {
@@ -199,6 +201,7 @@ namespace WPFhelper
     /// </summary>
     /// <typeparam name="Td">Derived TypeScaled class to convert to.</typeparam>
     /// <typeparam name="Tv">Type of the value to the TypeScaled class.</typeparam>
+    [SupportedOSPlatform("windows")]
     public class TypeScaledTypeConverter<Td, Tv> : TypeConverter where Td : TypeScaled<Tv>, new()
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -282,6 +285,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Byte value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<ByteScaled, byte>))]
     public class ByteScaled : TypeScaled<byte>
     {
@@ -297,6 +301,7 @@ namespace WPFhelper
         /// <returns>string representation of the object</returns>
         public string ToString(string format) { return Value.ToString(format); }
     }
+    [SupportedOSPlatform("windows")]
     public class ByteScaledExtension : BindingConstructorExtension<ByteScaled>
     {   // Boiler plate
         public ByteScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -307,6 +312,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Int16 value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<Int16Scaled, Int16>))]
     public class Int16Scaled : TypeScaled<Int16>
     {
@@ -322,6 +328,7 @@ namespace WPFhelper
 		/// <returns>string representation of the object</returns>
 		public string ToString(string format) { return Value.ToString(format); }
     }
+    [SupportedOSPlatform("windows")]
     public class Int16ScaledExtension : BindingConstructorExtension<Int16Scaled>
     {   // Boiler plate
         public Int16ScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -332,6 +339,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Int32 value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<Int32Scaled, Int32>))]
     public class Int32Scaled : TypeScaled<Int32>
     {
@@ -347,6 +355,7 @@ namespace WPFhelper
 		/// <returns>string representation of the object</returns>
 		public string ToString(string format) { return Value.ToString(format); }
     }
+    [SupportedOSPlatform("windows")]
     public class Int32ScaledExtension : BindingConstructorExtension<Int32Scaled>
     {   // Boiler plate
         public Int32ScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -357,6 +366,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Int64 value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<Int64Scaled, Int64>))]
     public class Int64Scaled : TypeScaled<Int64>
     {
@@ -372,6 +382,7 @@ namespace WPFhelper
 		/// <returns>string representation of the object</returns>
 		public string ToString(string format) { return Value.ToString(format); }
     }
+    [SupportedOSPlatform("windows")]
     public class Int64ScaledExtension : BindingConstructorExtension<Int64Scaled>
     {   // Boiler plate
         public Int64ScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -382,6 +393,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Single value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<SingleScaled, Single>))]
     public class SingleScaled : TypeScaled<Single>
     {
@@ -397,6 +409,7 @@ namespace WPFhelper
 		/// <returns>string representation of the object</returns>
 		public string ToString(string format) { return Value.ToString(format); }
     }
+    [SupportedOSPlatform("windows")]
     public class SingleScaledExtension : BindingConstructorExtension<SingleScaled>
     {   // Boiler plate
         public SingleScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -407,6 +420,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a double value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<DoubleScaled, double>))]
     public class DoubleScaled : TypeScaled<double>
     {
@@ -427,16 +441,18 @@ namespace WPFhelper
 			throw new NotImplementedException();
 		}
 	}
+    [SupportedOSPlatform("windows")]
     public class DoubleScaledExtension: BindingConstructorExtension<DoubleScaled>
     {   // Boiler plate
         public DoubleScaledExtension() { binding = new BindingSustained("Scaled"); }
         public DoubleScaledExtension(object value) : this() { Value = value; }
     }
-    
+
 
     /// <summary>
     /// Represents a Thickness value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<ThicknessScaled, Thickness>))]
     public class ThicknessScaled : TypeScaled<Thickness>
     {
@@ -509,6 +525,7 @@ namespace WPFhelper
             DependencyProperty.Register("Bottom", typeof(double), typeof(ThicknessScaled), new PropertyMetadata(OnValuePropertyChanged));
 
     }
+    [SupportedOSPlatform("windows")]
     public class ThicknessScaledExtension : BindingConstructorExtension<ThicknessScaled>
     {   // Boiler plate
         public ThicknessScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -521,6 +538,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Size value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<SizeScaled, Size>))]
     public class SizeScaled : TypeScaled<Size>
     {
@@ -529,7 +547,8 @@ namespace WPFhelper
 			return new Size(value.Width * factor, value.Height * factor);
 		}
 	}
-	public class SizeScaledExtension : BindingConstructorExtension<SizeScaled>
+    [SupportedOSPlatform("windows")]
+    public class SizeScaledExtension : BindingConstructorExtension<SizeScaled>
     {   // Boiler plate
         public SizeScaledExtension() { binding = new BindingSustained("Scaled"); }
         public SizeScaledExtension(object value) : this() { Value = value; }
@@ -540,6 +559,7 @@ namespace WPFhelper
     /// Represents a Rect value which can scale with the factor defined in TypeScaled.Scale.
     /// Only the size of the rectangle scales, its position remain unchanged.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<RectScaled, Rect>))]
     public class RectScaled : TypeScaled<Rect>
     {
@@ -548,6 +568,7 @@ namespace WPFhelper
 			return new Rect(value.X, value.Y, value.Width * factor, value.Height * factor);
 		}
 	}
+    [SupportedOSPlatform("windows")]
     public class RectScaledExtension : BindingConstructorExtension<RectScaled>
     {   // Boiler plate
         public RectScaledExtension() { binding = new BindingSustained("Scaled"); }
@@ -558,6 +579,7 @@ namespace WPFhelper
     /// <summary>
     /// Represents a Vector value which can scale with the factor defined in TypeScaled.Scale
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [TypeConverter(typeof(TypeScaledTypeConverter<VectorScaled, Vector>))]
     public class VectorScaled : TypeScaled<Vector>
     {
@@ -567,7 +589,8 @@ namespace WPFhelper
 		}
 
 	}
-	public class VectorScaledExtension : BindingConstructorExtension<VectorScaled>
+    [SupportedOSPlatform("windows")]
+    public class VectorScaledExtension : BindingConstructorExtension<VectorScaled>
     {   // Boiler plate
         public VectorScaledExtension() { binding = new BindingSustained("Scaled"); }
         public VectorScaledExtension(object value) : this() { Value = value; }

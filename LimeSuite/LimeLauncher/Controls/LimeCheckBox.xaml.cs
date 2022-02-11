@@ -7,22 +7,17 @@
 **************************************************************************/
 
 using System;
+using System.Runtime.Versioning;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Lime;
-using System.Windows;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Text;
-using WPFhelper;
-using System.Windows.Controls.Primitives;
-using System.Diagnostics;
+
 
 namespace LimeLauncher.Controls
 {
     /// <summary>
     /// Interaction logic for LimeCheckBox.xaml
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class LimeCheckBox : LimeControl
     {
         public LimeCheckBox()

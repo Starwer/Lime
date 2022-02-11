@@ -1,18 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9446D654-2333-4A03-AC5E-33B18B607F6E}</ProjectGuid>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LimeLauncher</RootNamespace>
-    <AssemblyName>LimeLauncher</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -28,27 +17,18 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>False</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
     <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>LimeLauncher.App</StartupObject>
@@ -60,309 +40,35 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hardcodet.NotifyIcon.Wpf, Version=1.1.0.0, Culture=neutral, PublicKeyToken=682384a853a08aad, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.1.0\lib\net472\Hardcodet.NotifyIcon.Wpf.dll</HintPath>
-    </Reference>
     <Reference Include="InputSimulator">
       <HintPath>Library\InputSimulator.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\LimeIcon.xaml.cs">
-      <DependentUpon>LimeIcon.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeGridView.xaml.cs">
-      <DependentUpon>LimeGridView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimePersonCtrl.xaml.cs">
-      <DependentUpon>LimePersonCtrl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeImage.xaml.cs">
-      <DependentUpon>LimeImage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeToolBar.xaml.cs">
-      <DependentUpon>LimeToolBar.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Library\WPFhelper\ComDataObject.cs" />
-    <Compile Include="Library\WPFhelper\DataVirtualization.cs" />
-    <Compile Include="Library\WPFhelper\DebugAdorner.cs" />
-    <Compile Include="Library\WPFhelper\DragSystemIcon.cs" />
-    <Compile Include="Library\WPFhelper\FrameworkElementAvatar.cs" />
-    <Compile Include="Library\WPFhelper\MarkupExtension.cs" />
-    <Compile Include="Library\WPFhelper\TypeScaled.cs" />
-    <Compile Include="Library\WPFhelper\ExtensionMethods.cs" />
-    <Compile Include="Library\WPFhelper\ValueConverter.cs" />
-    <Compile Include="Library\WPFhelper\ClipDragDrop.cs" />
-    <Compile Include="Library\WPFhelper\VirtualizingWrapPanel.cs" />
-    <Compile Include="Library\WPFhelper\WaitingWheel.cs" />
-    <Compile Include="ConfigTree.cs" />
-    <Compile Include="Controls\LimeColorPicker.xaml.cs">
-      <DependentUpon>LimeColorPicker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeComposite.cs" />
-    <Compile Include="Controls\LimeButton.xaml.cs">
-      <DependentUpon>LimeButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeNumBox.xaml.cs">
-      <DependentUpon>LimeNumBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeLabel.xaml.cs">
-      <DependentUpon>LimeLabel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeControl.cs" />
-    <Compile Include="Controls\LimeCheckBox.xaml.cs">
-      <DependentUpon>LimeCheckBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeDropDown.xaml.cs">
-      <DependentUpon>LimeDropDown.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeListView.xaml.cs">
-      <DependentUpon>LimeListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\BrowserPanel.xaml.cs">
-      <DependentUpon>BrowserPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\HelpPanel.xaml.cs">
-      <DependentUpon>HelpPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\LimeTextBox.xaml.cs">
-      <DependentUpon>LimeTextBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Library\WaitRotatingDots.xaml.cs">
-      <DependentUpon>WaitRotatingDots.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\ConfigPanel.xaml.cs">
-      <DependentUpon>ConfigPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\MetadataSearchPanel.xaml.cs">
-      <DependentUpon>MetadataSearchPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\InfoEditPanel.xaml.cs">
-      <DependentUpon>InfoEditPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\InfoPanel.xaml.cs">
-      <DependentUpon>InfoPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Panels\SkinPanel.xaml.cs">
-      <DependentUpon>SkinPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Skin.cs" />
-    <Page Include="Controls\Icons.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\LimeIcon.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\LimeGridView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimePersonCtrl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeImage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeToolBar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\LimeColorPicker.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeNumBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeLabel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeCheckBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeDropDown.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\LimeListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Panels\BrowserPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Panels\HelpPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Panels\AboutPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\LimeTextBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Library\WaitRotatingDots.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Panels\ConfigPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Panels\MetadataSearchPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Panels\InfoEditPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Panels\InfoPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="LimeLauncher.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="..\LimeVersionInfo.cs">
       <Link>Properties\LimeVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="ConfigLocal.cs" />
-    <Compile Include="Panels\AboutPanel.xaml.cs">
-      <DependentUpon>AboutPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Global.cs" />
-    <Compile Include="Library\WPFhelper\WPF.cs" />
-    <Compile Include="Library\SingleInstance.cs" />
-    <Page Include="Configuration.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Panels\SkinPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Properties\DesignTimeResources.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
-    </Page>
-    <None Include="app.config" />
-    <None Include="AppsFolder.dat">
+    <None Update="AppsFolder.dat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="doc\TemplateDir\TemplateFile">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="packages.config" />
-    <None Include="Skins\ProjectTile\ProjectTile.xaml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="Library\Thumbnail.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands.cs" />
-    <Compile Include="LimeLauncher.xaml.cs">
-      <DependentUpon>LimeLauncher.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ConfigUser.cs" />
-    <Compile Include="Configuration.xaml.cs">
-      <DependentUpon>Configuration.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="LimeWPF.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <None Include="Skins\System\System.xaml">
-      <SubType>Designer</SubType>
+    <None Update="doc\TemplateDir\TemplateFile">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="Languages\en-US.ini">
+    <None Update="Languages\en-US.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Languages\fr-FR.ini">
+    <None Update="Languages\fr-FR.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LimeLauncher.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ColorPicker\ColorPicker.csproj">
-      <Project>{827f8c33-8118-48c7-ab3c-4864298396ad}</Project>
-      <Name>ColorPicker</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Lime\Lime.csproj">
-      <Project>{ee85a931-b7a2-43ee-a4af-a9d12c2733b5}</Project>
-      <Name>Lime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
-      <Project>{95603f52-9aea-4bb7-a1ca-7ce3ccbc571a}</Project>
-      <Name>TaglibSharp</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\ColorPicker\ColorPicker.csproj" />
+    <ProjectReference Include="..\Lime\Lime.csproj" />
+    <ProjectReference Include="..\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Lime Icon.ico" />
@@ -385,30 +91,47 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="doc\Lime Icon 256.png">
+    <None Update="doc\Lime Icon 256.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="doc\help.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Skins\ProjectTile\Arrow Left black.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Skins\ProjectTile\Arrow Left white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="doc\help.htm">
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.310801">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Skins\ProjectTile\ProjectTile.xaml" />
+    <Page Remove="Skins\System\System.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Skins\ProjectTile\ProjectTile.xaml">
+      <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Skins\ProjectTile\Arrow Left black.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Skins\ProjectTile\Arrow Left white.png">
+    <None Include="Skins\System\System.xaml">
+      <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>echo $(ProjectDir) &gt; ..\Debug\debug.cfg</PreBuildEvent>
+    <PackageIcon>Lime Icon 256.png</PackageIcon>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

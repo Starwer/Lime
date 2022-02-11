@@ -14,6 +14,7 @@ using System.Windows;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -23,6 +24,7 @@ namespace Lime
     /// The special pseudo PropertyChanged "Item" indicates a change inside an Item of any collection down the tree. 
     /// A Subscriber handling LimePropertyChangedEventArgs can retrieve the path (in the tree) of the object which changed.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class LimePropertyCollection : ObservableCollection<LimeProperty>, INotifyPropertyChangedWeak
 
     {

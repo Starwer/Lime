@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Markup;
 using System.Xml.Serialization;
@@ -30,6 +31,7 @@ namespace LimeLauncher
     /// Alow convertion from virtually everything to everything to the SkinParam. The realcoonversion will be 
     /// handled by the ConfigProperty properties: Content/Value.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class SkinParamConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -65,6 +67,7 @@ namespace LimeLauncher
     /// <summary>
     /// Encompasse an object in this Content property that should be parameterizable in Lime Launcher.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [Serializable]
     [ContentProperty("Content"), TypeConverter(typeof(SkinParamConverter))]
     public class SkinParam : LimeProperty
@@ -112,6 +115,7 @@ namespace LimeLauncher
     /// <summary>
     /// Represent the parameters of a skin for LimeLauncher
     /// </summary>
+    [SupportedOSPlatform("windows7.0")]
     public class Skin : INotifyPropertyChanged
     {
 

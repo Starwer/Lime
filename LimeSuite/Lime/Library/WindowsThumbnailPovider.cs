@@ -17,6 +17,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace Lime
 {
@@ -31,6 +32,7 @@ namespace Lime
         InCacheOnly = 0x10,
     }
 
+    [SupportedOSPlatform("windows")]
     public class WindowsThumbnailProvider
     {
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";

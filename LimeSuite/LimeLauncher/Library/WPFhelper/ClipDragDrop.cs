@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -179,6 +180,7 @@ namespace WPFhelper
 	/// <summary>
 	/// Drop Menu Command Type
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class ClipDragDropMenuCommand : ICommand
 	{
 		public bool CanExecute(object parameter)
@@ -219,6 +221,7 @@ namespace WPFhelper
 	/// To fully leverage the use of this class, it is recommended to use IDataObjectCompatible objects
 	/// for the View-Model, as Drag-Sources and Drop-Destination data.
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public static class ClipDragDrop
 	{
 		// ----------------------------------------------------------------------------------------------
