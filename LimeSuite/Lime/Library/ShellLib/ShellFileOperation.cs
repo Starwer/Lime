@@ -208,7 +208,7 @@ namespace ShellLib
             FileOpStruct.lpszProgressTitle = ProgressTitle;
             FileOpStruct.fAnyOperationsAborted = 0;
             FileOpStruct.hNameMappings = IntPtr.Zero;
-            this.NameMappings = new ShellNameMapping[0];
+            NameMappings = new ShellNameMapping[0];
 
             int RetVal;
             RetVal = ShellApi.SHFileOperation(ref FileOpStruct);
@@ -234,7 +234,7 @@ namespace ShellLib
                     typeof(ShellApi.SHNAMEMAPPINGINDEXSTRUCT));
 
                 // Prepare array
-                this.NameMappings = new ShellNameMapping[mappingIndex.counter];
+                NameMappings = new ShellNameMapping[mappingIndex.counter];
 
                 // Set pointer to first mapping struct
                 IntPtr mover = mappingIndex.firstMappingStruct;
@@ -243,7 +243,7 @@ namespace ShellLib
                     ShellApi.SHNAMEMAPPINGSTRUCT oneNameMappingStruct =
                         (ShellApi.SHNAMEMAPPINGSTRUCT)Marshal.PtrToStructure(mover, typeof(ShellApi.SHNAMEMAPPINGSTRUCT));
                         
-                    this.NameMappings[i] = new ShellNameMapping(oneNameMappingStruct.pszOldPath, oneNameMappingStruct.pszNewPath);
+                    NameMappings[i] = new ShellNameMapping(oneNameMappingStruct.pszOldPath, oneNameMappingStruct.pszNewPath);
 
                     // move pointer to the next mapping struct 
                     mover = (IntPtr)((int)mover + Marshal.SizeOf(typeof(ShellApi.SHNAMEMAPPINGSTRUCT)));

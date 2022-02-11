@@ -152,26 +152,26 @@ namespace ShellLib
 
             public void CopyFrom(SHFILEOPSTRUCT32 initializer)
             {
-                this.hwnd = initializer.hwnd;
-                this.wFunc = initializer.wFunc;
-                this.pFrom = initializer.pFrom;
-                this.pTo = initializer.pTo;
-                this.fFlags = initializer.fFlags;
-                this.fAnyOperationsAborted = initializer.fAnyOperationsAborted;
-                this.hNameMappings = initializer.hNameMappings;
-                this.lpszProgressTitle = initializer.lpszProgressTitle;
+                hwnd = initializer.hwnd;
+                wFunc = initializer.wFunc;
+                pFrom = initializer.pFrom;
+                pTo = initializer.pTo;
+                fFlags = initializer.fFlags;
+                fAnyOperationsAborted = initializer.fAnyOperationsAborted;
+                hNameMappings = initializer.hNameMappings;
+                lpszProgressTitle = initializer.lpszProgressTitle;
             }
 
             public void CopyFrom(SHFILEOPSTRUCT64 initializer)
             {
-                this.hwnd = initializer.hwnd;
-                this.wFunc = initializer.wFunc;
-                this.pFrom = initializer.pFrom;
-                this.pTo = initializer.pTo;
-                this.fFlags = initializer.fFlags;
-                this.fAnyOperationsAborted = initializer.fAnyOperationsAborted;
-                this.hNameMappings = initializer.hNameMappings;
-                this.lpszProgressTitle = initializer.lpszProgressTitle;
+                hwnd = initializer.hwnd;
+                wFunc = initializer.wFunc;
+                pFrom = initializer.pFrom;
+                pTo = initializer.pTo;
+                fFlags = initializer.fFlags;
+                fAnyOperationsAborted = initializer.fAnyOperationsAborted;
+                hNameMappings = initializer.hNameMappings;
+                lpszProgressTitle = initializer.lpszProgressTitle;
             }
         }
 
@@ -206,14 +206,14 @@ namespace ShellLib
 
             public SHFILEOPSTRUCT32(SHFILEOPSTRUCT initializer)
             {
-                this.hwnd = initializer.hwnd;
-                this.wFunc = initializer.wFunc;
-                this.pFrom = initializer.pFrom;
-                this.pTo = initializer.pTo;
-                this.fFlags = initializer.fFlags;
-                this.fAnyOperationsAborted = initializer.fAnyOperationsAborted;
-                this.hNameMappings = initializer.hNameMappings;
-                this.lpszProgressTitle = initializer.lpszProgressTitle;
+                hwnd = initializer.hwnd;
+                wFunc = initializer.wFunc;
+                pFrom = initializer.pFrom;
+                pTo = initializer.pTo;
+                fFlags = initializer.fFlags;
+                fAnyOperationsAborted = initializer.fAnyOperationsAborted;
+                hNameMappings = initializer.hNameMappings;
+                lpszProgressTitle = initializer.lpszProgressTitle;
             }
         }
 
@@ -249,14 +249,14 @@ namespace ShellLib
 
             public SHFILEOPSTRUCT64(SHFILEOPSTRUCT initializer)
             {
-                this.hwnd = initializer.hwnd;
-                this.wFunc = initializer.wFunc;
-                this.pFrom = initializer.pFrom;
-                this.pTo = initializer.pTo;
-                this.fFlags = initializer.fFlags;
-                this.fAnyOperationsAborted = initializer.fAnyOperationsAborted;
-                this.hNameMappings = initializer.hNameMappings;
-                this.lpszProgressTitle = initializer.lpszProgressTitle;
+                hwnd = initializer.hwnd;
+                wFunc = initializer.wFunc;
+                pFrom = initializer.pFrom;
+                pTo = initializer.pTo;
+                fFlags = initializer.fFlags;
+                fAnyOperationsAborted = initializer.fAnyOperationsAborted;
+                hNameMappings = initializer.hNameMappings;
+                lpszProgressTitle = initializer.lpszProgressTitle;
             }
         }
 

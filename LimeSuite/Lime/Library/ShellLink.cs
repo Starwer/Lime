@@ -237,7 +237,7 @@ namespace MSjogren.Samples.ShellLink
 
 
                 m_Link.GetIconLocation(sb, sb.Capacity, out nIconIdx);
-                hInst = Marshal.GetHINSTANCE(this.GetType().Module);
+                hInst = Marshal.GetHINSTANCE(GetType().Module);
                 hIcon = Native.ExtractIcon(hInst, sb.ToString(), nIconIdx);
                 if (hIcon == IntPtr.Zero)
                     return null;

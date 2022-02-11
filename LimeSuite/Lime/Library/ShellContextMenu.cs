@@ -42,7 +42,7 @@ namespace Peter
         /// <summary>Default constructor</summary>
         public ShellContextMenu()
         {
-            this.CreateHandle(new CreateParams());
+            CreateHandle(new CreateParams());
         }
         #endregion
 
@@ -451,7 +451,7 @@ namespace Peter
             // Release all resources first.
             ReleaseAll();
             _arrPIDLs = GetPIDLs(files);
-            this.ShowContextMenu(pointScreen);
+            ShowContextMenu(pointScreen);
         }
 
         /// <summary>
@@ -465,7 +465,7 @@ namespace Peter
             ReleaseAll();
             _arrPIDLsFree = false;
             _arrPIDLs = pidls;
-            this.ShowContextMenu(pointScreen);
+            ShowContextMenu(pointScreen);
         }
 
         /// <summary>
@@ -478,7 +478,7 @@ namespace Peter
             // Release all resources first.
             ReleaseAll();
             _arrPIDLs = GetPIDLs(dirs);
-            this.ShowContextMenu(pointScreen);
+            ShowContextMenu(pointScreen);
         }
 
         /// <summary>
@@ -529,7 +529,7 @@ namespace Peter
                     TPM.RETURNCMD,
                     pointScreen.X,
                     pointScreen.Y,
-                    this.Handle,
+                    Handle,
                     IntPtr.Zero);
 
                 DestroyMenu(pMenu);
@@ -1493,7 +1493,7 @@ namespace Peter
         public LocalWindowsHook(HookType hook)
         {
             m_hookType = hook;
-            m_filterFunc = new HookProc(this.CoreHookProc);
+            m_filterFunc = new HookProc(CoreHookProc);
         }
         public LocalWindowsHook(HookType hook, HookProc func)
         {

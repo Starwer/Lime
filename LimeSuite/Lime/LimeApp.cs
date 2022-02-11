@@ -134,7 +134,7 @@ namespace Lime
 
         public LimeApp (string name = null)
         {
-            this.Name = name;
+            Name = name;
         }
 
 

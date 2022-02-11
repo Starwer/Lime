@@ -27,6 +27,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.Runtime.Versioning;
+using System.Diagnostics;
 
 namespace Lime
 {
@@ -274,21 +275,21 @@ namespace Lime
 
                 if (string.IsNullOrEmpty(Name))
                 {
-                    this.Name = System.IO.Path.GetFileNameWithoutExtension(_Path);
+                    Name = System.IO.Path.GetFileNameWithoutExtension(_Path);
                 }
 
                 desc = System.IO.Path.GetFileName(_Path);
 
-                if (this.FileAttributes == 0)
+                if (FileAttributes == 0)
                 {
                     try
                     {
                         if (!File.Exists(_Path) && !System.IO.Directory.Exists(_Path))
                         {
-                            this.FileAttributes = FileAttributes.ReadOnly;
+                            FileAttributes = FileAttributes.ReadOnly;
                             return;
                         }
-                        this.FileAttributes = File.GetAttributes(_Path);
+                        FileAttributes = File.GetAttributes(_Path);
                     }
                     catch
                     {
@@ -297,11 +298,11 @@ namespace Lime
                 }
 
 
-                if ((this.FileAttributes & (FileAttributes.Directory | FileAttributes.Device)) != 0 || LimeLib.IsLibrary(_Path))
+                if ((FileAttributes & (FileAttributes.Directory | FileAttributes.Device)) != 0 || LimeLib.IsLibrary(_Path))
                 {
                     // Directory
-                    this.Directory = true;
-                    this.FileAttributes &= ~FileAttributes.ReadOnly;
+                    Directory = true;
+                    FileAttributes &= ~FileAttributes.ReadOnly;
 
                     if (LimeLib.IsNetworkDrive(_Path))
                     {
@@ -322,35 +323,40 @@ namespace Lime
                             //  /!\  A ShellLink Windows API must be accessed from a STA thread like Thread class, 
                             //       and not a MTA thread like background-worker or UI thread.
                             ShellShortcut link = new ShellShortcut(_Path);
-                            this.Link = LimeLib.ResolvePath(_Path);
-                            if (LimeLib.IsPIDL(this.Link))
+                            Link = LimeLib.ResolvePath(_Path);
+                            if (LimeLib.IsPIDL(Link))
                             {
-                                var dInfo = new DirectoryInfoEx(new PIDL(LimeLib.GetPIDL(this.Link), true));
+                                var dInfo = new DirectoryInfoEx(new PIDL(LimeLib.GetPIDL(Link), true));
 
                                 // Special folder, directory, network drive...
                                 if (dInfo != null)
                                 {
-                                    this.FileAttributes = dInfo.Attributes;
-                                    this.Directory = dInfo.IsBrowsable || dInfo.IsFolder;
+                                    FileAttributes = dInfo.Attributes;
+                                    Directory = dInfo.IsBrowsable || dInfo.IsFolder;
                                     IsApp = dInfo.Name.Contains('!');
-                                    this._UseLinkIcon = IsApp;
-                                    LimeMsg.Debug("LimeItem link PIDL: {0}, name: {1}", this.Link, dInfo.Name);
+                                    _UseLinkIcon = IsApp;
+                                    LimeMsg.Debug("LimeItem link PIDL: {0}, name: {1}", Link, dInfo.Name);
                                 }
                                 else
                                 {
                                     // Default: assume directory
-                                    this.Directory = true;
-                                    this.FileAttributes |= FileAttributes.ReadOnly;
-                                    this._UseLinkIcon = false;
+                                    Directory = true;
+                                    FileAttributes |= FileAttributes.ReadOnly;
+                                    _UseLinkIcon = false;
                                 }
+                            }
+                            else if (LimeLib.IsLibrary(Link))
+                            {
+                                Directory = true;
+                                _UseLinkIcon = false;
                             }
                             else
                             {
-                                this.Directory = System.IO.Directory.Exists(this.Link);
-                                this._UseLinkIcon = string.IsNullOrEmpty(link.IconPath) && (File.Exists(this.Link) || System.IO.Directory.Exists(this.Link));
+                                 Directory = System.IO.Directory.Exists(Link);
+                                _UseLinkIcon = string.IsNullOrEmpty(link.IconPath) && (File.Exists(Link) || System.IO.Directory.Exists(Link));
                             }
                             if (!string.IsNullOrEmpty(link.Description)) desc += Environment.NewLine + link.Description;
-                            LimeMsg.Debug("LimeItem link: {0} (useLinkIcon: {1})", this.Link, this._UseLinkIcon);
+                            LimeMsg.Debug("LimeItem link: {0} (useLinkIcon: {1})", Link, _UseLinkIcon);
 
                         }
                         catch
@@ -630,15 +636,15 @@ namespace Lime
                     Flags = (Flags & ~mask) | val;
 
                     // Auto-refesh
-                    if (value && this.Directory && this.Children == null)
+                    if (value && Directory && Children == null)
                     {
-                        this.Refresh();
+                        Refresh();
                     }
 
                     // Avoid problem of Thumbnail showing up in hidden panel
-                    if (this.Children != null)
+                    if (Children != null)
                     {
-                        foreach (LimeItem node in this.Children)
+                        foreach (LimeItem node in Children)
                         {
                             node.IsTaskThumbVisible = value && node.Handle != IntPtr.Zero;
                         }
@@ -786,7 +792,7 @@ namespace Lime
                 path = LimeLib.ReservePIDL(LimeLib.GetPIDL(path));
             }
 
-            this.Path = path;
+            Path = path;
 
             // Tie it to its parent in the right location
             if (parent != null)
@@ -808,10 +814,10 @@ namespace Lime
         /// <param name="parent">integrate the new item in the children of this parent-item</param>
         public LimeItem(IntPtr handle, LimeItem parent = null) : this("", parent)
         {
-            this.Handle = handle;
-            this.Task = true;
-            this.FileAttributes = FileAttributes.ReadOnly | FileAttributes.System;
-            this.Refresh();
+            Handle = handle;
+            Task = true;
+            FileAttributes = FileAttributes.ReadOnly | FileAttributes.System;
+            Refresh();
         }
 
 
@@ -1091,32 +1097,45 @@ namespace Lime
         {
             bool ret = true;
 
-            LimeMsg.Debug("LimeItem Open: {0}: {1}", this.Name, this.Path);
+            LimeMsg.Debug("LimeItem Open: {0}: {1}", Name, Path);
 
-            if (this.Handle != IntPtr.Zero && !IsApp)
+            if (Handle != IntPtr.Zero && !IsApp)
             {
                 // Task open
                 Win32.ActivateWindowByHandle(Handle);
             }
-            else if (this.Path != null)
+            else if (Path != null)
             {
-                if (this.Directory)
+                if (Directory)
                 {
                     // Directory open
-                    if (this.Children == null && refreshDirectory)
+                    if (Children == null && refreshDirectory)
                     {
-                        ret = this.Refresh();
+                        ret = Refresh();
                     }
                 }
                 else
                 {   // File open
-                    try
+                    string path = Link ?? Path;
+                    if (File.Exists(path) || LimeLib.IsPIDL(path) || LimeLib.IsSSPD(path))
                     {
-                        System.Diagnostics.Process.Start(this.Path);
+                        try
+                        {
+                            // Open file with default program in .NET core +
+                            using var proc = new Process();
+                            proc.StartInfo.FileName = "explorer";
+                            proc.StartInfo.Arguments = $"\"{Path}\"";
+                            proc.Start();
+                        }
+                        catch
+                        {
+                            LimeMsg.Error("ErrOpenFile", Path);
+                            ret = false;
+                        }
                     }
-                    catch
+                    else
                     {
-                        LimeMsg.Error("ErrOpenFile", this.Path);
+                        LimeMsg.Error("ErrOpenFile", Path);
                         ret = false;
                     }
                 }
@@ -1388,9 +1407,9 @@ namespace Lime
                 return false;
             }
 
-            if (this.Directory)
+            if (Directory)
             {
-                if (this.Task)
+                if (Task)
                 {
                     return RefreshTaskSwitcher();
                 }
@@ -1400,7 +1419,7 @@ namespace Lime
                 }
 
             }
-            else if (this.Task)
+            else if (Task)
             {
                 return RefreshTask();
             }
@@ -1431,13 +1450,13 @@ namespace Lime
                 if (iconSize == 0) iconSize = size;
             }
 
-            bool isTask = this.Task || this.Handle != IntPtr.Zero && this.Link == null;
+            bool isTask = Task || Handle != IntPtr.Zero && Link == null;
 
             if (isTask && (size <= 32 || (options & ThumbnailOptions.IconOnly) != 0))
             {
                 // Icon for task
                 LimeMsg.Debug("LimeItem Bitmap {0}: handle: {1}", iconSize, Name);
-                if (this.Handle != IntPtr.Zero && !this.Directory)
+                if (Handle != IntPtr.Zero && !Directory)
                 {
                     try
                     {
@@ -1460,19 +1479,19 @@ namespace Lime
                     icon.Dispose();
                 }
             }
-			else if (isTask && this.Path == "explorer" && Tree?.DefaultDir != null)
+			else if (isTask && Path == "explorer" && Tree?.DefaultDir != null)
 			{
 				return Tree.DefaultDir.Bitmap(size, options);
 			}
-			else if (!string.IsNullOrEmpty(this.Path))
+			else if (!string.IsNullOrEmpty(Path))
             {
-                string path = _UseLinkIcon ? this.Link : this.Path;
+                string path = _UseLinkIcon ? Link : Path;
 
                 // Icon for file
                 int thumbSize = (int)iconSize;
                 LimeMsg.Debug("LimeItem Bitmap {0}: {1} --> {2}", iconSize, Name, path);
 
-                string ext = System.IO.Path.GetExtension(this.Path).ToLower();
+                string ext = System.IO.Path.GetExtension(Path).ToLower();
 
                 if (ext == ".url")
                 {
@@ -1636,13 +1655,13 @@ namespace Lime
                 {
 					if (Handle != appHandle)
 					{
-						LimeMsg.Debug("LimeItem ShellMenu: task: {0}", this.Name);
-						Win32.ShowSystemMenu(this.Handle, appHandle, pointScreen);
+						LimeMsg.Debug("LimeItem ShellMenu: task: {0}", Name);
+						Win32.ShowSystemMenu(Handle, appHandle, pointScreen);
 					}
                 }
                 else if (Path != null && !LimeLib.IsSSPD(Path))
                 {
-                    LimeMsg.Debug("LimeItem ShellMenu: path: {0}", this.Name);
+                    LimeMsg.Debug("LimeItem ShellMenu: path: {0}", Name);
 
                     if (LimeLib.IsPIDL(Path))
                     {
@@ -1661,7 +1680,7 @@ namespace Lime
             }
             catch
             {
-                LimeMsg.Debug("LimeItem ShellMenu: path: {0} --> FAIL", this.Name);
+                LimeMsg.Debug("LimeItem ShellMenu: path: {0} --> FAIL", Name);
             }
         }
 
@@ -2159,8 +2178,8 @@ namespace Lime
             if (pos < 0) return null;
             if (node == null) node = new LimeItem("");
             node.Tree = Tree; // Inherite attribute from parent
-            if (this.Children == null) this.Children = new ObservableCollection<LimeItem>();
-            this.Children.Insert(pos, node);
+            if (Children == null) Children = new ObservableCollection<LimeItem>();
+            Children.Insert(pos, node);
             return node;
         }
 
@@ -2183,14 +2202,14 @@ namespace Lime
         /// <returns>the position where this should be inserted, or -1 if fail</returns>
         public int FindInsertIndex(LimeItem node)
         {
-            if (!this.Directory) return -1;
-            if (this.Children == null) return 0;
-            if (this.Task) return this.Children.Count;
+            if (!Directory) return -1;
+            if (Children == null) return 0;
+            if (Task) return Children.Count;
 
             int ret = 0;
-            for (; ret < this.Children.Count; ret++)
+            for (; ret < Children.Count; ret++)
             {
-                var item = this.Children[ret];
+                var item = Children[ret];
                 if ((node.Directory == item.Directory && String.Compare(node.Name, item.Name, true) <= 0)
                    || (node.Directory && !item.Directory)
                    )
@@ -2280,7 +2299,7 @@ namespace Lime
                     {
                         if (e.ChangeType == WatcherChangeTypes.Deleted)
                         {
-                            this.Children.Remove(node);
+                            Children.Remove(node);
                         }
                         else if (node.IsSaving)
                         {
@@ -2339,7 +2358,7 @@ namespace Lime
             LimeItem item = null;
             int index = -1;
 
-            if (this.Children != null)
+            if (Children != null)
             {
                 foreach (var node in Children)
                 {
@@ -2355,12 +2374,12 @@ namespace Lime
                         node.Name = "";
                         node.Path = e.FullPath;
 
-                        int old = this.Children.IndexOf(node);
-                        int pos = this.FindInsertIndex(node);
+                        int old = Children.IndexOf(node);
+                        int pos = FindInsertIndex(node);
                         if (old >= 0 && pos >= 0 && old != pos)
                         {
                             if (old < pos) pos--; // fix move inconsistency
-                            this.Children.Move(old, pos);
+                            Children.Move(old, pos);
                         }
                         item = node;
                         break;
@@ -2388,23 +2407,23 @@ namespace Lime
         private bool RefreshTaskSwitcher()
         {
             bool ret = true;
-            LimeMsg.Debug("LimeItem RefreshTaskSwitcher: {0}", this.Name);
+            LimeMsg.Debug("LimeItem RefreshTaskSwitcher: {0}", Name);
 
-            if (this.Children == null)
-                this.Children = new ObservableCollection<LimeItem>();
+            if (Children == null)
+                Children = new ObservableCollection<LimeItem>();
 
-            foreach (var node in this.Children)
+            foreach (var node in Children)
             {
                 if (node is null)
                 {
-                    LimeMsg.Debug("LimeItem RefreshTaskSwitcher: Cancel {0} (Re-entrance)", this.Name);
+                    LimeMsg.Debug("LimeItem RefreshTaskSwitcher: Cancel {0} (Re-entrance)", Name);
                     return false;
                 }
                 node.IsTaskThumbVisible = false;
             }
 
             // Mark by null the limit between old and refreshed items
-            this.Children.Add(null);
+            Children.Add(null);
 
             try
             {
@@ -2416,20 +2435,20 @@ namespace Lime
             }
 
             // Remove old items (until null)
-            while (this.Children[0] != null)
+            while (Children[0] != null)
             {
-                LimeMsg.Debug("LimeItem RefreshTaskSwitcher: remove {0}", this.Children[0].Handle.ToString());
-                this.Children.RemoveAt(0);
+                LimeMsg.Debug("LimeItem RefreshTaskSwitcher: remove {0}", Children[0].Handle.ToString());
+                Children.RemoveAt(0);
             }
-            this.Children.RemoveAt(0);
+            Children.RemoveAt(0);
 
             // Refresh task found
             int i = 0;
             LimeItem nodet;
-            while (i < this.Children.Count() && (nodet = this.Children[i++]) != null)
+            while (i < Children.Count() && (nodet = Children[i++]) != null)
             {
                 nodet.Refresh();
-                nodet.IsTaskThumbVisible = this.IsPanelVisible;
+                nodet.IsTaskThumbVisible = IsPanelVisible;
             }
 
             return ret;
@@ -2444,12 +2463,12 @@ namespace Lime
             string path;
             string desc;
 
-            bool isWUPApp = Win32.IsWindowModernApp(this.Handle);
+            bool isWUPApp = Win32.IsWindowModernApp(Handle);
 
             if (isWUPApp)
             {
                 path = null;
-                desc = Win32.GetWindowTitle(this.Handle);
+                desc = Win32.GetWindowTitle(Handle);
 
 				// TODO: Modern App: try using Windows.System.AppDiagnosticInfo
 
@@ -2486,8 +2505,8 @@ namespace Lime
 			else
             {
                 // Classic Window exe
-                path = Win32.GetExecutablePathByHandle(this.Handle);
-                desc = Win32.GetWindowTitle(this.Handle);
+                path = Win32.GetExecutablePathByHandle(Handle);
+                desc = Win32.GetWindowTitle(Handle);
             }
 
 
@@ -2538,9 +2557,9 @@ namespace Lime
 
             // create the object
             LimeMsg.Debug("LimeItem RefreshTask: {0}", title);
-            this.Name = title;
-            this.Path = path;
-            this.Description = desc;
+            Name = title;
+            Path = path;
+            Description = desc;
 
             // Load data
             MetadataLoad(coverOnly: false);
@@ -2558,7 +2577,7 @@ namespace Lime
         {
             int ret = -1;
 
-            if (this.Directory) return ret;
+            if (Directory) return ret;
 
             LimeItem match = null;
             if (taskSwitcher.Children != null && enable)
@@ -2593,13 +2612,13 @@ namespace Lime
 
             if (match != null && match.Handle != IntPtr.Zero)
             {
-                LimeMsg.Debug("LimeItem TaskMatcher: matched: {0} with {1}", this.Name, match.Handle);
+                LimeMsg.Debug("LimeItem TaskMatcher: matched: {0} with {1}", Name, match.Handle);
                 Handle = match.Handle;
                 IsTaskThumbVisible = true;
             }
             else
             {
-                this.Handle = IntPtr.Zero;
+                Handle = IntPtr.Zero;
             }
 
             return ret;
@@ -2622,7 +2641,7 @@ namespace Lime
                || (style & (uint)Win32.WindowStyles.WS_VISIBLE) == 0              // is Invisible window
                || (exStyle & (uint)Win32.WindowExStyles.WS_EX_TOOLWINDOW) != 0    // is ToolTip window
                || Win32.GetWindowTitle(hWnd) == null                              // has no title
-               || hWnd == this.Handle                                             // is Lime Window itself
+               || hWnd == Handle                                             // is Lime Window itself
                || Win32.GetSystemMenu(hWnd, false) == IntPtr.Zero                 // has no System Menu (check required for Modern App)
                || !Tree.TaskSwitcherShowApp && Win32.IsWindowModernApp(hWnd)	  // Applications not enabled
                )
@@ -2633,15 +2652,15 @@ namespace Lime
             LimeMsg.Debug("LimeItem Refresh_Task_Add: {0} (0x{1:X8})", hWnd, hWnd.ToInt32());
 
             // Find existing item
-            if (this.Children != null)
+            if (Children != null)
             {
-                int end = this.Children.Count;
-                for (int i = 0; this.Children[i] != null; i++)
+                int end = Children.Count;
+                for (int i = 0; Children[i] != null; i++)
                 {
-                    var item = this.Children[i];
+                    var item = Children[i];
                     if (item.Handle == hWnd)
                     {
-                        this.Children.Move(i, end - 1);
+                        Children.Move(i, end - 1);
                         return true;
                     }
                 }

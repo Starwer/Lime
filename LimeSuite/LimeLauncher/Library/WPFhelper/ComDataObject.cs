@@ -877,212 +877,6 @@ namespace WPFhelper
 			}
 		}
 
-		/// <summary>
-		/// Gets managed data from a clipboard DataObject.
-		/// </summary>
-		/// <param name="dataObject">The DataObject to obtain the data from.</param>
-		/// <param name="format">The format for which to get the data in.</param>
-		/// <returns>The data object instance.</returns>
-		public static object GetManagedData(ComDataObject dataObject, string format)
-		{
-			FillFormatETC(format, TYMED.TYMED_HGLOBAL, out FORMATETC formatETC);
-
-			// Get the data as a stream
-			dataObject.GetData(ref formatETC, out STGMEDIUM medium);
-
-			IStream nativeStream;
-			try
-			{
-				int hr = CreateStreamOnHGlobal(medium.unionmember, true, out nativeStream);
-				if (hr != 0)
-				{
-					return null;
-				}
-			}
-			finally
-			{
-				ReleaseStgMedium(ref medium);
-			}
-
-
-			// Convert the native stream to a managed stream            
-			nativeStream.Stat(out System.Runtime.InteropServices.ComTypes.STATSTG statstg, 0);
-			if (statstg.cbSize > int.MaxValue)
-				throw new NotSupportedException();
-			byte[] buf = new byte[statstg.cbSize];
-			nativeStream.Read(buf, (int)statstg.cbSize, IntPtr.Zero);
-			MemoryStream dataStream = new MemoryStream(buf);
-
-			// Check for our stamp
-			int sizeOfGuid = Marshal.SizeOf(typeof(Guid));
-			byte[] guidBytes = new byte[sizeOfGuid];
-			if (dataStream.Length >= sizeOfGuid)
-			{
-				if (sizeOfGuid == dataStream.Read(guidBytes, 0, sizeOfGuid))
-				{
-					Guid guid = new Guid(guidBytes);
-					if (ManagedDataStamp.Equals(guid))
-					{
-						// Stamp matched, so deserialize
-						BinaryFormatter formatter = new BinaryFormatter();
-						Type dataType = (Type)formatter.Deserialize(dataStream);
-						object data2 = formatter.Deserialize(dataStream);
-						if (data2.GetType() == dataType)
-							return data2;
-						else if (data2 is string)
-							return ConvertDataFromString((string)data2, dataType);
-						else
-							return null;
-					}
-				}
-			}
-
-			// Stamp didn't match... attempt to reset the seek pointer
-			if (dataStream.CanSeek)
-				dataStream.Position = 0;
-			return null;
-		}
-
-		public static object ReadFromStream(Stream dataStream)
-		{
-			int sizeOfGuid = Marshal.SizeOf(typeof(Guid));
-			byte[] guidBytes = new byte[sizeOfGuid];
-			if (dataStream.Length >= sizeOfGuid)
-			{
-				if (sizeOfGuid == dataStream.Read(guidBytes, 0, sizeOfGuid))
-				{
-					Guid guid = new Guid(guidBytes);
-					if (ManagedDataStamp.Equals(guid))
-					{
-						// Stamp matched, so deserialize
-						BinaryFormatter formatter = new BinaryFormatter();
-						Type dataType = (Type)formatter.Deserialize(dataStream);
-						object data2 = formatter.Deserialize(dataStream);
-						if (data2.GetType() == dataType)
-							return data2;
-						else if (data2 is string)
-							return ConvertDataFromString((string)data2, dataType);
-						else
-							return null;
-					}
-				}
-			}
-
-			// Stamp didn't match... attempt to reset the seek pointer
-			if (dataStream.CanSeek)
-				dataStream.Position = 0;
-			return null;
-		}
-
-		/// <summary>
-		/// Sets managed data to a clipboard DataObject.
-		/// </summary>
-		/// <param name="dataObject">The DataObject to set the data on.</param>
-		/// <param name="format">The clipboard format.</param>
-		/// <param name="data">The data object.</param>
-		/// <remarks>
-		/// Because the underlying data store is not storing managed objects, but
-		/// unmanaged ones, this function provides intelligent conversion, allowing
-		/// you to set unmanaged data into the COM implemented IDataObject.</remarks>
-		public void SetDataEx(string format, object data)
-		{
-			System.Windows.DataFormat dataFormat = System.Windows.DataFormats.GetDataFormat(format);
-
-			// Initialize the format structure
-			FORMATETC formatETC = new FORMATETC
-			{
-				cfFormat = (short)dataFormat.Id,
-				dwAspect = DVASPECT.DVASPECT_CONTENT,
-				lindex = -1,
-				ptd = IntPtr.Zero
-			};
-
-			// Try to discover the TYMED from the format and data
-			TYMED tymed = GetCompatibleTymed(format, data);
-			// If a TYMED was found, we can use the system DataObject
-			// to convert our value for us.
-			if (tymed != TYMED.TYMED_NULL)
-			{
-				formatETC.tymed = tymed;
-
-				// Set data on an empty DataObject instance
-				System.Windows.DataObject conv = new System.Windows.DataObject();
-				conv.SetData(format, data, true);
-
-				// Now retrieve the data, using the COM interface.
-				// This will perform a managed to unmanaged conversion for us.
-				((IDataObject)conv).GetData(ref formatETC, out STGMEDIUM medium);
-				try
-				{
-					// Now set the data on our data object
-					SetData(ref formatETC, ref medium, true);
-				}
-				catch
-				{
-					// On exceptions, release the medium
-					ReleaseStgMedium(ref medium);
-					throw;
-				}
-			}
-			else
-			{
-				// Since we couldn't determine a TYMED, this data
-				// is likely custom managed data, and won't be used
-				// by unmanaged code, so we'll use our custom marshaling
-				// implemented by our COM IDataObject extensions.
-				SetManagedData(format, data);
-			}
-		}
-
-		/// <summary>
-		/// Gets a system compatible TYMED for the given format.
-		/// </summary>
-		/// <param name="format">The data format.</param>
-		/// <param name="data">The data.</param>
-		/// <returns>A TYMED value, indicating a system compatible TYMED that can
-		/// be used for data marshaling.</returns>
-		private TYMED GetCompatibleTymed(string format, object data)
-		{
-			if (IsFormatEqual(format, System.Windows.DataFormats.Bitmap) && (data is System.Drawing.Bitmap || data is System.Windows.Media.Imaging.BitmapSource))
-				return TYMED.TYMED_GDI;
-			if (IsFormatEqual(format, System.Windows.DataFormats.EnhancedMetafile))
-				return TYMED.TYMED_ENHMF;
-			if (IsFormatEqual(format, System.Windows.Ink.StrokeCollection.InkSerializedFormat))
-				return TYMED.TYMED_ISTREAM;
-			if (data is Stream
-				 || IsFormatEqual(format, System.Windows.DataFormats.Html) || IsFormatEqual(format, System.Windows.DataFormats.Xaml)
-				 || IsFormatEqual(format, System.Windows.DataFormats.Text) || IsFormatEqual(format, System.Windows.DataFormats.Rtf)
-				 || IsFormatEqual(format, System.Windows.DataFormats.OemText)
-				 || IsFormatEqual(format, System.Windows.DataFormats.UnicodeText) || IsFormatEqual(format, "ApplicationTrust")
-				 || IsFormatEqual(format, System.Windows.DataFormats.FileDrop)
-				 || IsFormatEqual(format, "FileName")
-				 || IsFormatEqual(format, "FileNameW"))
-				return TYMED.TYMED_HGLOBAL;
-			if (IsFormatEqual(format, System.Windows.DataFormats.Dib) && data is System.Drawing.Image)
-				return TYMED.TYMED_NULL;
-			if (IsFormatEqual(format, typeof(System.Windows.Media.Imaging.BitmapSource).FullName)
-				 || IsFormatEqual(format, typeof(System.Drawing.Bitmap).FullName))
-				return TYMED.TYMED_HGLOBAL;
-			if (IsFormatEqual(format, System.Windows.DataFormats.EnhancedMetafile) || data is System.Drawing.Imaging.Metafile)
-				return TYMED.TYMED_NULL;
-			if (IsFormatEqual(format, System.Windows.DataFormats.Serializable) || (data is System.Runtime.Serialization.ISerializable)
-				 || ((data != null) && data.GetType().IsSerializable))
-				return TYMED.TYMED_HGLOBAL;
-
-			return TYMED.TYMED_NULL;
-		}
-
-		/// <summary>
-		/// Compares the equality of two clipboard formats.
-		/// </summary>
-		/// <param name="formatA">First format.</param>
-		/// <param name="formatB">Second format.</param>
-		/// <returns>True if the formats are equal. False otherwise.</returns>
-		private bool IsFormatEqual(string formatA, string formatB)
-		{
-			return string.CompareOrdinal(formatA, formatB) == 0;
-		}
-
 		#region Helper methods
 
 		/// <summary>
@@ -1104,8 +898,10 @@ namespace WPFhelper
 			// during deserialization, we know which type to convert back to, if
 			// appropriate.
 			BinaryFormatter formatter = new BinaryFormatter();
-			formatter.Serialize(stream, data.GetType());
-			formatter.Serialize(stream, GetAsSerializable(data));
+#pragma warning disable SYSLIB0011 // I don't think use of this serializer could be avoided in COM context 
+            formatter.Serialize(stream, data.GetType());
+            formatter.Serialize(stream, GetAsSerializable(data));
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
 
 			// Now copy to an HGLOBAL
 			byte[] bytes = stream.GetBuffer();
@@ -1146,21 +942,6 @@ namespace WPFhelper
 				return conv.ConvertToInvariantString(obj);
 
 			throw new NotSupportedException("Cannot serialize the object");
-		}
-
-		/// <summary>
-		/// Converts data from a string to the specified format.
-		/// </summary>
-		/// <param name="data">The data to convert.</param>
-		/// <param name="dataType">The target data type.</param>
-		/// <returns>Returns the converted data instance.</returns>
-		private static object ConvertDataFromString(string data, Type dataType)
-		{
-			TypeConverter conv = GetTypeConverterForType(dataType);
-			if (conv != null && conv.CanConvertFrom(typeof(string)))
-				return conv.ConvertFromInvariantString(data);
-
-			throw new NotSupportedException("Cannot convert data");
 		}
 
 		/// <summary>

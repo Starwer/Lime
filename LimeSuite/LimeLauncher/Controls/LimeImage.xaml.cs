@@ -22,7 +22,7 @@ namespace LimeLauncher.Controls
 	/// <summary>
 	/// Interaction logic for LimeImage.xaml
 	/// </summary>
-	[SupportedOSPlatform("windows")]
+	[SupportedOSPlatform("windows7.0")]
 	public partial class LimeImage : LimeControl, IAutoSlide
 	{
         public LimeImage()

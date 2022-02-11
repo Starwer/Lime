@@ -139,7 +139,7 @@ namespace Lime
         /// <returns>true if PIDL, false otherwise</returns>
         public static bool IsPIDL(string path)
         {
-            return (path != null && path.Length > 2 && path[0] == ':' && path[1] != ':');
+            return path != null && path.Length > 2 && path[0] == ':' && path[1] != ':';
         }
 
         /// <summary>
@@ -152,9 +152,8 @@ namespace Lime
             IntPtr ret = IntPtr.Zero;
             if (path != null && path.Length > 2 && path[0] == ':' && path[1] != ':')
             {
-                int pidli = int.Parse(path.Substring(1));
-                ret = (IntPtr)pidli;
-            }
+                ret = IntPtr.Parse(path.Substring(1));
+			}
             return ret;
         }
 
@@ -187,7 +186,7 @@ namespace Lime
             if (pidl != IntPtr.Zero)
             {
                 var cpidl = PIDL.ILClone(pidl);
-                ret = String.Format(":{0}", cpidl);
+                ret = string.Format(":{0}", cpidl);
                 LimeMsg.Debug("LimeLib ReservePIDL: PIDL: {0} --> {1}", pidl, ret);
             }
             return ret;
@@ -201,7 +200,7 @@ namespace Lime
         /// <returns>true if SSPD, false otherwise</returns>
         public static bool IsSSPD(string path)
         {
-            return (path != null && path.Length > 3 && path[0] == ':' && path[1] == ':');
+            return path != null && path.Length > 3 && path[0] == ':' && path[1] == ':';
         }
 
 

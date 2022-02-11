@@ -20,7 +20,7 @@ namespace LimeLauncher.Controls
 	/// <summary>
 	/// Interaction logic for LimeTextBox.xaml
 	/// </summary>
-	[SupportedOSPlatform("windows")]
+	[SupportedOSPlatform("windows7.0")]
 	public partial class LimeTextBox : LimeControl
     {
         public LimeTextBox()
