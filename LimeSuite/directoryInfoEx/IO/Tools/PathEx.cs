@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public static class PathEx
     {
         public static string GetDirectoryName(string path)

@@ -5,19 +5,14 @@
 // This code used part of Delay's work                                                                           //
 //(http://blogs.msdn.com/delay/archive/2009/10/26/creating-something-from-nothing-developer-friendly-virtual-file-implementation-for-net.aspx)        //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices.ComTypes;
-using ShellDll;
-using System.Runtime.InteropServices;
-using System.Diagnostics.CodeAnalysis;
-using Delay;
+
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace System.IO.Tools
 {
-    
+
+    [SupportedOSPlatform("windows")]
     public class DataObjectEx : DataObject
     {
         private FileSystemInfoEx[] _entityList = new FileSystemInfoEx[0];

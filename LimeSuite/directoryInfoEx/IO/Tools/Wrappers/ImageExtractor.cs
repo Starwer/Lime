@@ -3,16 +3,16 @@
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.Collections.Generic;
+
 using System.Text;
 using System.Drawing;
 using ShellDll;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class ImageExtractor
     {
         private static bool isVistaUp = Environment.OSVersion.Version.Major >= 6; //5 = XP, 6 = Vista

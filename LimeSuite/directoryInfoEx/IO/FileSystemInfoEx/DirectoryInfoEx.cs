@@ -6,24 +6,26 @@
 //                                                                                                               //
 // 11/11/2015 - Changed by Sebastien Mouy (Starwer)                                                              //
 //              DirectoryInfoEx(PIDL fullPIDL) changed from internal to public                                   //
+// 14/02/2022 - Changed by Sebastien Mouy (Starwer)                                                              //
+//              Ported to .NET 6.0: replaced MD5 implmentation, added SupportedOSPlatform("windows")             //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
+
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using ShellDll;
 using System.Runtime.Serialization;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.IO.Utils;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
     /// <summary>
     /// Represents a directory in PIDL system.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     [Serializable]
     public class DirectoryInfoEx : FileSystemInfoEx, IDisposable, ISerializable, ICloneable
     {

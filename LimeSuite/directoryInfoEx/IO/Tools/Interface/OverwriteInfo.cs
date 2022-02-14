@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
+﻿using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class OverwriteInfo
     {
         public string Path { get; set; }

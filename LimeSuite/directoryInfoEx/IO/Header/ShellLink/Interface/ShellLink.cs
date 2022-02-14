@@ -1,7 +1,7 @@
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows.Forms;
 
@@ -11,6 +11,7 @@ namespace vbAccelerator.Components.Shell
 	/// <summary>
 	/// Summary description for ShellLink.
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class ShellLink : IDisposable
 	{
 		#region ComInterop for IShellLink

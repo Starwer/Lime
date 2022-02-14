@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShellDll;
+﻿using ShellDll;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public static class ExtensionMethods
     {
 

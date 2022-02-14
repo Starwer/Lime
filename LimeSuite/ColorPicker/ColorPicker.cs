@@ -3,6 +3,9 @@
 * Website:      https://www.codeproject.com/Articles/229442/WPF-Color-Picker-VS-Style
 * Creation:     21 Jul 2011
 * Copyright :   http://www.codeproject.com/info/cpol10.aspx
+*
+* 14/02/2022 - Changed by Sebastien Mouy (Starwer)
+*              Ported to .NET 6.0
 **************************************************************************/
 
 using System;

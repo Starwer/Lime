@@ -2,13 +2,15 @@
 // LYCJ (c) 2009 - http://www.quickzip.org/components                                                            //
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
-// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)    //
+// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)        //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using ShellDll;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public class DriveInfoEx
     {
         private DirectoryInfoEx _rootDirectory;

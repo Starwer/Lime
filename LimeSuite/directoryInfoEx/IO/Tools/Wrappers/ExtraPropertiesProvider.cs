@@ -3,12 +3,10 @@
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
 using System.Collections.Generic;
-using System.Text;
 using ShellDll;
 using System.Runtime.InteropServices;
-using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
@@ -288,6 +286,7 @@ namespace System.IO.Tools
     #endregion
 
 
+    [SupportedOSPlatform("windows")]
     public static class ExtraPropertiesProvider
     {
         #region Header Information

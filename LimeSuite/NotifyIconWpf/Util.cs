@@ -25,6 +25,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -165,6 +166,7 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// an icon file (*.ico).</param>
         /// <returns>An icon object that can be used with the
         /// taskbar area.</returns>
+        [SupportedOSPlatform("windows")]
         public static Icon ToIcon(this ImageSource imageSource)
         {
             if (imageSource == null) return null;

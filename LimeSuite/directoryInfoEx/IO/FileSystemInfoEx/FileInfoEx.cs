@@ -2,20 +2,21 @@
 // LYCJ (c) 2009 - http://www.quickzip.org/components                                                            //
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
-// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)    //
+// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)        //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.IO;
+
 using ShellDll;
 using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
-using System.Text;
+
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
     /// <summary>
     /// Represent a file in PIDL system
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class FileInfoEx : FileSystemInfoEx, ISerializable, ICloneable
     {
         #region Variables

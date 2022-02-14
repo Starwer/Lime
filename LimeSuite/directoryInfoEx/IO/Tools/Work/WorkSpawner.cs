@@ -3,11 +3,9 @@
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
@@ -24,9 +22,10 @@ namespace System.IO.Tools
         }
     }
 
-    public delegate void WorkAddedEventHandler(object sender, WorkAddedEventArgs e);    
+    public delegate void WorkAddedEventHandler(object sender, WorkAddedEventArgs e);
     #endregion
 
+    [SupportedOSPlatform("windows")]
     public class WorkSpawner
     {
         protected static Dictionary<int, IWork> onGoingWorkList = new Dictionary<int, IWork>();

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ShellDll;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
@@ -54,6 +53,7 @@ namespace System.IO.Tools
         #endregion
     }
 
+    [SupportedOSPlatform("windows")]
     public class FileTypeInfo
     {
         public FileTypeInfo(string ext)
@@ -199,6 +199,7 @@ namespace System.IO.Tools
         #endregion
     }
 
+    [SupportedOSPlatform("windows")]
     public static class FileTypeInfoProvider
     {
         private static Dictionary<string, FileTypeInfo> _fileInfoDic = new Dictionary<string, FileTypeInfo>();

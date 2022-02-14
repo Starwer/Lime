@@ -1135,6 +1135,7 @@ namespace Lime
                     }
                     else
                     {
+                        // Must check existance, otherwise explorer will open
                         LimeMsg.Error("ErrOpenFile", Path);
                         ret = false;
                     }

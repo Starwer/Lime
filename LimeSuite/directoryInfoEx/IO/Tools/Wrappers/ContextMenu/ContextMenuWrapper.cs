@@ -4,15 +4,14 @@
 //                                                                                                               //
 // This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)    //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
+
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using ShellDll;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
-
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
@@ -79,6 +78,7 @@ namespace System.IO.Tools
     public delegate void QueryMenuItemsEventHandler(object sender, QueryMenuItemsEventArgs args);
     public delegate void BeforePopupEventHandler(object sender, BeforePopupEventArgs args);
 
+    [SupportedOSPlatform("windows")]
     public class ContextMenuWrapper : NativeWindow
     {
         /// <summary>
@@ -375,7 +375,7 @@ namespace System.IO.Tools
                                         ShellAPI.DestroyMenu(menuPtr);
                                     menuPtrConstructed.Clear();
 
-                                    if (contextMenu != null)
+                                    if (contextMenu != IntPtr.Zero)
                                         ShellAPI.DestroyMenu(contextMenu);
 
                                     if (ptrContextMenu != IntPtr.Zero)
@@ -415,6 +415,7 @@ namespace System.IO.Tools
     /// This class provides static methods which are being used to retrieve IContextMenu's for specific items
     /// and to invoke certain commands.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public static class ContextMenuHelper
     {
         #region GetCommandString

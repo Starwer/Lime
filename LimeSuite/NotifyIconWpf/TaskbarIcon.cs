@@ -20,11 +20,15 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 //
 // THIS COPYRIGHT NOTICE MAY NOT BE REMOVED FROM THIS FILE
+//
+// 14/02/2022 - Changed by Sebastien Mouy (Starwer)
+//              Ported to .NET 6.0: added SupportedOSPlatform("windows")
 
 
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -41,6 +45,7 @@ namespace Hardcodet.Wpf.TaskbarNotification
     /// A WPF proxy to for a taskbar icon (NotifyIcon) that sits in the system's
     /// taskbar notification area ("system tray").
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class TaskbarIcon : FrameworkElement, IDisposable
     {
         #region Members

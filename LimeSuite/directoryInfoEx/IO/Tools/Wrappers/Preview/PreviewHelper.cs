@@ -6,13 +6,12 @@
 // The new version include support() method, as well as allow multiple previewers in the same app                //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using PreviewHandlerWPF;
 using ShellDll;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
@@ -24,6 +23,7 @@ namespace System.IO.Tools
         public string ConfirmSupportedExtension = "";
     }
 
+    [SupportedOSPlatform("windows")]
     public static class PreviewHelper
     {
         static List<PreviewerInfo> CurrentPreviewers;

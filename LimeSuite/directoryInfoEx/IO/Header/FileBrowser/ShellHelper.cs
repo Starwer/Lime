@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace ShellDll
 {
+    [SupportedOSPlatform("windows")]
     internal static class ShellHelper
     {
         #region Low/High Word

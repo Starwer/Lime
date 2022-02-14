@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using NaturalSorting;
-using System.IO;
 using System.Collections;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class ExComparer : IComparer<FileSystemInfoEx>, IComparer
     {
         public enum SortCriteria { sortByName, sortByFullName, sortByLabel, sortByType, sortByLength, sortByCreationTime, sortByLastWriteTime, sortByLastAccessTime };

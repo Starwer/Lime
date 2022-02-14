@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using PreviewHandlerWPF;
-using System.Diagnostics;
 using ShellDll;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class PreviewerControl : Control
     {
         private static bool isVistaUp = Environment.OSVersion.Version.Major >= 6; //5 = XP, 6 = Vista

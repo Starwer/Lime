@@ -14,10 +14,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using ShellDll;
 using System.Runtime.Serialization;
-
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     [Serializable]
     public class FileSystemInfoEx : FileSystemInfo, IDisposable, ISerializable, ICloneable,
         IEquatable<FileSystemInfoEx>

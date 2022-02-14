@@ -2,16 +2,16 @@
 // LYCJ (c) 2009 - http://www.quickzip.org/components                                                            //
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
-// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)    //
+// This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)        //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Text;
-using ShellDll;
-using System.Runtime.InteropServices;
+
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public static class FileEx
     {
         public static bool Exists(string path)

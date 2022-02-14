@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using ShellDll;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 using System.Text.RegularExpressions;
 //using VistaBridge.Shell;
 using System.Diagnostics;
 using System.Linq;
 using System.IO.Utils;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
     public delegate bool FileCancelDelegate(ushort completePercent);
     public delegate bool CancelDelegate();
+
+    [SupportedOSPlatform("windows")]
     public static class IOTools
     {
         #region Constants

@@ -4,11 +4,13 @@ using System.Collections.ObjectModel;
 using System.IO.Utils;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ShellDll
 {
+    [SupportedOSPlatform("windows")]
     public class KnownFolder : IDisposable
     {
         #region fields

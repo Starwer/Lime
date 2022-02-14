@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public static class DirectoryEx
     {
         public static DirectoryInfoEx CreateDirectory(string path) 

@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Windows;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace Delay
@@ -18,6 +18,7 @@ namespace Delay
     /// Class implementing drag/drop and clipboard support for virtual files.
     /// Also offers an alternate interface to the IDataObject interface.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public /*sealed*/ class VirtualFileDataObject : System.Runtime.InteropServices.ComTypes.IDataObject, IAsyncOperation
     {
         /// <summary>

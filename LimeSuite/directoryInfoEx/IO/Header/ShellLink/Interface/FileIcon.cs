@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace vbAccelerator.Components.Shell
 {
@@ -8,6 +9,7 @@ namespace vbAccelerator.Components.Shell
 	/// Enables extraction of icons for any file type from
 	/// the Shell.
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class FileIcon
 	{
 

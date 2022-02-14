@@ -4,12 +4,11 @@
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class MoveWork : ExWorkBase
     {
         public MoveWork(int id, FileSystemInfoEx[] src, DirectoryInfoEx dest)

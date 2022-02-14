@@ -4,14 +4,14 @@
 //                                                                                                               //
 // This code used part of Steven Roebert's work (http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx)    //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 using ShellDll;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public class ShellFolder : IShellFolder, IDisposable
     {
         private IShellFolder _iShellFolder = null;

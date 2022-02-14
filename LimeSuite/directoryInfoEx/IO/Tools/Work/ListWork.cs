@@ -3,12 +3,13 @@
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.Collections.Generic;
-using System.Text;
+
+
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public class ListWork : ExWorkBase
     {
         public ListWork(int id, DirectoryInfoEx[] dirs, bool listDir, bool listFile, string fileMask)

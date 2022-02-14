@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Win32;
-using System.IO;
+﻿using Microsoft.Win32;
 using System.Security.Cryptography;
 using System.Drawing;
 using ShellDll;
 using System.Runtime.InteropServices;
-
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public static class Helper
     {
         public static bool IsUnitTesting = false;
@@ -54,14 +51,14 @@ namespace System.IO
 		{
 			if (!FileEx.Exists(filename))
 				return "";
-			MD5CryptoServiceProvider csp = new MD5CryptoServiceProvider();
 
-            using (FileStreamEx stmcheck = FileEx.OpenRead(filename))
+            using (var md5 = MD5.Create())
             {
-                byte[] hash = csp.ComputeHash(stmcheck);
-                stmcheck.Close();
-
-                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                using (var stream = File.OpenRead(filename))
+                {
+                    byte[] hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
             }
 		}
 

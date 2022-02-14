@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.IO.Tools;
 using ShellDll;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using System.Runtime.Serialization;
-using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public static class ContextMenuHelperEx
     {
         #region ConstructCustomMenu

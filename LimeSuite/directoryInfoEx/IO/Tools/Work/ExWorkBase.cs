@@ -3,12 +3,12 @@
 // Release under LGPL license.                                                                                   //
 //                                                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.Collections.Generic;
-using System.Text;
+
+using System.Runtime.Versioning;
 
 namespace System.IO.Tools
 {
+    [SupportedOSPlatform("windows")]
     public abstract class ExWorkBase : WorkBase, IExWork
     {
         public ExWorkBase(int id, FileSystemInfoEx source, FileSystemInfoEx target)

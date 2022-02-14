@@ -1,14 +1,15 @@
 ﻿//Lycj : I have modify it to work with WinForms, then I use it via ElementHost in WPF.
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Win32;
 using System.Drawing;
 using ShellDll;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace PreviewHandlerWPF
 {
+    [SupportedOSPlatform("windows")]
     public static class PreviewManager
     {
         public static List<Previewer> CurrentPreviewers;

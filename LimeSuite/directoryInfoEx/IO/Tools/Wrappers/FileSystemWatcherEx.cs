@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using ShellDll;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
-using System.Threading;
-using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
@@ -49,6 +45,7 @@ namespace System.IO
     #endregion
 
     #region SystemWatcherWrapper
+    [SupportedOSPlatform("windows")]
     internal class SystemWatcherWrapper : NativeWindow
     {
         uint _notifyID;
@@ -115,6 +112,7 @@ namespace System.IO
     }
     #endregion
 
+    [SupportedOSPlatform("windows")]
     public class FileSystemWatcherEx : Component
     {
         SystemWatcherWrapper _sww;

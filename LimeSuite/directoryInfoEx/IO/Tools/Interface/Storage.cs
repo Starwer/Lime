@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ShellDll;
+﻿using ShellDll;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace System.IO
 {
+    [SupportedOSPlatform("windows")]
     public class Storage : IStorage, IDisposable
     {
         private IStorage _iStorage = null;
