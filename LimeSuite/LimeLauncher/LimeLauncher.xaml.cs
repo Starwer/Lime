@@ -36,7 +36,7 @@ namespace LimeLauncher
             LimeMsg.Handlers += LimeMsg.WinDialog;
 
             // Display version
-            LimeMsg.Debug("{0} version {1}", About.name, About.version);
+            LimeMsg.Debug("{0} version {1}", About.Name, About.Version);
             LimeMsg.Debug("ApplicationPath: {0}", About.ApplicationPath);
 
             // Initialize/Load LimeLauncher data-structures
@@ -71,7 +71,7 @@ namespace LimeLauncher
                 if (arg.Length > 0)
                 {
                     // Options
-                    LimeProperty prop = null;
+                    LimeProperty prop;
                     bool isToggle = false;
 
                     // Parse argument (detect = and !)
@@ -130,7 +130,6 @@ namespace LimeLauncher
                             case "help":
                                 {
                                     // TODO: do something usefull here
-                                    Console.WriteLine("hello");
                                     break;
                                 }
 
@@ -182,11 +181,6 @@ namespace LimeLauncher
 
 
         #region SingleInstance
-        /// <summary>
-        /// Single instance handling as described in: http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
-        /// </summary>
-
-        private const string Unique = "LimeLauncher Single Instance Key";
 
         [STAThread]
         public static void Main()

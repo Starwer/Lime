@@ -475,12 +475,12 @@ namespace LimeLauncher
                 if (value != _StartWithWindows)
                 {
                     _StartWithWindows = value;
-                    StartWithWindowsModified = value != SystemRegistry.GetAutoRun(About.name, About.ApplicationPath);
+                    StartWithWindowsModified = value != SystemRegistry.GetAutoRun(About.Name, About.ApplicationPath);
                     OnPropertyChanged();
                 }
             }
         }
-        private bool _StartWithWindows = SystemRegistry.GetAutoRun(About.name, About.ApplicationPath);
+        private bool _StartWithWindows = SystemRegistry.GetAutoRun(About.Name, About.ApplicationPath);
 
         [XmlIgnore]
         public bool StartWithWindowsModified { get; private set; } = false;
@@ -1026,7 +1026,7 @@ namespace LimeLauncher
             if (StartWithWindowsModified)
             {
                 LimeMsg.Debug("ConfigLocal: Set StartWithWindows: {0}", Global.Local.StartWithWindows);
-                SystemRegistry.SetAutoRun(About.name, Global.Local.StartWithWindows ? About.ApplicationPath : null);
+                SystemRegistry.SetAutoRun(About.Name, Global.Local.StartWithWindows ? About.ApplicationPath : null);
                 StartWithWindowsModified = false;
             }
 

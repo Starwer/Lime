@@ -30,7 +30,7 @@
             <LineBreak/>
             <Run FontWeight="Bold" Text="{l:Translate Usage}"/>
             <Run FontWeight="Bold" Text=":   "/>
-            <Hyperlink DataContext="{x:Static lime:About.path}" 
+            <Hyperlink DataContext="{x:Static lime:About.ApplicationPath}" 
                        ToolTip="{l:Translate ClickCopy}">
                 <Run FontFamily="Courier New" Text="{Binding Mode=OneWay}"/>
             </Hyperlink>

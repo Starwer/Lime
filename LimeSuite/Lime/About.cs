@@ -32,9 +32,9 @@ namespace Lime
         /// </summary>
         public class Credit
         {
-            public string item { get; set; }
-            public string author { get; set; }
-            public string url { get; set; }
+            public string Item { get; set; }
+            public string Author { get; set; }
+            public string URL { get; set; }
 
         }
 
@@ -44,33 +44,11 @@ namespace Lime
         //***********************************************************************************************
         #region Assembly Attribute Accessors
 
-        /// <summary>
-        /// Application file-name
-        /// </summary>
-        public static string file
-        {
-            get
-            {
-                return Path.GetFileName(Assembly.GetEntryAssembly().Location);
-            }
-        }
-
-        /// <summary>
-        /// Application full path
-        /// </summary>
-        public static string path
-        {
-            get
-            {
-                return new Uri(Assembly.GetEntryAssembly().Location).LocalPath;
-            }
-        }
-
 
         /// <summary>
         /// Name of the application
         /// </summary>
-        public static string name
+        public static string Name
         {
             get
             {
@@ -83,7 +61,7 @@ namespace Lime
                         return titleAttribute.Title;
                     }
                 }
-                return Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+                return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
             }
         }
 
@@ -91,7 +69,7 @@ namespace Lime
         /// <summary>
         /// Version of the application
         /// </summary>
-        public static string version
+        public static string Version
         {
             get
             {
@@ -103,7 +81,7 @@ namespace Lime
         /// <summary>
         /// Version of the application, as a double
         /// </summary>
-        public static double versionNum
+        public static double VersionNum
         {
             get
             {
@@ -117,7 +95,7 @@ namespace Lime
         /// <summary>
         /// description of the application
         /// </summary>
-        public static string description
+        public static string Description
         {
             get
             {
@@ -133,7 +111,7 @@ namespace Lime
         /// <summary>
         /// Product-name
         /// </summary>
-        public static string product
+        public static string Product
         {
             get
             {
@@ -149,7 +127,7 @@ namespace Lime
         /// <summary>
         /// copyright of the application
         /// </summary>
-        public static string copyright
+        public static string Copyright
         {
             get
             {
@@ -165,7 +143,7 @@ namespace Lime
         /// <summary>
         /// Company, developped and owner of the application
         /// </summary>
-        public static string company
+        public static string Company
         {
             get
             {
@@ -181,12 +159,12 @@ namespace Lime
         /// <summary>
         /// URL of the application
         /// </summary>
-        public static readonly string url = "http://starwer.online.fr";
+        public static readonly string URL = "http://starwer.online.fr";
 
         /// <summary>
         /// Author of the application
         /// </summary>
-        public static readonly string author = "Sebastien Mouy";
+        public static readonly string Author = "Sebastien Mouy";
 
         #endregion
 
@@ -196,40 +174,45 @@ namespace Lime
         #region Installation information
 
         /// <summary>
-        /// Application path
-        /// </summary>
-        public static readonly string ApplicationPath = Assembly.GetEntryAssembly().Location;
-
-
-        /// <summary>
         /// Returns the installation folder of Lime.
         /// </summary>
-        public static readonly string InstallPath = Path.GetDirectoryName(ApplicationPath);
+        public static readonly string InstallPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+        /// <summary>
+        /// Application file
+        /// </summary>
+        public static readonly string ApplicationFile = System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) + ".exe";
+
+        /// <summary>
+        /// Application path
+        /// </summary>
+        public static readonly string ApplicationPath = System.IO.Path.Combine(InstallPath, ApplicationFile);
+
 
         /// <summary>
         /// Path of the Lime Configuration directory (can be a Shell-link)
         /// </summary>
-        public static string ConfigPath = LimeLib.ResolvePath(Path.Combine(InstallPath, "Config"));
+        public static readonly string ConfigPath = LimeLib.ResolvePath(System.IO.Path.Combine(InstallPath, "Config"));
 
         /// <summary>
         /// Path of the Lime Language directory (can be a Shell-link)
         /// </summary>
-        public static string LanguagePath = LimeLib.ResolvePath(Path.Combine(InstallPath, "Languages"));
+        public static readonly string LanguagePath = LimeLib.ResolvePath(System.IO.Path.Combine(InstallPath, "Languages"));
 
         /// <summary>
         /// Path of the Lime Documentation directory (can be a Shell-link)
         /// </summary>
-        public static string DocPath = LimeLib.ResolvePath(Path.Combine(InstallPath, "doc"));
+        public static readonly string DocPath = LimeLib.ResolvePath(System.IO.Path.Combine(InstallPath, "doc"));
 
         /// <summary>
         /// Path to the Lime HTML help file 
         /// </summary>
-        public static string HelpPath = LimeLib.ResolvePath(Path.Combine(DocPath, "help.htm"));
+        public static readonly string HelpPath = LimeLib.ResolvePath(System.IO.Path.Combine(DocPath, "help.htm"));
 
         /// <summary>
         /// Path of the Lime Skins directory (can be a Shell-link)
         /// </summary>
-        public static readonly string SkinsPath = LimeLib.ResolvePath(Path.Combine(About.InstallPath, "Skins"));
+        public static readonly string SkinsPath = LimeLib.ResolvePath(System.IO.Path.Combine(About.InstallPath, "Skins"));
 
 
 
@@ -245,23 +228,23 @@ namespace Lime
         /// </summary>
         public static readonly List<Credit> Credits = new List<Credit>()
         {
-            new Credit{ item="TagLib#", author="Aaron Bockover, Alan McGovern, Alexander Kojevnikov, Andrés G. Aragoneses, Andy Beal, Anton Drachev, Bernd Niedergesaess, Bertrand Lorentz, Colin Turner, Eamon Nerbonne, Eberhard Beilharz, Félix Velasco, Gregory S. Chudov, Guy Taylor, Helmut Wahrmann, Jakub 'Fiołek' Fijałkowski, Jeffrey Stedfast, Jeroen Asselman, John Millikin, Julien Moutte, Les De Ridder, Marek Habersack, Mike Gemünde, Patrick Dehne, Paul Lange, Ruben Vermeersch, Samuel D. Jack, Sebastien Mouy, Stephane Delcroix, Stephen Shaw, Tim Howard", url="https://github.com/mono/taglib-sharp" },
-			new Credit{ item="TMDb", author="The Movie Database", url="https://www.themoviedb.org/" },
-			new Credit{ item="TMDbLib", author="LordMike, Naliath", url="https://github.com/LordMike/TMDbLib" },
-            new Credit{ item="Newtonsoft.Json", author="James Newton-King", url="http://www.newtonsoft.com/json" },
-			new Credit{ item="WindowsThumbnailProvider", author="Daniel Peñalba", url="http://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows" },
-			new Credit{ item="DirectoryInfoEx", author="Steven Roebert", url="http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx" },
-            new Credit{ item="Trinet.Core.IO.Ntfs", author="Richard Deeming", url="https://github.com/hubkey/Trinet.Core.IO.Ntfs" },
+            new Credit{ Item="TagLib#", Author="Aaron Bockover, Alan McGovern, Alexander Kojevnikov, Andrés G. Aragoneses, Andy Beal, Anton Drachev, Bernd Niedergesaess, Bertrand Lorentz, Colin Turner, Eamon Nerbonne, Eberhard Beilharz, Félix Velasco, Gregory S. Chudov, Guy Taylor, Helmut Wahrmann, Jakub 'Fiołek' Fijałkowski, Jeffrey Stedfast, Jeroen Asselman, John Millikin, Julien Moutte, Les De Ridder, Marek Habersack, Mike Gemünde, Patrick Dehne, Paul Lange, Ruben Vermeersch, Samuel D. Jack, Sebastien Mouy, Stephane Delcroix, Stephen Shaw, Tim Howard", URL="https://github.com/mono/taglib-sharp" },
+			new Credit{ Item="TMDb", Author="The Movie Database", URL="https://www.themoviedb.org/" },
+			new Credit{ Item="TMDbLib", Author="LordMike, Naliath", URL="https://github.com/LordMike/TMDbLib" },
+            new Credit{ Item="Newtonsoft.Json", Author="James Newton-King", URL="http://www.newtonsoft.com/json" },
+			new Credit{ Item="WindowsThumbnailProvider", Author="Daniel Peñalba", URL="http://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows" },
+			new Credit{ Item="DirectoryInfoEx", Author="Steven Roebert", URL="http://www.codeproject.com/KB/miscctrl/FileBrowser.aspx" },
+            new Credit{ Item="Trinet.Core.IO.Ntfs", Author="Richard Deeming", URL="https://github.com/hubkey/Trinet.Core.IO.Ntfs" },
 
-            new Credit{ item="ShellLib", author="Arik Poznanski", url="http://www.codeproject.com/Articles/3590/C-does-Shell-Part" },
-            new Credit{ item="IniFile", author="BLaZiNiX", url="http://www.codeproject.com/Articles/1966/An-INI-file-handling-class-using-C" },
-            new Credit{ item="SerializableDictionary", author="Paul Welter", url="https://weblogs.asp.net/pwelter34/444961" },
-            new Credit{ item="ShellContextMenu", author="Jpmon1, Andreas Johansson", url="https://www.codeproject.com/articles/22012/explorer-shell-context-menu" },
-            new Credit{ item="ShellLink", author="Mattias Sjögren", url="http://www.msjogren.net/dotnet" },
-            new Credit{ item="FolderBrowserTest", author="John Dickinson", url="http://unafaltadecomprension.blogspot.nl/2013/04/browsing-for-files-and-folders-c.html" },
-            new Credit{ item="WebCache", author="Scott McMaster", url="http://www.codeproject.com/Articles/13179/WebCacheTool-Manipulate-the-IE-Browser-Cache-From" },
-            new Credit{ item="Win32 Interop from IRSS", author="Team Mediaportal", url="http://www.team-mediaportal.com" },
-            new Credit{ item="AppxPackage", author="Simon Mourier", url="http://stackoverflow.com/questions/32122679/getting-icon-of-modern-windows-app-from-a-desktop-application" },
+            new Credit{ Item="ShellLib", Author="Arik Poznanski", URL="http://www.codeproject.com/Articles/3590/C-does-Shell-Part" },
+            new Credit{ Item="IniFile", Author="BLaZiNiX", URL="http://www.codeproject.com/Articles/1966/An-INI-file-handling-class-using-C" },
+            new Credit{ Item="SerializableDictionary", Author="Paul Welter", URL="https://weblogs.asp.net/pwelter34/444961" },
+            new Credit{ Item="ShellContextMenu", Author="Jpmon1, Andreas Johansson", URL="https://www.codeproject.com/articles/22012/explorer-shell-context-menu" },
+            new Credit{ Item="ShellLink", Author="Mattias Sjögren", URL="http://www.msjogren.net/dotnet" },
+            new Credit{ Item="FolderBrowserTest", Author="John Dickinson", URL="http://unafaltadecomprension.blogspot.nl/2013/04/browsing-for-files-and-folders-c.html" },
+            new Credit{ Item="WebCache", Author="Scott McMaster", URL="http://www.codeproject.com/Articles/13179/WebCacheTool-Manipulate-the-IE-Browser-Cache-From" },
+            new Credit{ Item="Win32 Interop from IRSS", Author="Team Mediaportal", URL="http://www.team-mediaportal.com" },
+            new Credit{ Item="AppxPackage", Author="Simon Mourier", URL="http://stackoverflow.com/questions/32122679/getting-icon-of-modern-windows-app-from-a-desktop-application" },
         };
 
         #endregion

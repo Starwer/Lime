@@ -207,7 +207,7 @@ namespace LimeLauncher
         public static LimeCommand OpenUrl = new LimeCommand(
             null,
             () => {
-                System.Diagnostics.Process.Start(About.url);
+                System.Diagnostics.Process.Start(About.URL);
             });
 
         // -------------------------------------------

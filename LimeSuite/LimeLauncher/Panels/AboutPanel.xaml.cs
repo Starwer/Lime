@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,8 +54,11 @@ namespace LimeLauncher
 		{
 			try
 			{
-				var url = new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri);
-				System.Diagnostics.Process.Start(url);
+				// Open file with default program in .NET core +
+				using var proc = new Process();
+				proc.StartInfo.FileName = "explorer";
+				proc.StartInfo.Arguments = $"\"{e.Uri.AbsoluteUri}\"";
+				proc.Start();
 			}
 			catch { }
 
@@ -99,18 +103,18 @@ namespace LimeLauncher
 		/// <summary>
 		/// Represent the credits for the application
 		/// </summary>
-		public static List<About.Credit> Credits = null;
+		public static List<About.Credit> Credits { get; private set; }
 
         /// <summary>
         /// Credit Definition
         /// </summary>
-        private static readonly List<About.Credit> LimeLauncherCredits = new List<About.Credit>()
+        private static readonly List<About.Credit> LimeLauncherCredits = new()
         {
-            new About.Credit{ item="DWM Thumbnails WPF", author="Douglas Stockwell", url="http://www.11011.net/archives/000653.html" },
-            new About.Credit{ item="NotifyIconWPF", author="Philipp Sumi", url="http://www.hardcodet.net/wpf-notifyicon" },
-            new About.Credit{ item="ColorPicker", author="Ury Jamshy", url="https://www.codeproject.com/Articles/229442/WPF-Color-Picker-VS-Style" },
-            new About.Credit{ item="UniversalValueConverter WPF", author="Colin Eberhardt", url="http://blog.scottlogic.com/2010/07/09/a-universal-value-converter-for-wpf.html" },
-			new About.Credit{ item="Icons (inconmontr)", author="Alexander Kahlkopf", url="https://iconmonstr.com/" },
+            new About.Credit{ Item="DWM Thumbnails WPF", Author="Douglas Stockwell", URL="http://www.11011.net/archives/000653.html" },
+            new About.Credit{ Item="NotifyIconWPF", Author="Philipp Sumi", URL="http://www.hardcodet.net/wpf-notifyicon" },
+            new About.Credit{ Item="ColorPicker", Author="Ury Jamshy", URL="https://www.codeproject.com/Articles/229442/WPF-Color-Picker-VS-Style" },
+            new About.Credit{ Item="UniversalValueConverter WPF", Author="Colin Eberhardt", URL="http://blog.scottlogic.com/2010/07/09/a-universal-value-converter-for-wpf.html" },
+			new About.Credit{ Item="Icons (inconmontr)", Author="Alexander Kahlkopf", URL="https://iconmonstr.com/" },
 		};
 
 		#endregion

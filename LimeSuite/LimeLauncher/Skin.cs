@@ -254,9 +254,9 @@ namespace LimeLauncher
             if (version > 0.5)
             {
                 // Successfull
-                if (version > About.versionNum)
+                if (version > About.VersionNum)
                 {
-                    LimeMsg.Error("ErrSkinVersion", skinName, About.name, version);
+                    LimeMsg.Error("ErrSkinVersion", skinName, About.Name, version);
                 }
 
             }

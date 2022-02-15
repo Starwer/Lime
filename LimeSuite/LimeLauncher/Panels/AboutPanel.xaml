@@ -34,12 +34,12 @@
             <StackPanel VerticalAlignment="Center">
                 <TextBlock FontWeight="Bold"
                            FontSize="{Binding FontSize, ElementName=wxLabel, Converter={StaticResource ScaleConvert}, ConverterParameter=1.4}" 
-                           Text="{x:Static lime:About.name}" />
-                <TextBlock Opacity="0.6" x:Name="wxLabel" TextWrapping="Wrap" Text="{x:Static lime:About.description}" />
+                           Text="{x:Static lime:About.Name}" />
+                <TextBlock Opacity="0.6" x:Name="wxLabel" TextWrapping="Wrap" Text="{x:Static lime:About.Description}" />
                 <TextBlock>
                     <Run Text="{l:Translate Version}" />
                     <Run Text=" " />
-                    <Run Text="{x:Static lime:About.version}" />
+                    <Run Text="{x:Static lime:About.Version}" />
                 </TextBlock>
             </StackPanel>
         </StackPanel>
@@ -56,16 +56,16 @@
 
             <TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Translate Website}" />
             <TextBlock Grid.Row="0" Grid.Column="1">
-                <Hyperlink NavigateUri="{Binding Source={x:Static lime:About.url}, Converter={StaticResource URIConvert}}">
-                    <Run Text="{x:Static lime:About.url}"/>
+                <Hyperlink NavigateUri="{Binding Source={x:Static lime:About.URL}, Converter={StaticResource URIConvert}}">
+                    <Run Text="{x:Static lime:About.URL}"/>
                 </Hyperlink>
             </TextBlock>
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="{l:Translate Copyright}" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static lime:About.copyright}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static lime:About.Copyright}" />
 
             <TextBlock Grid.Row="2" Grid.Column="0" Text="{l:Translate Author}" />
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Static lime:About.author}" TextWrapping="wrap"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Static lime:About.Author}" TextWrapping="wrap"/>
         </Grid>
 
         <TextBlock/>
@@ -99,13 +99,13 @@
                         <TextBlock Grid.Column="0"  
                                    Margin="{w:ThicknessScaled 8}"
                                    VerticalAlignment="Top">
-                            <Hyperlink NavigateUri="{Binding url, Converter={StaticResource URIConvert}}">
-                                <Run Text="{Binding item}"/>
+                            <Hyperlink NavigateUri="{Binding URL, Converter={StaticResource URIConvert}}">
+                                <Run Text="{Binding Item}"/>
                             </Hyperlink>
                         </TextBlock>
                         
                         <TextBlock Grid.Column="1" 
-                                   Text="{Binding author}" 
+                                   Text="{Binding Author}" 
                                    Margin="{w:ThicknessScaled 8}"
                                    VerticalAlignment="Top" 
                                    TextWrapping="Wrap"/>

@@ -133,5 +133,6 @@
   <PropertyGroup>
     <PreBuildEvent>echo $(ProjectDir) &gt; ..\Debug\debug.cfg</PreBuildEvent>
     <PackageIcon>Lime Icon 256.png</PackageIcon>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
   </PropertyGroup>
 </Project>

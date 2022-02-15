@@ -2637,12 +2637,12 @@ namespace Lime
             // Task selection by eliminating the non window tasks
             uint style = Win32.GetWindowLongPtr(hWnd, Win32.GWL.GWL_STYLE);
             uint exStyle = Win32.GetWindowLongPtr(hWnd, Win32.GWL.GWL_EXSTYLE);
-            if (Win32.GetParent(hWnd) != IntPtr.Zero                            // has Parent window
+            if (Win32.GetParent(hWnd) != IntPtr.Zero                              // has Parent window
                || Win32.GetWindow(hWnd, Win32.GW.Owner) != IntPtr.Zero            // is Owned window
                || (style & (uint)Win32.WindowStyles.WS_VISIBLE) == 0              // is Invisible window
                || (exStyle & (uint)Win32.WindowExStyles.WS_EX_TOOLWINDOW) != 0    // is ToolTip window
                || Win32.GetWindowTitle(hWnd) == null                              // has no title
-               || hWnd == Handle                                             // is Lime Window itself
+               || hWnd == Handle                                                  // is Lime Window itself
                || Win32.GetSystemMenu(hWnd, false) == IntPtr.Zero                 // has no System Menu (check required for Modern App)
                || !Tree.TaskSwitcherShowApp && Win32.IsWindowModernApp(hWnd)	  // Applications not enabled
                )
