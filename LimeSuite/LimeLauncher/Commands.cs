@@ -367,8 +367,17 @@ namespace LimeLauncher
 			toggle: null, icon: "Close");
 
 
-		// -------------------------------------------
-		public static LimeCommand Show = new LimeCommand(
+        // -------------------------------------------
+        public static LimeCommand CollectGarbage = new LimeCommand(
+            null,
+            () => {
+                GC.Collect();
+            },
+            toggle: null, icon: "Bug");
+
+
+        // -------------------------------------------
+        public static LimeCommand Show = new LimeCommand(
             () => MainWindow.Visibility != Visibility.Visible || MainWindow.WindowState == WindowState.Minimized || !Global.Local.OnTop,
             () => {
                 MainWindow.Show();

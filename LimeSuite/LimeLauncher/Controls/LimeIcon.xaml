@@ -20,7 +20,7 @@
              >
     <UserControl.Resources>
 
-        <!-- We use shared resources to avoid duplicating the resources in every LimeIcon instance -->
+        <!-- We use shared ResourceDictionary to avoid duplicating the resources in every LimeIcon instance -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Icons.xaml"/>

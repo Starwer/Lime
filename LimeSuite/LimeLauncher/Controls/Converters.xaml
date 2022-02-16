@@ -1,0 +1,21 @@
+﻿<!--**************************************************************************
+* Author:       Sebastien Mouy, alias Starwer
+* Contact:      starwer@laposte.net
+* Website:      http://starwer.online.fr
+* Creation:     16-02-2022
+* Copyright :   Sebastien Mouy © 2022  
+**************************************************************************-->
+
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:LimeLauncher"
+                    xmlns:w="clr-namespace:WPFhelper">
+
+    <!-- Declare value-converters -->
+    <w:UniversalValueConverter x:Key="AutoConvert" />
+    <w:EqualConverter x:Key="EqualConvert" />
+    <w:ScaleConverter x:Key="ScaleConvert" />
+    <l:FontFamilyConverter x:Key="FontFamilyConvert" />
+    <l:ListToStringConverter x:Key="ListToString" />
+
+</ResourceDictionary>

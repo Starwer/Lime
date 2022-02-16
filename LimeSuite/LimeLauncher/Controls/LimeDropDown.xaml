@@ -19,32 +19,13 @@
              >
     <UserControl.Resources>
 
-        <!-- Define value-converters -->
-        <w:EqualConverter x:Key="EqualConvert" />
-        <l:FontFamilyConverter x:Key="FontFamilyConvert" />
-
-        <!-- Templates -->
-        
-        <DataTemplate x:Key="EnumItemTemplate">
-            <TextBlock Text="{Binding Name}" ToolTip="{Binding Desc}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="PickCollectionItemTemplate">
-            <TextBlock Text="{Binding Name}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="FontFamilyItemTemplate">
-            <TextBlock Text="{Binding Name}" FontFamily="{Binding Key, Converter={StaticResource FontFamilyConvert}}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="FontWeightItemTemplate">
-            <TextBlock Text="{Binding Name}" FontWeight="{Binding Key}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="FontStyleItemTemplate">
-            <TextBlock Text="{Binding Name}" FontStyle="{Binding Key}" />
-        </DataTemplate>
-
+        <!-- We use shared ResourceDictionary to avoid duplicating the resources in every LimeIcon instance -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Converters.xaml"/>
+                <ResourceDictionary Source="LimeControlsResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
 
 
         <!-- No Style shall be used, so that this control is kept skinable -->

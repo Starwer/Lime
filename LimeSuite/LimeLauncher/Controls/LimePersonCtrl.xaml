@@ -21,10 +21,13 @@
              >
     <UserControl.Resources>
 
-        <!-- Define value-converters -->
-        <w:EqualConverter x:Key="EqualConvert" />
-        <w:ScaleConverter x:Key="ScaleConvert" />
-
+        <!-- We use shared ResourceDictionary to avoid duplicating the resources in every LimeIcon instance -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Converters.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+ 
         <!-- No Style shall be used, so that this control is kept skinable -->
         
     </UserControl.Resources>

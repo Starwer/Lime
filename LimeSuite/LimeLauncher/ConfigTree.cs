@@ -56,6 +56,10 @@ namespace LimeLauncher
 			"ShowInfoPane",
 			"InfoEditMode",
 			"ConfigVisible"
+#if DEBUG
+            , null,
+            "CollectGarbage"
+#endif
         );
 
 

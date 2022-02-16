@@ -975,6 +975,7 @@ namespace LimeLauncher
 				if (value != _SelectedItem)
 				{
 					_SelectedItem = value;
+                    InfoPanel.Cleanup();
 					LimeControl.AutoSlideReset();
 					OnPropertyChanged(false);
 				}

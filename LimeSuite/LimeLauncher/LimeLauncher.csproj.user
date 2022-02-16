@@ -25,4 +25,12 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\Converters.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\LimeControlsResources.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
 </Project>
