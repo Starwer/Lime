@@ -124,6 +124,132 @@ namespace LimeLauncher
         }
 
 
+        /// <summary>
+        /// Handle the Command Line Interface parsing of the application.
+        /// </summary>
+        /// <param name="args">list of arguments of the command</param>
+        /// <returns>true if handled.</returns>
+        static public bool Parse(string[] args)
+        {
+            LimeMsg.Debug("Commands.Parse");
+
+            Global.Local.CtrlMode = CtrlMode.CLI;
+
+            foreach (string arg in args)
+            {
+                LimeMsg.Debug("Commands.Parse: {0}", arg);
+
+                if (arg.Length > 0)
+                {
+                    // Options
+                    LimeProperty prop;
+                    bool isToggle = false;
+
+                    // Parse argument (detect = and !)
+                    string cmd = arg;
+                    string value = null;
+                    int idx = arg.IndexOf('=');
+                    if (idx >= 0)
+                    {
+                        value = arg.Substring(idx + 1);
+                        cmd = arg.Substring(0, idx).Trim();
+                    }
+                    else if (arg.EndsWith("!"))
+                    {
+                        isToggle = true;
+                        cmd = arg.Substring(0, arg.Length - 1).Trim();
+                    }
+
+                    if ((prop = Global.Properties.Get(cmd)) != null)
+                    {
+                        // Property
+                        if (value != null)
+                        {
+                            if (prop.ReadOnly)
+                            {
+                                LimeMsg.Error("ErrReadOnlyProp", cmd);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    prop.Serialize = value;
+                                }
+                                catch
+                                {
+                                    LimeMsg.Error("ErrInvProp", arg, prop.Type.ToString());
+                                }
+                            }
+                        }
+                        else if (isToggle)
+                        {
+                            prop.Toggle();
+                        }
+                        else if (prop.Content is LimeCommand lcmd)
+                        {
+                            lcmd.Execute();
+                        }
+                    }
+                    else
+                    {
+                        // Other options
+                        bool handled = true;
+                        switch (cmd.ToLower())
+                        {
+
+                            case "?":
+                            case "h":
+                            case "help":
+                                {
+                                    // TODO: do something usefull here
+                                    break;
+                                }
+
+                            default:
+                                handled = false;
+                                break;
+
+                        }
+
+                        // Try Skin-parameters
+                        if (!handled && Global.Local.Skin != null)
+                        {
+                            var param = Global.Local.Skin.Get(cmd);
+                            if (param != null)
+                            {
+                                if (param.Visible && param.Content != null)
+                                {
+                                    handled = true;
+                                    if (value != null)
+                                    {
+                                        try
+                                        {
+                                            param.Serialize = value;
+                                        }
+                                        catch
+                                        {
+                                            LimeMsg.Error("ErrInvSkinProp", arg, param.Type.ToString());
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+
+                        }
+
+                        // No match found
+                        if (!handled)
+                        {
+                            LimeMsg.Error("ErrInvArg", arg);
+                        }
+
+                    }
+                }
+            }
+
+            return true;
+        }
+
         #endregion
 
 
@@ -220,6 +346,14 @@ namespace LimeLauncher
             },
 			toggle: null, icon: "Refresh");
 
+
+        // -------------------------------------------
+        public static LimeCommand NotifyHide = new LimeCommand(
+            () => MainWindow != null && MainWindow.wxNotifier.IsOpen,
+            () =>
+            {
+                MainWindow.Notify();
+            });
 
         #endregion
 

@@ -27,6 +27,7 @@ using System.Windows.Threading;
 using System.Windows.Controls.Primitives;
 using LimeLauncher.Controls;
 using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
 
 namespace LimeLauncher
 {
@@ -842,8 +843,15 @@ namespace LimeLauncher
 						default: win.wxNotifierBorder.ClearValue(Border.BorderBrushProperty); break;
 					}
 
-					win.wxNotifierText.Text = msg;
-					win.wxNotifier.IsOpen = true;
+                    if (string.IsNullOrEmpty(win.wxNotifierText.Text))
+                    {
+                        win.wxNotifierText.Text = msg;
+                    }
+                    else
+                    {
+                        win.wxNotifierText.Text += Environment.NewLine + msg;
+                    }
+                    win.wxNotifier.IsOpen = true;
 				}
 				else
 				{
@@ -869,9 +877,20 @@ namespace LimeLauncher
         {
             // OSD Notifier
             //LimeMsg.Debug("Notify: End");
+            wxNotifierText.Text = "";
             wxNotifier.IsOpen = false;
         }
 
+
+        private void wxNotifierBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Notify();
+        }
+
+        private void wxNotifierBorder_KeyDown(object sender, KeyEventArgs e)
+        {
+            Notify();
+        }
 
         #endregion
 
@@ -939,11 +958,20 @@ namespace LimeLauncher
 
             var msg = (Win32.WindowsMessage) wmsg;
 
-    //        LimeMsg.Debug("HwndHook: {0} : 0x{1:X} - wParam: 0x{2:X}, lParam: 0x{3:X}", 
-				//Enum.GetName(typeof(Win32.WindowsMessage), msg), wmsg, wParam, lParam);
-           
+            //        LimeMsg.Debug("HwndHook: {0} : 0x{1:X} - wParam: 0x{2:X}, lParam: 0x{3:X}", 
+            //Enum.GetName(typeof(Win32.WindowsMessage), msg), wmsg, wParam, lParam);
 
-            if (msg == Win32.WindowsMessage.HOTKEY)
+
+            if (msg == Win32.WindowsMessage.COPYDATA)
+            {
+                // Handle commands sent by other application instances
+                var args = Win32.GetWindowsMessageCopyData(lParam);
+                var unpack = args.Split((char)1);
+                LimeMsg.Debug("HwndHook: Received COPYDATA : {0}", unpack.Length);
+                Commands.Parse(unpack);
+                handled = true;
+            }
+            else if (msg == Win32.WindowsMessage.HOTKEY)
             {
                 switch (wParam.ToInt32())
                 {
@@ -955,7 +983,7 @@ namespace LimeLauncher
                         break;
                 }
             }
-            else if (msg == Win32.WindowsMessage.MOUSEMOVE) 
+            else if (msg == Win32.WindowsMessage.MOUSEMOVE)
             {
                 if (IsMouseOver)
                 {
@@ -966,26 +994,26 @@ namespace LimeLauncher
                     }
                     else
                     {
-						// Mouse motion detection
+                        // Mouse motion detection
 
-						var xPos = (Int16) (lParam.ToInt32() & 0xFFFF);
-						var yPos = (Int16) (lParam.ToInt32() >> 16);
+                        var xPos = (short)(lParam.ToInt32() & 0xFFFF);
+                        var yPos = (short)(lParam.ToInt32() >> 16);
 
-						var xPrev = (Int16) (_mousePos & 0xFFFF);
-						var yPrev = (Int16) (_mousePos >> 16);
+                        var xPrev = (short)(_mousePos & 0xFFFF);
+                        var yPrev = (short)(_mousePos >> 16);
 
 
-						if (_mousePos == -1)
-						{
-							_mousePos = (yPos << 16) | (xPos & 0x0000FFFF);
-						}
-						else if (Math.Abs(xPos - xPrev) >= _mouseCountThresh || Math.Abs(yPos - yPrev) >= _mouseCountThresh)
-						{
-							// Not really a distance formula, but cheaper and good enough for the use
+                        if (_mousePos == -1)
+                        {
+                            _mousePos = (yPos << 16) | (xPos & 0x0000FFFF);
+                        }
+                        else if (Math.Abs(xPos - xPrev) >= _mouseCountThresh || Math.Abs(yPos - yPrev) >= _mouseCountThresh)
+                        {
+                            // Not really a distance formula, but cheaper and good enough for the use
 
-							LimeMsg.Debug("HwndHook: MOUSEMOVE ({0}, {1}) - ({2}, {3})", xPos, yPos, xPrev, yPrev);
-							Global.Local.CtrlMode = CtrlMode.Mouse;
-						}
+                            LimeMsg.Debug("HwndHook: MOUSEMOVE ({0}, {1}) - ({2}, {3})", xPos, yPos, xPrev, yPrev);
+                            Global.Local.CtrlMode = CtrlMode.Mouse;
+                        }
 
 
                     }
@@ -994,7 +1022,7 @@ namespace LimeLauncher
                 if (trackMove.enable)
                 {
                     var coord = Mouse.GetPosition(this);
-                    if( Math.Abs((int)coord.X - (int)trackMove.origin.X) > TrackMove.threshold || Math.Abs((int)coord.Y - (int)trackMove.origin.Y) > TrackMove.threshold)
+                    if (Math.Abs((int)coord.X - (int)trackMove.origin.X) > TrackMove.threshold || Math.Abs((int)coord.Y - (int)trackMove.origin.Y) > TrackMove.threshold)
                     {
                         double width = ActualWidth;
                         double height = ActualHeight;
@@ -1005,7 +1033,7 @@ namespace LimeLauncher
                         LimeMsg.Debug("HwndHook: trackMove End Drag: off: {0}, {1} --> {2}, {3}", win.X, win.Y, winOff.X, winOff.Y);
                         Left += winOff.X + coord.X * (1.0 - Width / width);
                         Top += winOff.Y + coord.Y * (1.0 - Height / height);
-                        if (WindowState == WindowState.Maximized)  WindowState = WindowState.Normal;
+                        if (WindowState == WindowState.Maximized) WindowState = WindowState.Normal;
                         trackMove.enable = false;
                         Window_MouseLeftButtonDown();
                     }
@@ -1482,8 +1510,8 @@ namespace LimeLauncher
                 }
             }
         }
-		
-		#endregion
 
-	}
+        #endregion
+
+    }
 }

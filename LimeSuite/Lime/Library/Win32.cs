@@ -2051,6 +2051,29 @@ public static class Win32
         public IntPtr lpData;
     }
 
+    /// <summary>
+    /// Structure to use with the SendMessage COPYDATA
+    /// <see cref="https://gist.github.com/Skibisky/d2e760af14c8ce774481a16e5a1ea556"/>
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct CopyData
+    {
+        /// <summary>
+        /// data to be passed, can be used as a message type identifier
+        /// </summary>
+        public IntPtr dwData;
+        /// <summary>
+        /// sizeof lpData
+        /// </summary>
+        public int cbData;
+        /// <summary>
+        /// data to be passed, can be null
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string lpData;
+    }
+
+
     #endregion
 
     #region Nested type: POINTAPI
@@ -2354,15 +2377,54 @@ public static class Win32
       int nSize,
       int Arguments);
 
-    [DllImport("user32.dll")]
+    /// <summary>
+    ///     Retrieves a handle to the top-level window whose class name and window name match the specified strings. This
+    ///     function does not search child windows. This function does not perform a case-sensitive search. To search child
+    ///     windows, beginning with a specified child window, use the
+    ///     <see cref="!:https://msdn.microsoft.com/en-us/library/windows/desktop/ms633500%28v=vs.85%29.aspx">FindWindowEx</see>
+    ///     function.
+    ///     <para>
+    ///     Go to https://msdn.microsoft.com/en-us/library/windows/desktop/ms633499%28v=vs.85%29.aspx for FindWindow
+    ///     information or https://msdn.microsoft.com/en-us/library/windows/desktop/ms633500%28v=vs.85%29.aspx for
+    ///     FindWindowEx
+    ///     </para>
+    /// </summary>
+    /// <param name="lpClassName">
+    ///     C++ ( lpClassName [in, optional]. Type: LPCTSTR )<br />The class name or a class atom created by a previous call to
+    ///     the RegisterClass or RegisterClassEx function. The atom must be in the low-order word of lpClassName; the
+    ///     high-order word must be zero.
+    ///     <para>
+    ///     If lpClassName points to a string, it specifies the window class name. The class name can be any name
+    ///     registered with RegisterClass or RegisterClassEx, or any of the predefined control-class names.
+    ///     </para>
+    ///     <para>If lpClassName is NULL, it finds any window whose title matches the lpWindowName parameter.</para>
+    /// </param>
+    /// <param name="lpWindowName">
+    ///     C++ ( lpWindowName [in, optional]. Type: LPCTSTR )<br />The window name (the window's
+    ///     title). If this parameter is NULL, all window names match.
+    /// </param>
+    /// <returns>
+    ///     C++ ( Type: HWND )<br />If the function succeeds, the return value is a handle to the window that has the
+    ///     specified class name and window name. If the function fails, the return value is NULL.
+    ///     <para>To get extended error information, call GetLastError.</para>
+    /// </returns>
+    /// <remarks>
+    ///     If the lpWindowName parameter is not NULL, FindWindow calls the <see cref="M:GetWindowText" /> function to
+    ///     retrieve the window name for comparison. For a description of a potential problem that can arise, see the Remarks
+    ///     for <see cref="M:GetWindowText" />.
+    /// </remarks>
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(
       string className,
       string windowName);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern IntPtr SendMessageTimeout(
       IntPtr hWnd,
-      int msg,
+      WindowsMessage msg,
       IntPtr wParam,
       IntPtr lParam,
       SendMessageTimeoutFlags flags,
@@ -2370,7 +2432,7 @@ public static class Win32
       out IntPtr result);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    public static extern IntPtr SendMessage(IntPtr hWnd, WindowsMessage Msg, IntPtr wParam, IntPtr lParam);
 
     //[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     //static extern int RegisterWindowMessage(string lpString);
@@ -2552,7 +2614,7 @@ public static class Win32
     #region  Global Hot Key
 
     [DllImport("user32.dll")]
-    private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
+    public static extern bool RegisterHotKey(IntPtr hWnd, int id, KeyModifier modifier, System.Windows.Forms.Keys key);
 
     [DllImport("user32.dll")]
     public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
@@ -2619,10 +2681,7 @@ public static class Win32
         if (wMenu == IntPtr.Zero) return;
 
         // Display the menu
-        uint command = TrackPopupMenuEx(wMenu, FuFlags.TPM_LEFTBUTTON | FuFlags.TPM_RETURNCMD, (int)point.X, (int)point.Y, myWindow, IntPtr.Zero);
-        if (command == 0) return;
-
-        PostMessage(appWindow, SysDefMsg.WM_SYSCOMMAND, new IntPtr(command), IntPtr.Zero);
+        TrackPopupMenuEx(wMenu, FuFlags.TPM_LEFTBUTTON, point.X, point.Y, myWindow, IntPtr.Zero);
     }
 
     /// <summary>
@@ -2767,14 +2826,14 @@ public static class Win32
     {
         IntPtr icon = IntPtr.Zero;
 
-        SendMessageTimeout(handle, (int)WindowsMessage.GETICON, new IntPtr(ICON_BIG), IntPtr.Zero,
+        SendMessageTimeout(handle, WindowsMessage.GETICON, new IntPtr(ICON_BIG), IntPtr.Zero,
                            SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out icon);
 
         if (icon == IntPtr.Zero)
             icon = GetClassLongPtr(handle, GCL_HICON);
 
         if (icon == IntPtr.Zero)
-            SendMessageTimeout(handle, (int)WindowsMessage.QUERYDRAGICON, IntPtr.Zero, IntPtr.Zero,
+            SendMessageTimeout(handle, WindowsMessage.QUERYDRAGICON, IntPtr.Zero, IntPtr.Zero,
                                SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out icon);
 
         if (icon != IntPtr.Zero)
@@ -2831,12 +2890,13 @@ public static class Win32
     /// <param name="msg">The message.</param>
     /// <param name="wParam">The wParam.</param>
     /// <param name="lParam">The lParam.</param>
+    /// <param name="timeout">Timeout in ms.</param>
     /// <returns>Result of message.</returns>
-    public static IntPtr SendWindowsMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam)
+    public static IntPtr SendWindowsMessage(IntPtr hWnd, WindowsMessage msg, IntPtr wParam, IntPtr lParam, int timeout = 1000)
     {
         IntPtr result = IntPtr.Zero;
 
-        IntPtr returnValue = SendMessageTimeout(hWnd, msg, wParam, lParam, SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000,
+        IntPtr returnValue = SendMessageTimeout(hWnd, msg, wParam, lParam, SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, timeout,
                                                 out result);
         int lastError = Marshal.GetLastWin32Error();
 
@@ -2853,10 +2913,55 @@ public static class Win32
     /// <param name="msg">The message.</param>
     /// <param name="wParam">The wParam.</param>
     /// <param name="lParam">The lParam.</param>
+    /// <param name="timeout">Timeout in ms.</param>
     /// <returns>Result of message.</returns>
-    public static IntPtr SendWindowsMessage(IntPtr hWnd, int msg, int wParam, int lParam)
+    public static IntPtr SendWindowsMessage(IntPtr hWnd, WindowsMessage msg, int wParam, int lParam, int timeout = 1000)
     {
         return SendWindowsMessage(hWnd, msg, new IntPtr(wParam), new IntPtr(lParam));
+    }
+
+    /// <summary>
+    /// Send a COPYDATA string through window message using the SendMessageTimeout method.
+    /// </summary>
+    /// <remarks>
+    /// Source: <see cref="https://codingvision.net/c-send-text-to-notepad"/>
+    /// </remarks>
+    /// <param name="hWnd">The window handle to send the message to</param>
+    /// <param name="message">The string to send</param>
+    /// <param name="id">Identifier of the message</param>
+    /// <param name="timeout">Timeout in ms</param>
+    /// <returns>Result of message.</returns>
+    public static IntPtr SendWindowsMessageCopyData(IntPtr hWnd, string message, int id = 0, int timeout = 10000)
+    {
+        var data = new CopyData
+        {
+            dwData = new IntPtr(id),
+            cbData = (message.Length + 1) * Marshal.SystemDefaultCharSize,
+            lpData = message
+        };
+
+        IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(data));
+        Marshal.StructureToPtr<CopyData>(data, ptr, fDeleteOld: false);
+
+        IntPtr returnValue = SendMessageTimeout(hWnd, WindowsMessage.COPYDATA, IntPtr.Zero, ptr,
+                                                SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, timeout, out IntPtr result);
+        int lastError = Marshal.GetLastWin32Error();
+
+        if (returnValue == IntPtr.Zero && lastError != 0)
+            throw new Win32Exception(lastError);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Retrieve a COPYDATA message which has been sent by <see cref="SendWindowsMessageCopyData"/> 
+    /// </summary>
+    /// <param name="lParam">lParam value received from the Windows message</param>
+    /// <returns>message which was sent by <see cref="SendWindowsMessageCopyData"/></returns>
+    public static string GetWindowsMessageCopyData(IntPtr lParam)
+    {
+        var data = (CopyData)Marshal.PtrToStructure(lParam, typeof(CopyData));
+        return data.lpData;
     }
 
 
@@ -3231,7 +3336,7 @@ public static class Win32
         if (trayWnd == IntPtr.Zero)
             return;
 
-		SendMessageTimeout(trayWnd, (int)WindowsMessage.COMMAND, new IntPtr(MINIMIZE_ALL), IntPtr.Zero,
+		SendMessageTimeout(trayWnd, WindowsMessage.COMMAND, new IntPtr(MINIMIZE_ALL), IntPtr.Zero,
 						   SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out IntPtr result);
 	}
 
@@ -3272,11 +3377,6 @@ public static class Win32
         return path.ToString();
     }
 
-
-    public static bool RegisterHotKey(IntPtr hWnd, int id, KeyModifier modifier, System.Windows.Forms.Keys key)
-    {
-        return RegisterHotKey(hWnd, id, (int)modifier, (int)key);
-    }
 
     /// <summary>
     /// Return true if last event was generated from Touch (gesture)

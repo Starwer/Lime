@@ -7,7 +7,7 @@
 **************************************************************************/
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Windows;
 using Lime;
@@ -46,153 +46,75 @@ namespace LimeLauncher
 			new MainWindow();
 
             // Parse command arguments
-            CommandLineInterface(true, e.Args);
+            Commands.Parse(e.Args);
 
         }
 
-
         /// <summary>
-        /// Handle the Command Line Interface parsing of the application.
+        /// Application entry point, handling the singleton application instance scheme
         /// </summary>
-        /// <param name="firstInstance">true if this is the first instance, false if the application is re-opened</param>
-        /// <param name="args">list of arguments of the command</param>
-        /// <returns>true if handled.</returns>
-        public bool CommandLineInterface(bool firstInstance, IList<string> args)
+        /// <param name="args">command line arguments</param>
+        [STAThread]
+        public static void Main(string[] args)
         {
-            LimeMsg.Debug("CommandLineInterface: {0}", firstInstance);
+            var appName = About.ApplicationName;
+            Process[] processList = Process.GetProcessesByName(appName);
+            var currId = Environment.ProcessId;
 
-            Global.Local.CtrlMode = CtrlMode.CLI;
-
-            for (int i = firstInstance ? 0 : 1; i < args.Count; i++)
+            // Retrieve other (main) application instance
+            foreach (var process in processList)
             {
-                LimeMsg.Debug("CommandLineInterface: {0}: arg: {1}", firstInstance, args[i]);
-                string arg = args[i];
-                                
-                if (arg.Length > 0)
+                if (process.Id != currId)
                 {
-                    // Options
-                    LimeProperty prop;
-                    bool isToggle = false;
+                    IntPtr wHandle = process.MainWindowHandle;
 
-                    // Parse argument (detect = and !)
-                    string value = null;
-                    int idx = arg.IndexOf('=');
-                    if (idx>=0)
+                    if (wHandle != IntPtr.Zero)
                     {
-                        value = arg.Substring(idx+1);
-                        arg = arg.Substring(0, idx).Trim();
-                    }
-                    else if (arg.EndsWith("!"))
-                    {
-                        isToggle = true;
-                        arg = arg.Substring(0, arg.Length - 1).Trim();
-                    }
-
-                    if ((prop = Global.Properties.Get(arg)) != null) 
-                    {
-                        // Property
-                        if (value != null)
+                        // Try to retrieve the real main root window, and not the popup or child windows.
+                        // Still, this will keep stuck on sub windows like Configuration window
+                        IntPtr ptr;
+                        while ( (ptr = Win32.GetWindow(wHandle, Win32.GW.Owner)) != IntPtr.Zero)
                         {
-                            if (prop.ReadOnly)
-                            {
-                                LimeMsg.Error("ErrReadOnlyProp", args[i]);
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    prop.Serialize = value;
-                                }
-                                catch
-                                {
-                                    LimeMsg.Error("ErrInvProp", args[i], prop.Type.ToString());
-                                }
-                            }
+                            wHandle = ptr;
                         }
-                        else if (isToggle)
+                        while ((ptr = Win32.GetParent(wHandle)) != IntPtr.Zero)
                         {
-                            prop.Toggle();
-                        }
-                        else if (prop.Content is LimeCommand cmd)
-                        {
-                            cmd.Execute();
-                        }
-                    }
-                    else
-                    {
-                        // Other options
-                        bool handled = true;
-                        switch (arg.ToLower())
-                        {
-
-                            case "?":
-                            case "h":
-                            case "help":
-                                {
-                                    // TODO: do something usefull here
-                                    break;
-                                }
-
-                            default:
-                                handled = false;
-                                break;
-
+                            wHandle = ptr;
                         }
 
-                        // Try Skin-parameters
-                        if (!handled && Global.Local.Skin != null)
+                        string name = Win32.GetWindowTitle(wHandle);
+                        if (name != About.Name)
                         {
-                            var param = Global.Local.Skin.Get(arg);
-                            if (param != null)
-                            {
-                                if(param.Visible && param.Content != null)
-                                {
-                                    handled = true;
-                                    if (value != null)
+                            // Alternative method to find the real main window, and not the sub windows
+                            Win32.EnumerateWindows (
+                                (IntPtr hWnd, IntPtr lParam) => 
+                                { 
+                                    if ( Win32.GetWindowPID(hWnd) == process.Id &&
+                                         Win32.GetWindowTitle(hWnd) == About.Name )
                                     {
-                                        try
-                                        {
-                                            param.Serialize = value;
-                                        }
-                                        catch
-                                        {
-                                            LimeMsg.Error("ErrInvSkinProp", args[i], param.Type.ToString());
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-
+                                        wHandle = hWnd;
+                                    } 
+                                    return true; 
+                                }, 
+                                IntPtr.Zero );
                         }
 
-						// No match found
-						if (!handled)
-                        {
-                            LimeMsg.Error("ErrInvArg", args[i]);
-                        }
-
+                        // Send command arguments to main application instance as one string
+                        var pack = string.Join((char)1, args);
+                        Win32.SendWindowsMessageCopyData(wHandle, pack, currId);
+                        return;
                     }
                 }
             }
 
-            return true;
-        }
-
-
-
-        #region SingleInstance
-
-        [STAThread]
-        public static void Main()
-        {
+            // First application instance: Start application
             var application = new App();
 
             application.InitializeComponent();
             application.Run();
 
-        }
 
-        #endregion
+        }
 
     }
 

@@ -198,7 +198,7 @@
             <!-- Notifier -->
 
             <Popup x:Name="wxNotifier" Grid.ColumnSpan="3" Style="{DynamicResource NotifierStyle}">
-                <Border x:Name="wxNotifierBorder" Grid.ColumnSpan="3">
+                <Border x:Name="wxNotifierBorder" Grid.ColumnSpan="3" MouseLeftButtonDown="wxNotifierBorder_MouseLeftButtonDown" KeyDown="wxNotifierBorder_KeyDown">
                     <TextBlock x:Name="wxNotifierText" />
                 </Border>
             </Popup>

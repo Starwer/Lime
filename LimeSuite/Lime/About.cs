@@ -179,9 +179,14 @@ namespace Lime
         public static readonly string InstallPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         /// <summary>
+        /// Returns the application name as its file name
+        /// </summary>
+        public static readonly string ApplicationName = System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+
+        /// <summary>
         /// Application file
         /// </summary>
-        public static readonly string ApplicationFile = System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) + ".exe";
+        public static readonly string ApplicationFile = ApplicationName + ".exe";
 
         /// <summary>
         /// Application path
