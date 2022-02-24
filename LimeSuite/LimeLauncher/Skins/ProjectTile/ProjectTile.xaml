@@ -1589,14 +1589,17 @@
                 * Border : NotifierStyle
                   + TextBlock
     -->
-
+    
     <Style x:Key="NotifierStyle" TargetType="Popup">
         <Setter Property="PopupAnimation" Value="Slide" />
-        <Setter Property="Placement" Value="Center" />
+        <Setter Property="Placement" Value="Bottom" />
+        <Setter Property="VerticalOffset" Value="{Binding ActualHeight, ElementName=wxWinBorder}" />
+        <Setter Property="MaxHeight" Value="{Binding ActualHeight, ElementName=wxWinBorder, Converter={StaticResource ScaleConvert}, ConverterParameter=0.3}" />
+        <Setter Property="Width" Value="{Binding ActualWidth, ElementName=wxWinBorder}" />
         <Setter Property="AllowsTransparency" Value="True" />
         <Style.Resources>
             <Style TargetType="Border">
-                <Setter Property="Margin" Value="{w:ThicknessScaled 4}"/>
+                <Setter Property="Margin" Value="{w:ThicknessScaled '20,0,0,20'}"/>
                 <Setter Property="BorderThickness" Value="{w:ThicknessScaled 1}"/>
                 <Setter Property="CornerRadius" Value="{w:DoubleScaled 3}" />
                 <Setter Property="BorderBrush" Value="{StaticResource IconFontBrush}"/>

@@ -2594,6 +2594,8 @@ namespace Lime
                 for (int i = 0; i < taskSwitcher.Children.Count; i++)
                 {
                     var node = taskSwitcher.Children[i];
+                    if (node is null) break;
+
                     // TODO: stub: matching of data file
                     string wintitle = Win32.GetWindowTitle(node.Handle);
                     try

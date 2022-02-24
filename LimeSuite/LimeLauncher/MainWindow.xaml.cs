@@ -871,7 +871,7 @@ namespace LimeLauncher
         }
 
         /// <summary>
-        /// Stop all notifications
+        /// Hide and clear all notifications
         /// </summary>
         public void Notify()
         {
